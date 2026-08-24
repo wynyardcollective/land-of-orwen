@@ -18,6 +18,7 @@
     {
       "binding": "DB",
       "database_name": "orwen-players",
+      // Replace with the UUID from `wrangler d1 create orwen-players` before remote deploy
       "database_id": "local-orwen-players",
       "migrations_dir": "migrations"
     }

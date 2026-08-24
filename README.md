@@ -29,28 +29,41 @@ Progress is written to:
 
 ## Cloudflare deploy
 
-Requires a Cloudflare account and Wrangler auth (`npx wrangler login` or `CLOUDFLARE_API_TOKEN`).
+Requires a Cloudflare account with **Workers Paid** (or otherwise enough Worker size quota). The OpenNext bundle is typically ~1 MiB compressed, which exceeds the free 1 MiB Worker limit.
 
 ```bash
+npx wrangler login
+# or export CLOUDFLARE_API_TOKEN=...
+
 # Create a remote D1 database once
 npx wrangler d1 create orwen-players
-
-# Put the returned database_id into wrangler.jsonc → d1_databases[0].database_id
+# Copy the returned database_id into wrangler.jsonc → d1_databases[0].database_id
 
 # Apply migrations
-npx wrangler d1 migrations apply orwen-players --remote
+npm run db:migrate:remote
 
 # Build with OpenNext and deploy
 npm run deploy
 ```
 
+Local D1 (via `next.dev` + OpenNext bindings):
+
+```bash
+npm run db:migrate:local
+npm run dev
+```
+
+Player progress is stored in the `player_saves` D1 table (JSON state keyed by `player_id`). The browser also keeps a `localStorage` cache and falls back to it if the API is unreachable.
+
 Useful scripts:
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Next.js local server |
+| `npm run dev` | Next.js local server (port 43127) |
 | `npm run preview` | OpenNext + Wrangler local Worker preview |
 | `npm run deploy` | Build and deploy to Cloudflare Workers |
+| `npm run db:migrate:local` | Apply D1 migrations locally |
+| `npm run db:migrate:remote` | Apply D1 migrations remotely |
 | `npm run cf-typegen` | Generate Cloudflare binding types |
 
 ## Stack
