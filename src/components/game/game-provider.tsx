@@ -24,6 +24,7 @@ import {
   type SettingsState,
   type TabId,
 } from "@/lib/game";
+import { playCue } from "@/lib/game/sound";
 import {
   createContext,
   useCallback,
@@ -147,6 +148,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (lastAnnounced.current !== msg) {
           lastAnnounced.current = msg;
           setAnnouncement(msg);
+          playCue(state.settings.soundEnabled, "travel");
         }
       } else if (next.pendingReward) {
         const msg = next.pendingReward.success
@@ -155,6 +157,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (lastAnnounced.current !== msg) {
           lastAnnounced.current = msg;
           setAnnouncement(msg);
+          playCue(state.settings.soundEnabled, "reward");
         }
       }
     }
