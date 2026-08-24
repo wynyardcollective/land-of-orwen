@@ -7,13 +7,14 @@ export interface SaveStore {
   put(state: GameState): Promise<void>;
 }
 
+type D1Prepared = {
+  bind: (...args: unknown[]) => D1Prepared;
+  first: <T>() => Promise<T | null>;
+  run: () => Promise<unknown>;
+};
+
 type D1Database = {
-  prepare: (query: string) => {
-    bind: (...args: unknown[]) => {
-      first: <T>() => Promise<T | null>;
-      run: () => Promise<unknown>;
-    };
-  };
+  prepare: (query: string) => D1Prepared;
 };
 
 async function getD1(): Promise<D1Database | null> {
@@ -56,27 +57,74 @@ const fileStore: SaveStore = {
 
 const d1Store = (db: D1Database): SaveStore => ({
   async get(playerId) {
-    const row = await db
-      .prepare("SELECT state_json FROM player_saves WHERE player_id = ?")
-      .bind(playerId)
-      .first<{ state_json: string }>();
-    if (!row?.state_json) return null;
-    return JSON.parse(row.state_json) as GameState;
+    try {
+      const row = await db
+        .prepare("SELECT state_json FROM player_saves WHERE player_id = ?")
+        .bind(playerId)
+        .first<{ state_json: string }>();
+      if (!row?.state_json) return null;
+      return JSON.parse(row.state_json) as GameState;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("no such table")) {
+        await ensureD1Schema(db);
+        return null;
+      }
+      throw err;
+    }
   },
   async put(state) {
-    await db
-      .prepare(
-        `INSERT INTO player_saves (player_id, hero_name, state_json, updated_at)
-         VALUES (?, ?, ?, ?)
-         ON CONFLICT(player_id) DO UPDATE SET
-           hero_name = excluded.hero_name,
-           state_json = excluded.state_json,
-           updated_at = excluded.updated_at`,
-      )
-      .bind(state.playerId, state.heroName, JSON.stringify(state), state.updatedAt)
-      .run();
+    try {
+      await db
+        .prepare(
+          `INSERT INTO player_saves (player_id, hero_name, state_json, updated_at)
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT(player_id) DO UPDATE SET
+             hero_name = excluded.hero_name,
+             state_json = excluded.state_json,
+             updated_at = excluded.updated_at`,
+        )
+        .bind(state.playerId, state.heroName, JSON.stringify(state), state.updatedAt)
+        .run();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("no such table")) {
+        await ensureD1Schema(db);
+        await db
+          .prepare(
+            `INSERT INTO player_saves (player_id, hero_name, state_json, updated_at)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT(player_id) DO UPDATE SET
+               hero_name = excluded.hero_name,
+               state_json = excluded.state_json,
+               updated_at = excluded.updated_at`,
+          )
+          .bind(
+            state.playerId,
+            state.heroName,
+            JSON.stringify(state),
+            state.updatedAt,
+          )
+          .run();
+        return;
+      }
+      throw err;
+    }
   },
 });
+
+async function ensureD1Schema(db: D1Database) {
+  await db
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS player_saves (
+        player_id TEXT PRIMARY KEY NOT NULL,
+        hero_name TEXT NOT NULL DEFAULT 'Wanderer',
+        state_json TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      )`,
+    )
+    .run();
+}
 
 export async function getSaveStore(): Promise<SaveStore> {
   const db = await getD1();
