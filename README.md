@@ -27,26 +27,61 @@ Progress is written to:
 1. `localStorage` immediately
 2. `PUT /api/save` (debounced) — uses `.data/saves/` when D1 is unavailable, or Cloudflare D1 in production
 
-## Cloudflare deploy
+## Production: rough.co.nz
 
-Requires a Cloudflare account with **Workers Paid** (or otherwise enough Worker size quota). The OpenNext bundle is typically ~1 MiB compressed, which exceeds the free 1 MiB Worker limit.
+The Worker is configured for custom domains **rough.co.nz** and **www.rough.co.nz** in `wrangler.jsonc`.
+
+### Prerequisites
+
+1. **Cloudflare account** with the zone `rough.co.nz` (add the domain in Cloudflare Dashboard → Domains, point nameservers at your registrar).
+2. **Workers Paid** (~$5/mo) — the OpenNext bundle is ~1 MiB compressed and exceeds the free Worker size limit.
+3. Auth in this shell:
+   - `export CLOUDFLARE_API_TOKEN=...` with permissions: Account → Workers Scripts Edit, D1 Edit, Workers Routes Write (and Zone → DNS Edit if you manage records manually), **or**
+   - `npx wrangler login` on a machine with a browser.
+
+### One-shot deploy
+
+```bash
+npm run deploy:prod
+```
+
+That script will:
+
+1. Create (or reuse) the remote D1 database `orwen-players` and write its `database_id` into `wrangler.jsonc`
+2. Apply D1 migrations remotely
+3. Build with OpenNext and deploy the Worker, attaching `rough.co.nz` and `www.rough.co.nz`
+
+After a successful deploy:
+
+- https://rough.co.nz
+- https://www.rough.co.nz
+- `https://land-of-orwen.<account>.workers.dev` (default workers.dev URL)
+
+### Manual steps (same outcome)
 
 ```bash
 npx wrangler login
-# or export CLOUDFLARE_API_TOKEN=...
+# or: export CLOUDFLARE_API_TOKEN=...
 
-# Create a remote D1 database once
 npx wrangler d1 create orwen-players
-# Copy the returned database_id into wrangler.jsonc → d1_databases[0].database_id
+# Paste database_id into wrangler.jsonc → d1_databases[0].database_id
 
-# Apply migrations
 npm run db:migrate:remote
-
-# Build with OpenNext and deploy
 npm run deploy
 ```
 
-Local D1 (via `next.dev` + OpenNext bindings):
+### Domain troubleshooting
+
+| Symptom | Fix |
+|--------|-----|
+| Custom domain create fails | Zone `rough.co.nz` must be **Active** on the same Cloudflare account as the Worker |
+| Deploy fails on size / quota | Upgrade to **Workers Paid** |
+| www works, apex does not | Both patterns are in `wrangler.jsonc` `routes`; re-run deploy after the zone is Active |
+| Saves empty after deploy | Confirm `database_id` is a real UUID (not `local-orwen-players`) and migrations ran |
+
+## Cloudflare notes (general)
+
+Local D1 (via OpenNext bindings):
 
 ```bash
 npm run db:migrate:local
@@ -62,6 +97,7 @@ Useful scripts:
 | `npm run dev` | Next.js local server (port 43127) |
 | `npm run preview` | OpenNext + Wrangler local Worker preview |
 | `npm run deploy` | Build and deploy to Cloudflare Workers |
+| `npm run deploy:prod` | Create/patch D1 + migrate + deploy (incl. rough.co.nz) |
 | `npm run db:migrate:local` | Apply D1 migrations locally |
 | `npm run db:migrate:remote` | Apply D1 migrations remotely |
 | `npm run cf-typegen` | Generate Cloudflare binding types |

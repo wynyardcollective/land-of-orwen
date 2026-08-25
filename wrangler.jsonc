@@ -19,8 +19,14 @@
       "binding": "DB",
       "database_name": "orwen-players",
       // Replace with the UUID from `wrangler d1 create orwen-players` before remote deploy
+      // (or run `npm run deploy:prod` which creates it and patches this file)
       "database_id": "local-orwen-players",
       "migrations_dir": "migrations"
     }
+  ],
+  // Custom domains — zone rough.co.nz must live on the same Cloudflare account
+  "routes": [
+    { "pattern": "rough.co.nz", "custom_domain": true },
+    { "pattern": "www.rough.co.nz", "custom_domain": true }
   ]
 }
