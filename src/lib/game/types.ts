@@ -91,6 +91,8 @@ export interface QuestDef {
   unlockLocationId?: string;
   rumor?: boolean;
   itemPool: string[];
+  /** Base chance (0–1) to find an item on success; Wisdom adds further chance. */
+  itemChance: number;
   gemChance: number;
 }
 

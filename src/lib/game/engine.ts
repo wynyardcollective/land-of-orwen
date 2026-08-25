@@ -31,8 +31,20 @@ function uid(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
 }
 
-function pickItem(quest: QuestDef, wisdom: number, charisma: number): OwnedItem | undefined {
+function itemDropChance(quest: QuestDef, wisdom: number) {
+  // Wisdom +2% absolute per point; soft-cap so drops stay scarce
+  return clamp(quest.itemChance + wisdom * 0.02, 0, 0.85);
+}
+
+function pickItem(
+  quest: QuestDef,
+  wisdom: number,
+  charisma: number,
+  force = false,
+): OwnedItem | undefined {
   if (!quest.itemPool.length) return undefined;
+  if (!force && Math.random() > itemDropChance(quest, wisdom)) return undefined;
+
   const legendaryBoost = wisdom * 0.02;
   const pool = [...quest.itemPool];
   if (Math.random() < 0.08 + legendaryBoost) {
@@ -112,7 +124,7 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
     gem = pickGem({ ...quest, gemChance: 1 }, stats.wisdom);
   }
   if (jackpot && !item && quest.itemPool.length) {
-    item = pickItem(quest, stats.wisdom + 4, stats.charisma);
+    item = pickItem(quest, stats.wisdom + 4, stats.charisma, true);
   }
 
   const outcomes = QUEST_OUTCOMES[quest.id];

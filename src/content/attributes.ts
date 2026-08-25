@@ -58,9 +58,10 @@ export const ATTRIBUTE_HELP: Record<HeroStat, AttributeHelp> = {
   wisdom: {
     id: "wisdom",
     summary:
-      "A knack for noticing relics. Wisdom improves the chance of rare drops from successful quests.",
+      "A knack for noticing relics. Wisdom raises your chance of finding gear and rare drops on successful quests.",
     details: [
-      "Raises the chance of legendary items, lore finds, and raw gems.",
+      "Adds +2% item drop chance per Wisdom (on top of each quest's base drop rate).",
+      "Also raises the chance of legendary items and raw gems.",
       "Does not change quest success chance.",
       "Sage affinity gear and Mistpearl gems add Wisdom.",
     ],

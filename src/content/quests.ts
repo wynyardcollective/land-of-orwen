@@ -13,6 +13,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 90,
     goldReward: 4,
     itemPool: ["walking-staff", "leather-cap"],
+    itemChance: 0.28,
     gemChance: 0.05,
   },
   {
@@ -26,6 +27,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 80,
     goldReward: 3,
     itemPool: ["cloth-pants", "farm-gloves"],
+    itemChance: 0.3,
     gemChance: 0.05,
     storyFlagOnSuccess: "orchard_help",
   },
@@ -40,6 +42,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 100,
     goldReward: 4,
     itemPool: ["scholar-ring"],
+    itemChance: 0.32,
     gemChance: 0.08,
     storyFlagOnSuccess: "mill_unlocked",
     unlockLocationId: "stone-mill",
@@ -57,6 +60,7 @@ export const QUESTS: QuestDef[] = [
     goldReward: 6,
     rumor: true,
     itemPool: ["market-boots", "scholar-ring"],
+    itemChance: 0.34,
     gemChance: 0.1,
     storyFlagOnSuccess: "shore_unlocked",
     unlockLocationId: "northern-shore",
@@ -72,6 +76,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 110,
     goldReward: 6,
     itemPool: ["bronze-chest", "leather-cap"],
+    itemChance: 0.3,
     gemChance: 0.08,
   },
   {
@@ -85,6 +90,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 100,
     goldReward: 5,
     itemPool: ["farm-gloves", "market-boots"],
+    itemChance: 0.32,
     gemChance: 0.08,
   },
   // Grass
@@ -99,6 +105,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 70,
     goldReward: 3,
     itemPool: ["cloth-pants", "farm-gloves"],
+    itemChance: 0.3,
     gemChance: 0.06,
   },
   {
@@ -112,6 +119,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 100,
     goldReward: 5,
     itemPool: ["walking-staff", "bronze-chest"],
+    itemChance: 0.3,
     gemChance: 0.08,
   },
   {
@@ -125,6 +133,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 110,
     goldReward: 5,
     itemPool: ["scholar-ring"],
+    itemChance: 0.35,
     gemChance: 0.1,
   },
   // Mill
@@ -139,6 +148,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 140,
     goldReward: 8,
     itemPool: ["mill-hammer", "bronze-chest"],
+    itemChance: 0.32,
     gemChance: 0.12,
     storyFlagOnSuccess: "canyon_unlocked",
     unlockLocationId: "clara-canyon",
@@ -154,6 +164,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 130,
     goldReward: 8,
     itemPool: ["herald-gloves", "market-boots"],
+    itemChance: 0.34,
     gemChance: 0.12,
   },
   {
@@ -167,6 +178,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 150,
     goldReward: 9,
     itemPool: ["warlock-ring", "scholar-ring"],
+    itemChance: 0.36,
     gemChance: 0.14,
   },
   // Shore
@@ -181,6 +193,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 150,
     goldReward: 8,
     itemPool: ["shore-sandals", "warlock-ring"],
+    itemChance: 0.4,
     gemChance: 0.15,
   },
   {
@@ -195,6 +208,7 @@ export const QUESTS: QuestDef[] = [
     goldReward: 11,
     rumor: true,
     itemPool: ["warlock-ring", "canyon-amulet"],
+    itemChance: 0.38,
     gemChance: 0.16,
     storyFlagOnSuccess: "tables_unlocked",
     unlockLocationId: "blackened-tables",
@@ -210,6 +224,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 140,
     goldReward: 8,
     itemPool: ["mill-hammer", "ash-helm"],
+    itemChance: 0.32,
     gemChance: 0.12,
   },
   {
@@ -224,6 +239,7 @@ export const QUESTS: QuestDef[] = [
     goldReward: 10,
     rumor: true,
     itemPool: ["canyon-amulet"],
+    itemChance: 0.36,
     gemChance: 0.18,
     storyFlagOnSuccess: "shrine_unlocked",
     unlockLocationId: "sealed-shrine",
@@ -240,6 +256,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 170,
     goldReward: 12,
     itemPool: ["herald-gloves", "shore-sandals"],
+    itemChance: 0.35,
     gemChance: 0.16,
   },
   {
@@ -253,6 +270,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 180,
     goldReward: 12,
     itemPool: ["canyon-amulet", "warlock-ring"],
+    itemChance: 0.4,
     gemChance: 0.18,
   },
   {
@@ -266,6 +284,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 170,
     goldReward: 11,
     itemPool: ["ash-helm", "mill-hammer"],
+    itemChance: 0.34,
     gemChance: 0.15,
   },
   // Tablelands
@@ -280,6 +299,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 200,
     goldReward: 14,
     itemPool: ["ash-helm", "bronze-chest"],
+    itemChance: 0.36,
     gemChance: 0.2,
   },
   {
@@ -293,6 +313,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 210,
     goldReward: 15,
     itemPool: ["canyon-amulet", "warlock-ring"],
+    itemChance: 0.42,
     gemChance: 0.22,
   },
   {
@@ -306,6 +327,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 190,
     goldReward: 14,
     itemPool: ["herald-gloves", "shore-sandals"],
+    itemChance: 0.38,
     gemChance: 0.2,
   },
   // Shrine
@@ -320,6 +342,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 200,
     goldReward: 16,
     itemPool: ["canyon-amulet"],
+    itemChance: 0.4,
     gemChance: 0.25,
     storyFlagOnSuccess: "shrine_studied",
   },
@@ -334,6 +357,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 190,
     goldReward: 15,
     itemPool: ["ash-helm"],
+    itemChance: 0.36,
     gemChance: 0.22,
   },
   {
@@ -347,6 +371,7 @@ export const QUESTS: QuestDef[] = [
     durationSeconds: 220,
     goldReward: 20,
     itemPool: ["ring-of-success"],
+    itemChance: 0.45,
     gemChance: 0.3,
     storyFlagOnSuccess: "chapter_complete",
   },

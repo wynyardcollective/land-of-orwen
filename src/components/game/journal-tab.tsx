@@ -1,14 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { JOURNAL, LOCATION_MAP, QUEST_MAP, currentGoals } from "@/content";
+import { formatStat } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export function JournalTab() {
   const { state } = useGame();
   const goals = currentGoals(state.storyFlags);
   const entries = JOURNAL.filter((j) => state.journalUnlocked.includes(j.id));
+  const [openQuestId, setOpenQuestId] = useState<string | null>(null);
+  const openQuest = openQuestId ? QUEST_MAP[openQuestId] : null;
+  const openLocation = openQuest
+    ? LOCATION_MAP[openQuest.locationId]
+    : undefined;
 
   return (
     <div className="space-y-4">
@@ -81,6 +97,9 @@ export function JournalTab() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Completed quests</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Tap a quest to reread what you were asked to do.
+          </p>
         </CardHeader>
         <CardContent>
           {state.completedQuests.length === 0 ? (
@@ -89,17 +108,62 @@ export function JournalTab() {
             </p>
           ) : (
             <ul className="flex flex-wrap gap-2">
-              {state.completedQuests.map((id) => (
-                <li key={id}>
-                  <Badge variant="secondary">
-                    {QUEST_MAP[id]?.name ?? id}
-                  </Badge>
-                </li>
-              ))}
+              {state.completedQuests.map((id) => {
+                const quest = QUEST_MAP[id];
+                const label = quest?.name ?? id;
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => setOpenQuestId(id)}
+                      aria-haspopup="dialog"
+                      aria-label={`Details for ${label}`}
+                    >
+                      <Badge
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-secondary/80"
+                      >
+                        {label}
+                      </Badge>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={!!openQuest}
+        onOpenChange={(open) => {
+          if (!open) setOpenQuestId(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          {openQuest && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{openQuest.name}</DialogTitle>
+                <DialogDescription>
+                  {openLocation?.name ?? "Unknown place"} · Level{" "}
+                  {openQuest.level} · {formatStat(openQuest.stat)}
+                  {openQuest.rumor ? " · Rumor" : ""}
+                </DialogDescription>
+              </DialogHeader>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {openQuest.description}
+              </p>
+              <DialogFooter>
+                <Button type="button" variant="secondary" onClick={() => setOpenQuestId(null)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
