@@ -20,13 +20,13 @@ import {
   unequipSlot,
   upgradeGem,
   writeLocalSave,
+  playCue,
   type GameState,
   type Pace,
   type SettingsState,
   type TabId,
 } from "@/lib/game";
 import { ARRIVAL_LINES } from "@/content";
-import { playCue } from "@/lib/game/sound";
 import {
   createContext,
   useCallback,

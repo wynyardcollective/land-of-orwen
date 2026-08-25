@@ -1,5 +1,3 @@
-"use client";
-
 /** Tiny Web Audio cues — no external music assets. */
 export function playCue(
   enabled: boolean,
@@ -17,7 +15,7 @@ export function playCue(
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    const now = ctx.currentTime;
+    const t = ctx.currentTime;
     const freqs = {
       travel: [392, 494],
       quest: [330, 440],
@@ -26,17 +24,17 @@ export function playCue(
       ambient: [196, 247],
     }[kind];
     osc.type = kind === "ambient" ? "triangle" : "sine";
-    osc.frequency.setValueAtTime(freqs[0], now);
+    osc.frequency.setValueAtTime(freqs[0], t);
     freqs.forEach((f, i) => {
-      if (i > 0) osc.frequency.setValueAtTime(f, now + i * 0.08);
+      if (i > 0) osc.frequency.setValueAtTime(f, t + i * 0.08);
     });
     const peak = kind === "ambient" ? 0.03 : 0.08;
     const dur = kind === "ambient" ? 0.9 : 0.28;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(peak, now + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-    osc.start(now);
-    osc.stop(now + dur + 0.05);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(peak, t + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.start(t);
+    osc.stop(t + dur + 0.05);
     void ctx.resume();
     setTimeout(() => void ctx.close(), (dur + 0.2) * 1000);
   } catch {

@@ -17,10 +17,10 @@ import {
   formatStat,
   questsAtLocation,
   successChance,
+  playCue,
 } from "@/lib/game";
 import type { ActiveAction, QuestDef } from "@/lib/game";
 import { useGame } from "./game-provider";
-import { playCue } from "@/lib/game/sound";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
