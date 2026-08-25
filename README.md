@@ -29,6 +29,8 @@ Progress is written to:
 
 ## Production: rough.co.nz
 
+Live: [https://rough.co.nz](https://rough.co.nz) · [https://www.rough.co.nz](https://www.rough.co.nz)
+
 The Worker is configured for custom domains **rough.co.nz** and **www.rough.co.nz** in `wrangler.jsonc`.
 
 ### Prerequisites
