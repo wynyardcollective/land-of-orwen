@@ -48,78 +48,94 @@ export function MapTab() {
 
   return (
     <div className="space-y-4">
-      <Card className="overflow-hidden border-amber-900/40 bg-gradient-to-b from-stone-900 to-stone-950">
+      <Card className="border-amber-900/40 bg-gradient-to-b from-stone-900 to-stone-950">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Map of Orwen</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Select a place to travel or view quests. Unlocked locations are
-            labeled; locked ones stay dim until your story opens them.
+            Tap a pin on the map or a name below to travel or view quests. Dim
+            pins are locked until your story opens them.
           </p>
         </CardHeader>
         <CardContent>
-          <svg
-            viewBox="0 0 100 100"
+          <div
+            className="relative aspect-square w-full overflow-visible rounded-xl border border-border/60 bg-[radial-gradient(ellipse_at_center,_#1c1917_0%,_#0c0a09_70%)]"
             role="img"
             aria-label="Illustrated countryside map of Orwen with location markers"
-            className="h-auto w-full rounded-xl border border-border/60 bg-[radial-gradient(ellipse_at_center,_#1c1917_0%,_#0c0a09_70%)]"
           >
-            <defs>
-              <pattern id="grass" width="8" height="8" patternUnits="userSpaceOnUse">
-                <path d="M0 8 L4 0 L8 8" fill="none" stroke="#3f3a32" strokeWidth="0.3" />
-              </pattern>
-            </defs>
-            <rect width="100" height="100" fill="url(#grass)" opacity="0.5" />
-            <path
-              d="M10 70 Q30 55 45 60 T80 40"
-              fill="none"
-              stroke="#57534e"
-              strokeWidth="0.8"
-              strokeDasharray="1.5 1"
-            />
+            <svg
+              viewBox="0 0 100 100"
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full"
+            >
+              <defs>
+                <pattern
+                  id="grass"
+                  width="8"
+                  height="8"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M0 8 L4 0 L8 8"
+                    fill="none"
+                    stroke="#3f3a32"
+                    strokeWidth="0.3"
+                  />
+                </pattern>
+              </defs>
+              <rect width="100" height="100" fill="url(#grass)" opacity="0.5" />
+              <path
+                d="M10 70 Q30 55 45 60 T80 40"
+                fill="none"
+                stroke="#57534e"
+                strokeWidth="0.8"
+                strokeDasharray="1.5 1"
+              />
+            </svg>
             {LOCATIONS.map((loc) => {
               const unlocked = state.unlockedLocations.includes(loc.id);
               const here = state.locationId === loc.id;
+              const label = `${loc.name}${here ? ", current location" : ""}${unlocked ? "" : ", locked"}. ${loc.regionHint}`;
               return (
-                <g key={loc.id}>
-                  <circle
-                    cx={loc.x}
-                    cy={loc.y}
-                    r={here ? 3.2 : 2.4}
-                    className={
+                <button
+                  key={loc.id}
+                  type="button"
+                  disabled={!unlocked}
+                  onClick={() => {
+                    if (!unlocked) return;
+                    setError(null);
+                    setSelectedId(loc.id);
+                  }}
+                  aria-label={label}
+                  aria-disabled={!unlocked}
+                  title={unlocked ? loc.name : `${loc.name} (locked)`}
+                  className={`absolute z-10 flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-start gap-0.5 rounded-xl px-1 pt-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${
+                    unlocked
+                      ? "cursor-pointer hover:brightness-110"
+                      : "cursor-not-allowed opacity-55"
+                  }`}
+                  style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
+                >
+                  <span
+                    className={`mt-1 block size-4 shrink-0 rounded-full ring-2 ring-black/50 sm:size-5 ${
                       unlocked
                         ? here
-                          ? "fill-amber-300"
-                          : "fill-emerald-400/90"
-                        : "fill-stone-600"
-                    }
+                          ? "bg-amber-300"
+                          : "bg-emerald-400"
+                        : "bg-stone-600"
+                    }`}
+                    aria-hidden="true"
                   />
-                  <foreignObject
-                    x={loc.x - 14}
-                    y={loc.y + 3.5}
-                    width="28"
-                    height="12"
+                  <span
+                    className={`max-w-24 rounded bg-black/70 px-1 py-0.5 text-center text-[10px] leading-tight sm:text-xs ${
+                      unlocked ? "text-stone-100" : "text-stone-400"
+                    }`}
                   >
-                    <button
-                      type="button"
-                      disabled={!unlocked}
-                      onClick={() => {
-                        setError(null);
-                        setSelectedId(loc.id);
-                      }}
-                      className={`w-full rounded px-0.5 text-center text-[3.2px] leading-tight focus:outline-none focus:ring-1 focus:ring-amber-300 ${
-                        unlocked
-                          ? "bg-black/50 text-stone-100 hover:bg-black/70"
-                          : "cursor-not-allowed bg-black/30 text-stone-500"
-                      }`}
-                      aria-label={`${loc.name}${here ? ", current location" : ""}${unlocked ? "" : ", locked"}. ${loc.regionHint}`}
-                    >
-                      {loc.name}
-                    </button>
-                  </foreignObject>
-                </g>
+                    {loc.name}
+                  </span>
+                </button>
               );
             })}
-          </svg>
+          </div>
 
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {LOCATIONS.filter((l) => state.unlockedLocations.includes(l.id)).map(
