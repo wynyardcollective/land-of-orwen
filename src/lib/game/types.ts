@@ -35,13 +35,16 @@ export interface StatLevels {
 export interface ItemDef {
   id: string;
   name: string;
-  slot: EquipSlot;
-  questStat: QuestStat;
-  affinity: SecondaryAffinity;
   rarity: ItemRarity;
-  basePower: number;
   sellValue: number;
   description: string;
+  basePower: number;
+  /** Gear only — omitted on consumables */
+  slot?: EquipSlot;
+  questStat?: QuestStat;
+  affinity?: SecondaryAffinity;
+  /** Consumable: HP restored on use */
+  healAmount?: number;
 }
 
 export interface OwnedItem {
@@ -258,8 +261,13 @@ export interface GameState {
   journalUnlocked: string[];
   active: ActiveAction;
   pendingReward: PendingReward | null;
-  /** −5% offense on next combat until cleared by quest or campfire rest */
+  /** −5% offense until cleared by quest success, heal, or campfire rest */
   wounded: boolean;
+  /**
+   * Persistent hit points between fights. `null` means full health
+   * (legacy saves / fresh characters).
+   */
+  heroHp: number | null;
   campfireMessages: CampfireMessage[];
   playerNotes: string[];
   loreSolved: boolean;

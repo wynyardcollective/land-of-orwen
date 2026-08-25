@@ -1,6 +1,6 @@
 "use client";
 
-import { computeStats, goldCap } from "@/lib/game";
+import { computeStats, goldCap, currentHeroHp, heroMaxHp } from "@/lib/game";
 import { LOCATION_MAP } from "@/content";
 import { useGame } from "./game-provider";
 import { SettingsDialog } from "./settings-dialog";
@@ -12,6 +12,9 @@ export function StatusBar() {
   const stats = computeStats(state);
   const cap = goldCap(stats.constitution);
   const loc = LOCATION_MAP[state.locationId];
+  const maxHp = heroMaxHp(state);
+  const hp = currentHeroHp(state, maxHp);
+  const lowHp = hp <= maxHp * 0.35;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-card/95 backdrop-blur">
@@ -24,6 +27,15 @@ export function StatusBar() {
             {loc?.name ?? "Unknown"} · {state.heroName}
           </p>
         </div>
+        <Badge
+          variant={lowHp ? "destructive" : "outline"}
+          className="font-mono text-sm"
+          aria-live="polite"
+          aria-label={`Health ${hp} of ${maxHp}`}
+        >
+          HP {hp}/{maxHp}
+          {state.wounded ? " · W" : ""}
+        </Badge>
         <Badge variant="secondary" className="font-mono text-sm" aria-live="polite">
           Gold {state.gold}/{cap}
         </Badge>

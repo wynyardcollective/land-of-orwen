@@ -35,6 +35,9 @@ import {
   tavernHitChance,
   tavernRoundDuration,
   availableTavernRumors,
+  tavernHealCost,
+  currentHeroHp,
+  heroMaxHp,
   type ActiveAction,
   type CombatStance,
   type EncounterDef,
@@ -63,7 +66,7 @@ function formatRemaining(ms: number) {
 }
 
 export function MapTab() {
-  const { state, travelTo, attemptQuest, engageCombat, fleeCombat, buyTavernRound, now } =
+  const { state, travelTo, attemptQuest, engageCombat, fleeCombat, buyTavernRound, healAtTavern, now } =
     useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -522,6 +525,10 @@ export function MapTab() {
                         if (err) setError(err);
                         else setSelectedId(null);
                       }}
+                      onHeal={() => {
+                        const err = healAtTavern(tavernHere.id);
+                        if (err) setError(err);
+                      }}
                     />
                   )}
                 </div>
@@ -541,11 +548,13 @@ function TavernPanel({
   state,
   listening,
   onBuy,
+  onHeal,
 }: {
   tavern: import("@/content/taverns").TavernDef;
   state: GameState;
   listening: boolean;
   onBuy: () => void;
+  onHeal: () => void;
 }) {
   const cost = tavernRoundCost(state, tavern.id);
   const hitPct = Math.round(tavernHitChance(state) * 100);
@@ -553,6 +562,11 @@ function TavernPanel({
   const rumorsLeft = availableTavernRumors(state, tavern.id);
   const canAfford = state.gold >= cost;
   const busy = !!state.active || !!state.pendingReward;
+  const maxHp = heroMaxHp(state);
+  const hp = currentHeroHp(state, maxHp);
+  const healCost = tavernHealCost(state);
+  const needsHeal = hp < maxHp;
+  const canAffordHeal = state.gold >= healCost;
 
   return (
     <div className="space-y-2 rounded-xl border border-violet-900/50 bg-violet-950/20 p-3 pt-4">
@@ -566,6 +580,35 @@ function TavernPanel({
         </Badge>
       </div>
       <p className="text-sm text-muted-foreground">{tavern.description}</p>
+      <div className="rounded-lg border border-border/40 bg-black/20 px-3 py-2 text-xs">
+        <p>
+          Your health:{" "}
+          <strong className={hp < maxHp * 0.35 ? "text-orange-200" : "text-emerald-200"}>
+            {hp}/{maxHp} HP
+          </strong>
+          {state.wounded ? " · wounded" : ""}
+        </p>
+        <p className="mt-1 text-muted-foreground">
+          Rest here to restore all health. Cost scales with how hurt you are;
+          Charisma softens the bill.
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          className="mt-2"
+          variant="outline"
+          disabled={!needsHeal || busy || !canAffordHeal}
+          onClick={onHeal}
+        >
+          {!needsHeal
+            ? "Already full health"
+            : !canAffordHeal
+              ? `Need ${healCost}g to rest`
+              : busy
+                ? "Busy…"
+                : `Rest & recover (${healCost}g)`}
+        </Button>
+      </div>
       <p className="text-xs text-muted-foreground">
         Pay <strong className="text-amber-100">{cost} gold</strong> and linger{" "}
         <strong className="text-amber-100">~{seconds}s</strong> for a chance to

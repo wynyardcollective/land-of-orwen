@@ -15,6 +15,7 @@ import {
 } from "./formulas";
 import {
   combatRoundDuration,
+  currentHeroHp,
   deriveCombatSheet,
   enemyDamage,
   fleeChance,
@@ -76,7 +77,7 @@ function pickEncounterItem(
   return {
     uid: uid("item"),
     defId,
-    power: def.basePower + Math.floor(charisma / 4),
+    power: def.healAmount ? 0 : def.basePower + Math.floor(charisma / 4),
   };
 }
 
@@ -113,7 +114,9 @@ export function startCombat(
   encounterId: string,
   stanceInput: CombatStance | "auto" = "auto",
 ): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling, questing, or fighting." };
+  if (state.active) {
+    return { error: "You are already traveling, questing, fighting, or listening at a tavern." };
+  }
   if (state.pendingReward) return { error: "Claim your reward first." };
   const enc = ENCOUNTER_MAP[encounterId];
   if (!enc) return { error: "Unknown encounter." };
@@ -130,6 +133,12 @@ export function startCombat(
   let next = autoEquipForQuest(state, fakeQuest);
   const stats = computeStats(next);
   const sheet = deriveCombatSheet(stats, stance, next, next.wounded);
+  const hp = currentHeroHp(next, sheet.maxHp);
+  if (hp <= 0) {
+    return {
+      error: "You have no strength left to fight. Heal with a remedy or rest at a tavern.",
+    };
+  }
   const now = Date.now();
   const roundMs =
     combatRoundDuration(enc, next.settings.pace, stats.constitution) * 1000;
@@ -140,7 +149,7 @@ export function startCombat(
     enemyId: enc.enemyId,
     stance,
     waveIndex: 0,
-    heroHp: sheet.maxHp,
+    heroHp: hp,
     heroMaxHp: sheet.maxHp,
     enemyHp: enemy.maxHp,
     enemyMaxHp: enemy.maxHp,
@@ -150,7 +159,10 @@ export function startCombat(
     log: [
       {
         round: 0,
-        text: `You engage ${enemy.name}. Stance: ${stance}.`,
+        text:
+          hp < sheet.maxHp
+            ? `You engage ${enemy.name} already hurt (${hp}/${sheet.maxHp} HP). Stance: ${stance}.`
+            : `You engage ${enemy.name}. Stance: ${stance}.`,
         at: now,
       },
     ],
@@ -183,11 +195,11 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
       combatLine(enemy.id, "enemyHit", `${enemy.name} catches you as you turn.`),
     );
     if (heroHp <= 0) {
-      return finishCombatDefeat(state, combat, enc, now);
+      return finishCombatDefeat(state, { ...combat, heroHp, log }, enc, now);
     }
     return {
       ...state,
-      active: { ...combat, heroHp, log, nextRoundAt: now + 500 },
+      active: { ...combat, heroHp, log, nextRoundAt: now + Math.max(2500, Math.round(combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500)) },
       updatedAt: now,
     };
   }
@@ -209,6 +221,7 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
     ...state,
     active: null,
     pendingReward: reward,
+    heroHp: Math.max(1, combat.heroHp),
     updatedAt: now,
   };
 }
@@ -279,6 +292,7 @@ function finishCombatVictory(
     ...state,
     active: null,
     pendingReward: reward,
+    heroHp: Math.max(0, combat.heroHp),
     wounded: false,
     updatedAt: now,
   };
@@ -319,6 +333,7 @@ function finishCombatDefeat(
     ...state,
     active: null,
     pendingReward: reward,
+    heroHp: 0,
     wounded: true,
     updatedAt: now,
   };

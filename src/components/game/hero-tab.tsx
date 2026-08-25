@@ -9,6 +9,8 @@ import {
   goldCap,
   rarityClass,
   SLOT_QUEST_STAT,
+  currentHeroHp,
+  heroMaxHp,
   type EquipSlot,
   type HeroStat,
 } from "@/lib/game";
@@ -49,13 +51,16 @@ const ATTRIBUTE_ORDER: HeroStat[] = [
 ];
 
 export function HeroTab() {
-  const { state, equip, unequip, sell, setName } = useGame();
+  const { state, equip, unequip, sell, setName, useItem } = useGame();
   const { user } = useAuth();
   const [nameDraft, setNameDraft] = useState(state.heroName);
   const [openStat, setOpenStat] = useState<HeroStat | null>(null);
+  const [invError, setInvError] = useState<string | null>(null);
   const stats = computeStats(state);
   const help = openStat ? ATTRIBUTE_HELP[openStat] : null;
   const gearBonus = openStat ? stats[openStat] - state.stats[openStat] : 0;
+  const maxHp = heroMaxHp(state);
+  const hp = currentHeroHp(state, maxHp);
 
   return (
     <div className="space-y-4">
@@ -77,6 +82,13 @@ export function HeroTab() {
           </div>
           <p className="text-xs text-muted-foreground break-all">
             Account: {user?.email ?? "signed in"}
+          </p>
+          <p className="text-sm" aria-live="polite">
+            Health{" "}
+            <strong className={hp < maxHp * 0.35 ? "text-orange-200" : ""}>
+              {hp}/{maxHp}
+            </strong>
+            {state.wounded ? " · wounded (−5% offense)" : ""}
           </p>
         </CardContent>
       </Card>
@@ -199,15 +211,21 @@ export function HeroTab() {
           <CardTitle className="text-base">Inventory</CardTitle>
         </CardHeader>
         <CardContent>
+          {invError && (
+            <p className="mb-2 text-sm text-destructive" role="alert">
+              {invError}
+            </p>
+          )}
           {state.inventory.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Pack is empty. Complete quests to find gear.
+              Pack is empty. Complete quests to find gear and remedies.
             </p>
           ) : (
             <ul className="space-y-3">
               {state.inventory.map((item) => {
                 const def = ITEMS[item.defId];
                 if (!def) return null;
+                const isConsumable = !!def.healAmount && !def.slot;
                 const equipped = Object.values(state.equipment).includes(item.uid);
                 const gem = item.gemId
                   ? state.gems.find((g) => g.uid === item.gemId)
@@ -227,11 +245,16 @@ export function HeroTab() {
                               Equipped
                             </Badge>
                           )}
+                          {isConsumable && (
+                            <Badge variant="outline" className="ml-1">
+                              Remedy · +{def.healAmount} HP
+                            </Badge>
+                          )}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {formatStat(def.questStat)} +{item.power} ·{" "}
-                          {formatStat(AFFINITY_STAT[def.affinity])} affinity ·{" "}
-                          {def.rarity}
+                          {isConsumable
+                            ? `Consumable · restores ${def.healAmount} HP`
+                            : `${formatStat(def.questStat!)} +${item.power} · ${formatStat(AFFINITY_STAT[def.affinity!])} affinity · ${def.rarity}`}
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {def.description}
@@ -243,20 +266,39 @@ export function HeroTab() {
                         )}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {!equipped && (
+                        {isConsumable ? (
                           <Button
                             type="button"
                             size="sm"
-                            onClick={() => equip(item.uid)}
+                            onClick={() => {
+                              const err = useItem(item.uid);
+                              setInvError(err);
+                            }}
                           >
-                            Equip
+                            Use (+{def.healAmount} HP)
                           </Button>
+                        ) : (
+                          !equipped && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                setInvError(null);
+                                equip(item.uid);
+                              }}
+                            >
+                              Equip
+                            </Button>
+                          )
                         )}
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
-                          onClick={() => sell(item.uid)}
+                          onClick={() => {
+                            setInvError(null);
+                            sell(item.uid);
+                          }}
                         >
                           Sell ({def.sellValue}g)
                         </Button>

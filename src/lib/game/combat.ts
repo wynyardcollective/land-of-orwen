@@ -50,6 +50,22 @@ export function deriveCombatSheet(
   return { maxHp, offense, armor, crit };
 }
 
+/** Max HP for the hero (stance-independent). */
+export function heroMaxHp(state: GameState): number {
+  const stats = computeStats(state);
+  return deriveCombatSheet(stats, "strength", state, false).maxHp;
+}
+
+/** Current persistent HP, clamped to max. `null` save → full. */
+export function currentHeroHp(state: GameState, maxHp = heroMaxHp(state)): number {
+  if (state.heroHp == null) return maxHp;
+  return clamp(state.heroHp, 0, maxHp);
+}
+
+export function isConsumableItem(def: { healAmount?: number; slot?: string } | undefined) {
+  return !!def && typeof def.healAmount === "number" && def.healAmount > 0 && !def.slot;
+}
+
 export function resolveStance(
   requested: CombatStance | "auto",
   enemy: EnemyDef,

@@ -20,6 +20,7 @@ import {
 } from "./formulas";
 import { advanceCombatUntilCaughtUp } from "./combat-engine";
 import { completeTavernRound } from "./tavern-engine";
+import { currentHeroHp, heroMaxHp } from "./combat";
 import type {
   CampfireMessage,
   GameState,
@@ -64,10 +65,13 @@ function pickItem(
   const defId = pool[Math.floor(Math.random() * pool.length)];
   const def = ITEMS[defId];
   if (!def) return undefined;
+  const power = def.healAmount
+    ? 0
+    : def.basePower + Math.floor(charisma / 4);
   return {
     uid: uid("item"),
     defId,
-    power: def.basePower + Math.floor(charisma / 4),
+    power,
   };
 }
 
@@ -427,10 +431,37 @@ export function equipItem(state: GameState, itemUid: string): GameState {
   const item = state.inventory.find((i) => i.uid === itemUid);
   if (!item) return state;
   const def = ITEMS[item.defId];
-  if (!def) return state;
+  if (!def?.slot) return state;
   return {
     ...state,
     equipment: { ...state.equipment, [def.slot]: itemUid },
+    updatedAt: Date.now(),
+  };
+}
+
+export function useConsumable(
+  state: GameState,
+  itemUid: string,
+): GameState | { error: string } {
+  if (state.active?.type === "combat") {
+    return { error: "You can't use remedies in the middle of a fight." };
+  }
+  const item = state.inventory.find((i) => i.uid === itemUid);
+  if (!item) return { error: "Item not found." };
+  const def = ITEMS[item.defId];
+  if (!def?.healAmount) return { error: "That item can't be used to heal." };
+
+  const maxHp = heroMaxHp(state);
+  const before = currentHeroHp(state, maxHp);
+  if (before >= maxHp) {
+    return { error: "You are already at full health." };
+  }
+  const after = clamp(before + def.healAmount, 0, maxHp);
+  return {
+    ...state,
+    heroHp: after,
+    wounded: after >= maxHp ? false : state.wounded,
+    inventory: state.inventory.filter((i) => i.uid !== itemUid),
     updatedAt: Date.now(),
   };
 }

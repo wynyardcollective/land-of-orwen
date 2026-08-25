@@ -74,6 +74,10 @@ export function AssistPanel() {
               Intelligence.
             </p>
             <p className="text-muted-foreground">
+              Health carries between fights. Use remedies from your pack or rest
+              at a tavern for gold when you are hurt — you cannot fight at 0 HP.
+            </p>
+            <p className="text-muted-foreground">
               At major locations, look for a <strong>tavern</strong> on the map
               when you are there. Spend gold and wait through a round for a
               chance to uncover secret places, early routes, and journal intel.

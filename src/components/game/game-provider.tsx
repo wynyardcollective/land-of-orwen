@@ -22,6 +22,8 @@ import {
   writeLocalSave,
   playCue,
   buyTavernRound as startTavernRound,
+  tavernHeal as healAtTavern,
+  useConsumable as consumeItem,
   type GameState,
   type Pace,
   type SettingsState,
@@ -66,6 +68,8 @@ interface GameContextValue {
   setName: (name: string) => void;
   patchSettings: (patch: Partial<SettingsState>) => void;
   buyTavernRound: (tavernId: string) => string | null;
+  healAtTavern: (tavernId: string) => string | null;
+  useItem: (uid: string) => string | null;
   resetGame: () => void;
   now: number;
 }
@@ -289,6 +293,33 @@ export function GameProvider({
     [state, update],
   );
 
+  const healAtTavernFn = useCallback(
+    (tavernId: string) => {
+      if (!state) return "Not ready.";
+      const result = healAtTavern(state, tavernId);
+      if ("error" in result) return result.error;
+      update(() => result);
+      const tr = result.lastTavernResult;
+      setAnnouncement(tr?.detail ?? "You recover.");
+      playCue(state.settings.soundEnabled, "reward");
+      return null;
+    },
+    [state, update],
+  );
+
+  const useItem = useCallback(
+    (uid: string) => {
+      if (!state) return "Not ready.";
+      const result = consumeItem(state, uid);
+      if ("error" in result) return result.error;
+      update(() => result);
+      setAnnouncement("You use a remedy and feel better.");
+      playCue(state.settings.soundEnabled, "reward");
+      return null;
+    },
+    [state, update],
+  );
+
   const value = useMemo<GameContextValue | null>(() => {
     if (!state) return null;
     return {
@@ -303,6 +334,8 @@ export function GameProvider({
       engageCombat,
       fleeCombat: flee,
       buyTavernRound,
+      healAtTavern: healAtTavernFn,
+      useItem,
       claim: () =>
         update((s) => {
           const next = claimReward(s);
@@ -369,6 +402,8 @@ export function GameProvider({
     engageCombat,
     flee,
     buyTavernRound,
+    healAtTavernFn,
+    useItem,
     update,
     persist,
     now,

@@ -46,8 +46,9 @@ export const ATTRIBUTE_HELP: Record<HeroStat, AttributeHelp> = {
   constitution: {
     id: "constitution",
     summary:
-      "Stamina for the road. Constitution shortens idle waits and lets you carry more gold.",
+      "Stamina for the road and the fight. Constitution raises max HP, shortens idle waits, and lets you carry more gold.",
     details: [
+      "Raises combat max HP (about +8 per point, plus Warden gear).",
       "Each point trims travel and quest duration by 4%, up to 40%.",
       "Gold cap starts at 200 and grows by 25 per Constitution.",
       "Gear with Warden affinity, and gems socketed for Constitution, raise this total.",

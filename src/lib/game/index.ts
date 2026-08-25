@@ -19,4 +19,6 @@ export {
   tavernRoundDuration,
   availableTavernRumors,
   buyTavernRound,
+  tavernHeal,
+  tavernHealCost,
 } from "./tavern-engine";

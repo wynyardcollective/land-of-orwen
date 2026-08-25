@@ -6,6 +6,7 @@ import {
   type TavernRumorDef,
 } from "@/content/taverns";
 import { clamp, computeStats, goldCap, paceDuration } from "./formulas";
+import { currentHeroHp, heroMaxHp } from "./combat";
 import type { ActiveTavern, GameState, TavernResult } from "./types";
 import { LOCATION_MAP } from "@/content";
 
@@ -283,4 +284,65 @@ export function buyTavernRound(state: GameState, tavernId: string) {
 
 export function availableTavernRumors(state: GameState, tavernId: string) {
   return rumorPool(state, tavernId).length;
+}
+
+/** Gold cost to restore all missing HP at a tavern (Charisma softens the bill). */
+export function tavernHealCost(state: GameState): number {
+  const maxHp = heroMaxHp(state);
+  const hp = currentHeroHp(state, maxHp);
+  const missing = maxHp - hp;
+  if (missing <= 0) return 0;
+  const stats = computeStats(state);
+  return Math.max(
+    6,
+    Math.round(missing * 1.15 - stats.charisma * 0.6),
+  );
+}
+
+/** Instant full heal at the tavern you're standing in — paid in gold. */
+export function tavernHeal(
+  state: GameState,
+  tavernId: string,
+): GameState | { error: string } {
+  if (state.active) {
+    return { error: "Finish what you're doing before resting at the tavern." };
+  }
+  if (state.pendingReward) {
+    return { error: "Claim your reward first." };
+  }
+  const tavern = TAVERN_MAP[tavernId];
+  if (!tavern) return { error: "Unknown tavern." };
+  if (tavern.locationId !== state.locationId) {
+    return { error: "You must be at this tavern to rest." };
+  }
+
+  const maxHp = heroMaxHp(state);
+  const before = currentHeroHp(state, maxHp);
+  if (before >= maxHp) {
+    return { error: "You are already at full health." };
+  }
+
+  const cost = tavernHealCost(state);
+  if (state.gold < cost) {
+    return { error: `Need ${cost} gold to rest and recover.` };
+  }
+
+  const healed = maxHp - before;
+  const result: TavernResult = {
+    at: Date.now(),
+    tavernId,
+    cost,
+    hit: true,
+    headline: "Rested",
+    detail: `${tavern.keeper} finds you a quiet corner. You recover ${healed} HP (${cost}g).`,
+  };
+
+  return {
+    ...state,
+    gold: state.gold - cost,
+    heroHp: maxHp,
+    wounded: false,
+    lastTavernResult: result,
+    updatedAt: Date.now(),
+  };
 }

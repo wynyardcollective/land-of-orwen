@@ -48,7 +48,7 @@ export function computeStats(state: GameState): StatLevels {
     const owned = state.inventory.find((i) => i.uid === uid);
     if (!owned) continue;
     const def = ITEMS[owned.defId];
-    if (!def) continue;
+    if (!def?.slot || !def.questStat || !def.affinity) continue;
     const power = owned.power + itemPowerBonus(owned, state.gems);
     stats[def.questStat] += power;
     const secondary = AFFINITY_STAT[def.affinity];

@@ -156,6 +156,42 @@ export const ITEMS: Record<string, ItemDef> = {
     sellValue: 20,
     description: "For shaking hands and picking locks with equal grace.",
   },
+  "field-bandage": {
+    id: "field-bandage",
+    name: "Field Bandage",
+    rarity: "common",
+    basePower: 0,
+    sellValue: 6,
+    healAmount: 8,
+    description: "Clean cloth and orchard salve. Restores a little health.",
+  },
+  "dried-apple": {
+    id: "dried-apple",
+    name: "Dried Apple",
+    rarity: "common",
+    basePower: 0,
+    sellValue: 4,
+    healAmount: 5,
+    description: "Sweet and chewy. Not a feast, but it steadies you.",
+  },
+  "shore-tonic": {
+    id: "shore-tonic",
+    name: "Shore Tonic",
+    rarity: "uncommon",
+    basePower: 0,
+    sellValue: 14,
+    healAmount: 14,
+    description: "Brine, herbs, and something that fizzes. Clears the fog from your bones.",
+  },
+  "ash-draught": {
+    id: "ash-draught",
+    name: "Ash Draught",
+    rarity: "rare",
+    basePower: 0,
+    sellValue: 28,
+    healAmount: 22,
+    description: "Bitter tablelands medicine. Heals deep cuts and the wounded stagger.",
+  },
 };
 
 export const GEMS: Record<string, GemDef> = {

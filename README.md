@@ -13,6 +13,7 @@ A relaxing browser idle RPG inspired by **Land of Livia** — original world, st
 - Player saves via Cloudflare D1 (with local file fallback for `next dev`)
 - Email + password accounts required before play (httpOnly session cookie)
 - Idle auto-combat at mid/late locations — paced rounds, stance vs enemy weakness, flee/negotiate via Charisma
+- Persistent health between fights; remedies and tavern rests restore HP for gold
 
 ## Local development
 

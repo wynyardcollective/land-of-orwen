@@ -68,7 +68,18 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     storyFlags: ["prelude_start"],
     stats: { ...starterStats },
     equipment: {},
-    inventory: [],
+    inventory: [
+      {
+        uid: "start_bandage_1",
+        defId: "field-bandage",
+        power: 0,
+      },
+      {
+        uid: "start_apple_1",
+        defId: "dried-apple",
+        power: 0,
+      },
+    ],
     gems: [],
     completedQuests: [],
     completedEncounters: [],
@@ -76,6 +87,7 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     active: null,
     pendingReward: null,
     wounded: false,
+    heroHp: null,
     campfireMessages: seedCampfire,
     playerNotes: [],
     loreSolved: false,
@@ -113,6 +125,7 @@ export function normalizeState(raw: GameState): GameState {
     active,
     completedEncounters: raw.completedEncounters ?? [],
     wounded: raw.wounded ?? false,
+    heroHp: raw.heroHp === undefined ? null : raw.heroHp,
     records: {
       questsCompleted: raw.records?.questsCompleted ?? 0,
       encountersWon: raw.records?.encountersWon ?? 0,
