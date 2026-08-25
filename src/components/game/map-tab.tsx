@@ -14,6 +14,7 @@ import {
   ENCOUNTERS,
   ENCOUNTER_MAP,
   ENEMY_MAP,
+  getLocationUnlockInfo,
 } from "@/content";
 import {
   computeStats,
@@ -58,7 +59,13 @@ export function MapTab() {
   const [error, setError] = useState<string | null>(null);
   const stats = computeStats(state);
   const selected = selectedId ? LOCATION_MAP[selectedId] : null;
-  const quests = selected ? questsAtLocation(selected.id) : [];
+  const selectedUnlocked = selected
+    ? state.unlockedLocations.includes(selected.id)
+    : false;
+  const unlockInfo = selected && !selectedUnlocked
+    ? getLocationUnlockInfo(selected.id)
+    : null;
+  const quests = selected && selectedUnlocked ? questsAtLocation(selected.id) : [];
   const threats = selected
     ? ENCOUNTERS.filter(
         (e) =>
@@ -110,7 +117,7 @@ export function MapTab() {
           <CardTitle className="text-base">Map of Orwen</CardTitle>
           <p className="text-sm text-muted-foreground">
             Tap a pin on the map or a name below to travel or view quests. Dim
-            pins are locked until your story opens them.
+            locked pins can be tapped to see how to unlock them.
           </p>
         </CardHeader>
         <CardContent>
@@ -166,19 +173,20 @@ export function MapTab() {
                 <button
                   key={loc.id}
                   type="button"
-                  disabled={!unlocked}
                   onClick={() => {
-                    if (!unlocked) return;
                     setError(null);
                     setSelectedId(loc.id);
                   }}
-                  aria-label={label}
-                  aria-disabled={!unlocked}
-                  title={unlocked ? loc.name : `${loc.name} (locked)`}
+                  aria-label={
+                    unlocked
+                      ? label
+                      : `${label} Tap for unlock requirements.`
+                  }
+                  title={unlocked ? loc.name : `${loc.name} (locked — tap for details)`}
                   className={`absolute z-10 flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-start gap-0.5 rounded-xl px-1 pt-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${
                     unlocked
                       ? "cursor-pointer hover:brightness-110"
-                      : "cursor-not-allowed opacity-55"
+                      : "cursor-pointer opacity-55 hover:opacity-70"
                   }`}
                   style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
                 >
@@ -207,20 +215,30 @@ export function MapTab() {
           </div>
 
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {LOCATIONS.filter((l) => state.unlockedLocations.includes(l.id)).map(
-              (loc) => (
+            {LOCATIONS.map((loc) => {
+              const unlocked = state.unlockedLocations.includes(loc.id);
+              return (
                 <li key={loc.id}>
                   <Button
                     type="button"
-                    variant={state.locationId === loc.id ? "default" : "outline"}
-                    className="h-auto w-full justify-start whitespace-normal px-3 py-2 text-left"
+                    variant={
+                      unlocked && state.locationId === loc.id
+                        ? "default"
+                        : "outline"
+                    }
+                    className={`h-auto w-full justify-start whitespace-normal px-3 py-2 text-left ${
+                      !unlocked ? "opacity-60" : ""
+                    }`}
                     onClick={() => {
                       setError(null);
                       setSelectedId(loc.id);
                     }}
                   >
                     <span>
-                      <span className="block font-medium">{loc.name}</span>
+                      <span className="block font-medium">
+                        {loc.name}
+                        {!unlocked ? " (locked)" : ""}
+                      </span>
                       <span className="block text-xs opacity-80">
                         {loc.regionHint}
                         {loc.bestFor ? ` · best for ${formatStat(loc.bestFor)}` : ""}
@@ -228,8 +246,8 @@ export function MapTab() {
                     </span>
                   </Button>
                 </li>
-              ),
-            )}
+              );
+            })}
           </ul>
         </CardContent>
       </Card>
@@ -277,6 +295,65 @@ export function MapTab() {
                 <DialogTitle>{selected.name}</DialogTitle>
                 <DialogDescription>{selected.description}</DialogDescription>
               </DialogHeader>
+
+              {!selectedUnlocked ? (
+                <div className="space-y-3">
+                  <Badge variant="outline">Locked</Badge>
+                  {unlockInfo ? (
+                    <>
+                      <p className="text-sm leading-relaxed">
+                        To open this area on your map, <strong>successfully complete</strong>{" "}
+                        the quest below and claim your reward.
+                      </p>
+                      <div className="rounded-xl border border-amber-900/40 bg-muted/30 p-3 text-sm">
+                        <p className="font-medium text-amber-100">
+                          {unlockInfo.questName}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          At {unlockInfo.questLocationName} · Level {unlockInfo.level}{" "}
+                          {formatStat(unlockInfo.stat)}
+                          {unlockInfo.rumor ? " · rumor" : ""}
+                        </p>
+                        <p className="mt-2 text-muted-foreground">
+                          {unlockInfo.questDescription}
+                        </p>
+                      </div>
+                      {!state.unlockedLocations.includes(
+                        unlockInfo.questLocationId,
+                      ) && (
+                        <p className="text-sm text-orange-200/90">
+                          {unlockInfo.questLocationName} is not on your map yet —
+                          follow Journal goals to unlock it first.
+                        </p>
+                      )}
+                      {state.unlockedLocations.includes(
+                        unlockInfo.questLocationId,
+                      ) &&
+                        state.locationId !== unlockInfo.questLocationId && (
+                          <p className="text-sm text-muted-foreground">
+                            Travel to {unlockInfo.questLocationName} to attempt
+                            this quest.
+                          </p>
+                        )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      This place opens through story progress elsewhere. Check
+                      Journal → Current goals.
+                    </p>
+                  )}
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setSelectedId(null)}
+                    >
+                      Close
+                    </Button>
+                  </DialogFooter>
+                </div>
+              ) : (
+                <>
               {LOCATION_NPCS[selected.id] && (
                 <p className="rounded-lg border border-border/50 bg-muted/30 p-3 text-sm">
                   <span className="font-medium">
@@ -386,6 +463,8 @@ export function MapTab() {
                     </div>
                   )}
                 </div>
+              )}
+                </>
               )}
             </>
           )}

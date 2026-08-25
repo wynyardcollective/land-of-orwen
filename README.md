@@ -11,6 +11,7 @@ A relaxing browser idle RPG inspired by **Land of Livia** — original world, st
 - Accessibility: Atkinson Hyperlegible, font scale, high contrast, live regions, keyboard-friendly controls
 - Player saves via Cloudflare D1 (with local file fallback for `next dev`)
 - Email + password accounts required before play (httpOnly session cookie)
+- Idle auto-combat at mid/late locations — paced rounds, stance vs enemy weakness, flee/negotiate via Charisma
 
 ## Local development
 
