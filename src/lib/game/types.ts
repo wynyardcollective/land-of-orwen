@@ -189,7 +189,21 @@ export interface ActiveCombat {
   heroCrit: number;
 }
 
-export type ActiveAction = ActiveTravel | ActiveQuest | ActiveCombat | null;
+export interface ActiveTavern {
+  type: "tavern";
+  tavernId: string;
+  cost: number;
+  hitChance: number;
+  startedAt: number;
+  completesAt: number;
+}
+
+export type ActiveAction =
+  | ActiveTravel
+  | ActiveQuest
+  | ActiveCombat
+  | ActiveTavern
+  | null;
 
 export type RewardTone =
   | "success"

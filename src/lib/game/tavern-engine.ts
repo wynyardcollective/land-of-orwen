@@ -5,8 +5,8 @@ import {
   TAVERN_TIP_GOLD,
   type TavernRumorDef,
 } from "@/content/taverns";
-import { clamp, computeStats, goldCap } from "./formulas";
-import type { GameState, TavernResult } from "./types";
+import { clamp, computeStats, goldCap, paceDuration } from "./formulas";
+import type { ActiveTavern, GameState, TavernResult } from "./types";
 import { LOCATION_MAP } from "@/content";
 
 function rumorAvailable(
@@ -41,6 +41,12 @@ function rumorAvailable(
   return true;
 }
 
+function rumorPool(state: GameState, tavernId: string) {
+  return TAVERN_RUMORS.filter(
+    (r) => r.tavernId === tavernId && rumorAvailable(r, state),
+  );
+}
+
 export function tavernRoundCost(state: GameState, tavernId: string): number {
   const tavern = TAVERN_MAP[tavernId];
   if (!tavern) return 0;
@@ -60,6 +66,17 @@ export function tavernHitChance(state: GameState): number {
   );
 }
 
+export function tavernRoundDuration(state: GameState, tavernId: string): number {
+  const tavern = TAVERN_MAP[tavernId];
+  if (!tavern) return 30;
+  const stats = computeStats(state);
+  return paceDuration(
+    tavern.roundSeconds,
+    state.settings.pace,
+    stats.constitution,
+  );
+}
+
 function pickWeighted(rumors: TavernRumorDef[]): TavernRumorDef | null {
   if (!rumors.length) return null;
   const total = rumors.reduce((s, r) => s + r.weight, 0);
@@ -71,7 +88,12 @@ function pickWeighted(rumors: TavernRumorDef[]): TavernRumorDef | null {
   return rumors[rumors.length - 1];
 }
 
-function applyRumor(state: GameState, rumor: TavernRumorDef, cost: number): GameState {
+function applyRumor(
+  state: GameState,
+  rumor: TavernRumorDef,
+  cost: number,
+  goldAlreadyPaid: boolean,
+): GameState {
   const storyFlags = [...state.storyFlags];
   if (!storyFlags.includes(rumor.flag)) storyFlags.push(rumor.flag);
 
@@ -106,7 +128,7 @@ function applyRumor(state: GameState, rumor: TavernRumorDef, cost: number): Game
       TAVERN_TIP_GOLD[Math.floor(Math.random() * TAVERN_TIP_GOLD.length)];
     const stats = computeStats(state);
     gold = clamp(gold + tip, 0, goldCap(stats.constitution));
-  } else {
+  } else if (!goldAlreadyPaid) {
     gold = Math.max(0, gold - cost);
   }
 
@@ -151,12 +173,13 @@ function applyRumor(state: GameState, rumor: TavernRumorDef, cost: number): Game
   };
 }
 
-export function buyTavernRound(
+/** Begin listening at a tavern — gold is paid up front; outcome resolves when the timer ends. */
+export function startTavernRound(
   state: GameState,
   tavernId: string,
 ): GameState | { error: string } {
   if (state.active) {
-    return { error: "Finish traveling, questing, or fighting first." };
+    return { error: "Finish traveling, questing, fighting, or listening first." };
   }
   if (state.pendingReward) {
     return { error: "Claim your reward first." };
@@ -173,17 +196,40 @@ export function buyTavernRound(
     return { error: `Need ${cost} gold for a round of rumors.` };
   }
 
-  const pool = TAVERN_RUMORS.filter(
-    (r) => r.tavernId === tavernId && rumorAvailable(r, state),
-  );
-
+  const pool = rumorPool(state, tavernId);
   if (!pool.length) {
     return {
       error: "The regulars have nothing new for you. Try another tavern or advance the story.",
     };
   }
 
-  const hit = Math.random() < tavernHitChance(state);
+  const now = Date.now();
+  const seconds = tavernRoundDuration(state, tavernId);
+  const active: ActiveTavern = {
+    type: "tavern",
+    tavernId,
+    cost,
+    hitChance: tavernHitChance(state),
+    startedAt: now,
+    completesAt: now + seconds * 1000,
+  };
+
+  return {
+    ...state,
+    gold: state.gold - cost,
+    active,
+    updatedAt: now,
+  };
+}
+
+/** Resolve a finished tavern round (called from the main action resolver). */
+export function completeTavernRound(
+  state: GameState,
+  active: ActiveTavern,
+): GameState {
+  const { tavernId, cost, hitChance } = active;
+  const pool = rumorPool(state, tavernId);
+  const hit = pool.length > 0 && Math.random() < hitChance;
 
   if (!hit) {
     const miss =
@@ -200,7 +246,7 @@ export function buyTavernRound(
     };
     return {
       ...state,
-      gold: state.gold - cost,
+      active: null,
       lastTavernResult: result,
       updatedAt: Date.now(),
     };
@@ -208,14 +254,33 @@ export function buyTavernRound(
 
   const rumor = pickWeighted(pool);
   if (!rumor) {
-    return { error: "The rumor mill jammed. Try again." };
+    const result: TavernResult = {
+      at: Date.now(),
+      tavernId,
+      cost,
+      hit: false,
+      headline: "Nothing useful",
+      detail: "The rumor mill jammed. Your gold bought only warmth.",
+    };
+    return {
+      ...state,
+      active: null,
+      lastTavernResult: result,
+      updatedAt: Date.now(),
+    };
   }
 
-  return applyRumor(state, rumor, cost);
+  return {
+    ...applyRumor(state, rumor, cost, true),
+    active: null,
+  };
+}
+
+/** @deprecated Use startTavernRound — kept for callers migrating from instant rounds. */
+export function buyTavernRound(state: GameState, tavernId: string) {
+  return startTavernRound(state, tavernId);
 }
 
 export function availableTavernRumors(state: GameState, tavernId: string) {
-  return TAVERN_RUMORS.filter(
-    (r) => r.tavernId === tavernId && rumorAvailable(r, state),
-  ).length;
+  return rumorPool(state, tavernId).length;
 }

@@ -104,7 +104,8 @@ export function normalizeState(raw: GameState): GameState {
   const active =
     raw.active?.type === "combat" ||
     raw.active?.type === "quest" ||
-    raw.active?.type === "travel"
+    raw.active?.type === "travel" ||
+    raw.active?.type === "tavern"
       ? raw.active
       : null;
   return {

@@ -11,6 +11,8 @@ export interface TavernDef {
   keeper: string;
   description: string;
   baseCost: number;
+  /** Seconds to linger and listen before a rumor resolves */
+  roundSeconds: number;
 }
 
 export interface TavernRumorDef {
@@ -43,6 +45,7 @@ export const TAVERNS: TavernDef[] = [
     description:
       "Tarowen's last proper tavern. The ale is thin and the chatter is thick — for a few coins, Senna will pour you something stronger: a lead.",
     baseCost: 18,
+    roundSeconds: 45,
   },
   {
     id: "cider-bench",
@@ -52,6 +55,7 @@ export const TAVERNS: TavernDef[] = [
     description:
       "Not a tavern so much as a plank and two stools, but Merrick hears every traveler. He'll sell a cup and a hint to those who ask nicely.",
     baseCost: 12,
+    roundSeconds: 40,
   },
   {
     id: "wheelhouse-tap",
@@ -61,6 +65,7 @@ export const TAVERNS: TavernDef[] = [
     description:
       "Mill hands gather here after turning the wheel. Odo keeps a chalkboard of who owes who — and who saw what on the roads.",
     baseCost: 22,
+    roundSeconds: 50,
   },
   {
     id: "salt-gull",
@@ -70,6 +75,7 @@ export const TAVERNS: TavernDef[] = [
     description:
       "A driftwood shack that serves brine-stung tea and sharper rumors. Pel trades in wrecks and whispers.",
     baseCost: 26,
+    roundSeconds: 55,
   },
   {
     id: "ash-canteen",
@@ -79,6 +85,7 @@ export const TAVERNS: TavernDef[] = [
     description:
       "The only roof on the tablelands that isn't choked with cinders. Iri logs heat-vent sightings and sells them by the sip.",
     baseCost: 32,
+    roundSeconds: 60,
   },
 ];
 
@@ -308,5 +315,38 @@ export const TAVERN_MISS_FLAVOR = [
   "A fight breaks out and your question is forgotten in the scuffle.",
   "The barkeep shrugs. 'Come back when you’ve got more face — or more gold.'",
 ];
+
+export const TAVERN_BEATS: Record<string, string[]> = {
+  "dry-kettle": [
+    "Senna slides a cup across the scarred bar. The ale is thin; the gossip isn't.",
+    "A trader argues about rain gauges. Someone else buys silence with a stare.",
+    "Dice clatter in the corner. You lean in and pretend not to listen.",
+    "The kettle hisses. Voices drop when coin changes hands.",
+  ],
+  "cider-bench": [
+    "Merrick pours cider that tastes like patience. Travelers swap half-truths on the plank.",
+    "Apple wood smokes in the pit. A drover mentions a path you haven't walked.",
+    "Merrick hums an old rain-song. Regulars answer with names you almost catch.",
+    "The orchard wind carries laughter. Someone at the bench knows something.",
+  ],
+  "wheelhouse-tap": [
+    "Mill hands argue over chalk tallies. Odo wipes the board and starts a fresh column.",
+    "Gear grease and cheap spirits. Road stories compete with the wheel's groan.",
+    "A smuggler's coin buys a second cup — and a longer stare your way.",
+    "Odo points at the chalkboard without looking. The regulars understand.",
+  ],
+  "salt-gull": [
+    "Pel stokes the driftwood stove. Brine and tea war the shack against the shore wind.",
+    "Wreck wood creaks outside. Beachcombers trade rumors like salvage.",
+    "Someone sketches a cove in spilled salt. Pel pretends not to notice you watching.",
+    "Gull cries punctuate every pause. Pel refills cups without being asked.",
+  ],
+  "ash-canteen": [
+    "Iri ticks a vent sighting into a soot-stained log. The canteen smells of ash and spice.",
+    "Watchtower hands speak in half-whispers. Heat shimmer is a familiar backdrop.",
+    "A scout drops a coin for another cup. Iri's eyes track who listens too closely.",
+    "Cinders tap the roof. Someone mentions a gate that remembers rain.",
+  ],
+};
 
 export const TAVERN_TIP_GOLD = [3, 5, 8, 12];

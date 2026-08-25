@@ -12,8 +12,11 @@ export {
 } from "./combat-engine";
 export { playCue } from "./sound";
 export {
-  buyTavernRound,
+  startTavernRound,
+  completeTavernRound,
   tavernRoundCost,
   tavernHitChance,
+  tavernRoundDuration,
   availableTavernRumors,
+  buyTavernRound,
 } from "./tavern-engine";

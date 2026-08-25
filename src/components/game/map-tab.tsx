@@ -17,6 +17,8 @@ import {
   ENEMY_MAP,
   getLocationUnlockInfo,
   tavernAtLocation,
+  TAVERN_MAP,
+  TAVERN_BEATS,
 } from "@/content";
 import {
   computeStats,
@@ -31,6 +33,7 @@ import {
   encounterAvailable,
   tavernRoundCost,
   tavernHitChance,
+  tavernRoundDuration,
   availableTavernRumors,
   type ActiveAction,
   type CombatStance,
@@ -510,9 +513,14 @@ export function MapTab() {
                     <TavernPanel
                       tavern={tavernHere}
                       state={state}
+                      listening={
+                        state.active?.type === "tavern" &&
+                        state.active.tavernId === tavernHere.id
+                      }
                       onBuy={() => {
                         const err = buyTavernRound(tavernHere.id);
                         if (err) setError(err);
+                        else setSelectedId(null);
                       }}
                     />
                   )}
@@ -531,14 +539,17 @@ export function MapTab() {
 function TavernPanel({
   tavern,
   state,
+  listening,
   onBuy,
 }: {
   tavern: import("@/content/taverns").TavernDef;
   state: GameState;
+  listening: boolean;
   onBuy: () => void;
 }) {
   const cost = tavernRoundCost(state, tavern.id);
   const hitPct = Math.round(tavernHitChance(state) * 100);
+  const seconds = tavernRoundDuration(state, tavern.id);
   const rumorsLeft = availableTavernRumors(state, tavern.id);
   const canAfford = state.gold >= cost;
   const busy = !!state.active || !!state.pendingReward;
@@ -556,25 +567,32 @@ function TavernPanel({
       </div>
       <p className="text-sm text-muted-foreground">{tavern.description}</p>
       <p className="text-xs text-muted-foreground">
-        Pay <strong className="text-amber-100">{cost} gold</strong> for a round
-        of rumors · ~{hitPct}% chance to learn something useful (Charisma &
-        Wisdom help). Gold is spent even on a miss.
+        Pay <strong className="text-amber-100">{cost} gold</strong> and linger{" "}
+        <strong className="text-amber-100">~{seconds}s</strong> for a chance to
+        learn something useful (~{hitPct}%; Charisma & Wisdom help). Gold is
+        spent up front, even on a miss.
       </p>
-      <Button
-        type="button"
-        size="sm"
-        variant="secondary"
-        disabled={!canAfford || busy || rumorsLeft === 0}
-        onClick={onBuy}
-      >
-        {!canAfford
-          ? `Need ${cost} gold`
-          : rumorsLeft === 0
-            ? "Nothing new here"
-            : busy
-              ? "Busy…"
-              : `Buy a round (${cost}g)`}
-      </Button>
+      {listening ? (
+        <p className="text-xs text-violet-200" role="status">
+          You are listening for rumors…
+        </p>
+      ) : (
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          disabled={!canAfford || busy || rumorsLeft === 0}
+          onClick={onBuy}
+        >
+          {!canAfford
+            ? `Need ${cost} gold`
+            : rumorsLeft === 0
+              ? "Nothing new here"
+              : busy
+                ? "Busy…"
+                : `Buy a round (${cost}g, ~${seconds}s)`}
+        </Button>
+      )}
     </div>
   );
 }
@@ -657,16 +675,22 @@ function WaitScene({
   const locId =
     action.type === "travel"
       ? action.toLocationId
-      : QUEST_MAP[action.questId]?.locationId;
+      : action.type === "quest"
+        ? QUEST_MAP[action.questId]?.locationId
+        : undefined;
   const lines =
     action.type === "travel"
       ? TRAVEL_BEATS[action.toLocationId]
-      : LOCATION_BEATS[locId ?? ""];
+      : action.type === "tavern"
+        ? TAVERN_BEATS[action.tavernId]
+        : LOCATION_BEATS[locId ?? ""];
   const beat = rotatingBeat(lines, action.startedAt, now);
   const title =
     action.type === "travel"
       ? `On the road to ${LOCATION_MAP[action.toLocationId]?.name}`
-      : QUEST_MAP[action.questId]?.name ?? "Quest";
+      : action.type === "tavern"
+        ? `${TAVERN_MAP[action.tavernId]?.name ?? "Tavern"} — listening`
+        : QUEST_MAP[action.questId]?.name ?? "Quest";
 
   useEffect(() => {
     if (!soundEnabled) return;
@@ -679,7 +703,11 @@ function WaitScene({
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">
-          {action.type === "travel" ? "Traveling" : "In the work"}
+          {action.type === "travel"
+            ? "Traveling"
+            : action.type === "tavern"
+              ? "At the tavern"
+              : "In the work"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">

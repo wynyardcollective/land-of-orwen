@@ -4,6 +4,7 @@ export {
   TAVERNS,
   TAVERN_MAP,
   TAVERN_RUMORS,
+  TAVERN_BEATS,
   tavernAtLocation,
 } from "./taverns";
 export { getLocationUnlockInfo, type LocationUnlockInfo } from "./unlocks";

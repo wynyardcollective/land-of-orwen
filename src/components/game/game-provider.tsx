@@ -21,7 +21,7 @@ import {
   upgradeGem,
   writeLocalSave,
   playCue,
-  buyTavernRound as purchaseTavernRound,
+  buyTavernRound as startTavernRound,
   type GameState,
   type Pace,
   type SettingsState,
@@ -176,6 +176,19 @@ export function GameProvider({
           setAnnouncement(msg);
           playCue(state.settings.soundEnabled, "travel");
         }
+      } else if (state.active.type === "tavern" && next.lastTavernResult) {
+        const tr = next.lastTavernResult;
+        const msg = tr.hit
+          ? `${tr.headline} — ${tr.detail}`
+          : tr.detail;
+        if (lastAnnounced.current !== msg) {
+          lastAnnounced.current = msg;
+          setAnnouncement(msg);
+          playCue(
+            state.settings.soundEnabled,
+            tr.hit ? "reward" : "ambient",
+          );
+        }
       } else if (next.pendingReward) {
         const r = next.pendingReward;
         const isCombat = r.kind === "combat";
@@ -267,20 +280,10 @@ export function GameProvider({
   const buyTavernRound = useCallback(
     (tavernId: string) => {
       if (!state) return "Not ready.";
-      const result = purchaseTavernRound(state, tavernId);
+      const result = startTavernRound(state, tavernId);
       if ("error" in result) return result.error;
       update(() => result);
-      const tr = result.lastTavernResult;
-      if (tr) {
-        const msg = tr.hit
-          ? `${tr.headline} — ${tr.detail}`
-          : tr.detail;
-        setAnnouncement(msg);
-        playCue(
-          state.settings.soundEnabled,
-          tr.hit ? "reward" : "ambient",
-        );
-      }
+      setAnnouncement("Listening for rumors…");
       return null;
     },
     [state, update],

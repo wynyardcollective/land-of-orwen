@@ -19,6 +19,7 @@ import {
   successChance,
 } from "./formulas";
 import { advanceCombatUntilCaughtUp } from "./combat-engine";
+import { completeTavernRound } from "./tavern-engine";
 import type {
   CampfireMessage,
   GameState,
@@ -87,6 +88,10 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
   }
 
   if (state.active.completesAt > now) return state;
+
+  if (state.active.type === "tavern") {
+    return completeTavernRound(state, state.active);
+  }
 
   if (state.active.type === "travel") {
     const to = state.active.toLocationId;
@@ -359,7 +364,7 @@ export function claimReward(state: GameState): GameState {
 }
 
 export function startTravel(state: GameState, toLocationId: string): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling, questing, or fighting." };
+  if (state.active) return { error: "You are already traveling, questing, fighting, or listening at a tavern." };
   if (state.pendingReward) return { error: "Claim your reward first." };
   if (!state.unlockedLocations.includes(toLocationId)) {
     return { error: "That place is not yet on your map." };
@@ -389,7 +394,7 @@ export function startQuest(
   questId: string,
   withAutoEquip = false,
 ): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling, questing, or fighting." };
+  if (state.active) return { error: "You are already traveling, questing, fighting, or listening at a tavern." };
   if (state.pendingReward) return { error: "Claim your reward first." };
   const quest = QUEST_MAP[questId];
   if (!quest) return { error: "Unknown quest." };
