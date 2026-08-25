@@ -11,6 +11,9 @@ import {
   TRAVEL_BEATS,
   mapWeather,
   rotatingBeat,
+  ENCOUNTERS,
+  ENCOUNTER_MAP,
+  ENEMY_MAP,
 } from "@/content";
 import {
   computeStats,
@@ -18,8 +21,15 @@ import {
   questsAtLocation,
   successChance,
   playCue,
+  deriveCombatSheet,
+  combatRiskBand,
+  formatRiskBand,
+  resolveStance,
+  encounterAvailable,
+  type ActiveAction,
+  type CombatStance,
+  type EncounterDef,
 } from "@/lib/game";
-import type { ActiveAction, QuestDef } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +43,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
 
 function formatRemaining(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -42,12 +53,19 @@ function formatRemaining(ms: number) {
 }
 
 export function MapTab() {
-  const { state, travelTo, attemptQuest, now } = useGame();
+  const { state, travelTo, attemptQuest, engageCombat, fleeCombat, now } = useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const stats = computeStats(state);
   const selected = selectedId ? LOCATION_MAP[selectedId] : null;
   const quests = selected ? questsAtLocation(selected.id) : [];
+  const threats = selected
+    ? ENCOUNTERS.filter(
+        (e) =>
+          e.locationId === selected.id &&
+          encounterAvailable(e, state.storyFlags),
+      )
+    : [];
   const weather = mapWeather(
     state.storyFlags,
     state.locationId,
@@ -65,6 +83,20 @@ export function MapTab() {
 
   const activeProgress = useMemo(() => {
     if (!state.active) return null;
+    if (state.active.type === "combat") {
+      const combat = state.active;
+      const total = Math.max(1, combat.nextRoundAt - (combat.startedAt || now));
+      const elapsed = now - (combat.nextRoundAt - total);
+      const pct = Math.min(
+        100,
+        Math.round(((now - combat.startedAt) / Math.max(1, combat.nextRoundAt - combat.startedAt)) * 100),
+      );
+      return {
+        pct: Math.min(100, Math.max(0, pct)),
+        remaining: combat.nextRoundAt - now,
+        action: state.active,
+      };
+    }
     const total = state.active.completesAt - state.active.startedAt;
     const done = now - state.active.startedAt;
     const pct = Math.min(100, Math.round((done / total) * 100));
@@ -227,6 +259,8 @@ export function MapTab() {
           action={activeProgress.action}
           now={now}
           soundEnabled={state.settings.soundEnabled}
+          onFlee={fleeCombat}
+          wounded={state.wounded}
         />
       )}
 
@@ -289,7 +323,15 @@ export function MapTab() {
                   {state.settings.tutorialTips && (
                     <p className="rounded-lg border border-border/60 bg-muted/40 p-3 text-xs">
                       Quest success depends on your level versus the quest level.
-                      Below ~70%, grind easier work or better gear first.
+                      Below ~70%, grind easier work or better gear first. In combat,
+                      match your stance to the enemy&apos;s weakness — Strike, Skirmish,
+                      or Hex.
+                    </p>
+                  )}
+                  {state.wounded && (
+                    <p className="rounded-lg border border-orange-500/40 bg-orange-950/30 p-3 text-xs text-orange-100">
+                      Wounded — −5% offense until you finish a quest or rest at the
+                      campfire.
                     </p>
                   )}
                   {error && (
@@ -322,6 +364,27 @@ export function MapTab() {
                       ))}
                     </ul>
                   )}
+                  {threats.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <h3 className="text-sm font-semibold text-amber-100">
+                        Threats
+                      </h3>
+                      <ul className="space-y-3">
+                        {threats.map((enc) => (
+                          <EncounterCard
+                            key={enc.id}
+                            encounter={enc}
+                            gameState={state}
+                            onEngage={(stance) => {
+                              const err = engageCombat(enc.id, stance);
+                              if (err) setError(err);
+                              else setSelectedId(null);
+                            }}
+                          />
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -338,13 +401,75 @@ function WaitScene({
   action,
   now,
   soundEnabled,
+  onFlee,
+  wounded,
 }: {
   pct: number;
   remaining: number;
   action: NonNullable<ActiveAction>;
   now: number;
   soundEnabled: boolean;
+  onFlee: () => string | null;
+  wounded: boolean;
 }) {
+  if (action.type === "combat") {
+    const enc = ENCOUNTER_MAP[action.encounterId];
+    const enemy = ENEMY_MAP[action.enemyId];
+    const heroPct = Math.round((action.heroHp / action.heroMaxHp) * 100);
+    const enemyPct = Math.round((action.enemyHp / action.enemyMaxHp) * 100);
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">In combat</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm font-medium">
+            {enc?.name ?? "Fight"} · Round {action.round}
+          </p>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs">
+              <span>You</span>
+              <span aria-live="polite">
+                {action.heroHp}/{action.heroMaxHp} HP
+              </span>
+            </div>
+            <Progress value={heroPct} aria-label="Your health" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs">
+              <span>{enemy?.name ?? "Enemy"}</span>
+              <span aria-live="polite">
+                {action.enemyHp}/{action.enemyMaxHp} HP
+              </span>
+            </div>
+            <Progress value={enemyPct} aria-label="Enemy health" />
+          </div>
+          <div
+            className="max-h-32 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 p-2 text-xs leading-relaxed"
+            aria-live="polite"
+          >
+            {action.log.slice(-6).map((line) => (
+              <p key={`${line.at}-${line.round}`}>{line.text}</p>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Next round in {formatRemaining(remaining)} · Stance:{" "}
+            {formatStat(action.stance)}
+            {wounded ? " · wounded" : ""}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onFlee()}
+          >
+            Flee
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const locId =
     action.type === "travel"
       ? action.toLocationId
@@ -392,7 +517,7 @@ function QuestCard({
   chance,
   onAttempt,
 }: {
-  quest: QuestDef;
+  quest: import("@/lib/game").QuestDef;
   chance: number;
   onAttempt: (autoEquip: boolean) => void;
 }) {
@@ -427,6 +552,76 @@ function QuestCard({
           onClick={() => onAttempt(true)}
         >
           Auto-equip & attempt
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+const STANCES: { id: CombatStance | "auto"; label: string }[] = [
+  { id: "auto", label: "Auto (match weakness)" },
+  { id: "strength", label: "Strike (Strength)" },
+  { id: "dexterity", label: "Skirmish (Dexterity)" },
+  { id: "intelligence", label: "Hex (Intelligence)" },
+];
+
+function EncounterCard({
+  encounter,
+  gameState,
+  onEngage,
+}: {
+  encounter: EncounterDef;
+  gameState: import("@/lib/game").GameState;
+  onEngage: (stance: CombatStance | "auto") => void;
+}) {
+  const [stance, setStance] = useState<CombatStance | "auto">("auto");
+  const enemy = ENEMY_MAP[encounter.enemyId];
+  if (!enemy) return null;
+  const stats = computeStats(gameState);
+  const resolved = resolveStance(stance, enemy);
+  const sheet = deriveCombatSheet(stats, resolved, gameState, gameState.wounded);
+  const risk = combatRiskBand(sheet, enemy, resolved);
+  const riskVariant =
+    risk === "safe" ? "secondary" : risk === "even" ? "outline" : "destructive";
+
+  return (
+    <li className="rounded-xl border border-red-900/40 bg-card p-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="font-medium">{encounter.name}</p>
+          <p className="text-xs text-muted-foreground">
+            {enemy.name} · L{enemy.level} · weak to {formatStat(enemy.weakTo)}
+          </p>
+        </div>
+        <Badge variant={riskVariant}>{formatRiskBand(risk)}</Badge>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{encounter.description}</p>
+      <p className="mt-1 text-xs text-muted-foreground italic">{enemy.description}</p>
+      <div className="mt-3 space-y-2">
+        <Label htmlFor={`stance-${encounter.id}`}>Stance</Label>
+        <select
+          id={`stance-${encounter.id}`}
+          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+          value={stance}
+          onChange={(e) =>
+            setStance(e.target.value as CombatStance | "auto")
+          }
+        >
+          {STANCES.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="mt-2 text-xs">
+        Gold {encounter.goldReward} · Possible loot:{" "}
+        {encounter.itemPool.map((id) => ITEMS[id]?.name).filter(Boolean).join(", ") ||
+          "—"}
+      </p>
+      <div className="mt-3">
+        <Button type="button" size="sm" onClick={() => onEngage(stance)}>
+          Engage
         </Button>
       </div>
     </li>

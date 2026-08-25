@@ -71,9 +71,11 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     inventory: [],
     gems: [],
     completedQuests: [],
+    completedEncounters: [],
     journalUnlocked: ["prelude"],
     active: null,
     pendingReward: null,
+    wounded: false,
     campfireMessages: seedCampfire,
     playerNotes: [],
     loreSolved: false,
@@ -82,6 +84,7 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     settings: { ...defaultSettings },
     records: {
       questsCompleted: 0,
+      encountersWon: 0,
       goldEarned: 0,
       legendaryFound: 0,
       bestStreak: 0,
@@ -96,10 +99,20 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
 }
 
 export function normalizeState(raw: GameState): GameState {
+  const active =
+    raw.active?.type === "combat" ||
+    raw.active?.type === "quest" ||
+    raw.active?.type === "travel"
+      ? raw.active
+      : null;
   return {
     ...raw,
+    active,
+    completedEncounters: raw.completedEncounters ?? [],
+    wounded: raw.wounded ?? false,
     records: {
       questsCompleted: raw.records?.questsCompleted ?? 0,
+      encountersWon: raw.records?.encountersWon ?? 0,
       goldEarned: raw.records?.goldEarned ?? 0,
       legendaryFound: raw.records?.legendaryFound ?? 0,
       bestStreak: raw.records?.bestStreak ?? 0,

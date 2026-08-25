@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { JOURNAL, LOCATION_MAP, QUEST_MAP, currentGoals } from "@/content";
+import { JOURNAL, LOCATION_MAP, QUEST_MAP, ENCOUNTER_MAP, currentGoals } from "@/content";
 import { formatStat } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,10 +21,14 @@ export function JournalTab() {
   const goals = currentGoals(state.storyFlags);
   const entries = JOURNAL.filter((j) => state.journalUnlocked.includes(j.id));
   const [openQuestId, setOpenQuestId] = useState<string | null>(null);
+  const [openEncounterId, setOpenEncounterId] = useState<string | null>(null);
   const openQuest = openQuestId ? QUEST_MAP[openQuestId] : null;
+  const openEncounter = openEncounterId ? ENCOUNTER_MAP[openEncounterId] : null;
   const openLocation = openQuest
     ? LOCATION_MAP[openQuest.locationId]
-    : undefined;
+    : openEncounter
+      ? LOCATION_MAP[openEncounter.locationId]
+      : undefined;
 
   return (
     <div className="space-y-4">
@@ -135,10 +139,54 @@ export function JournalTab() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Completed encounters</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Tap a fight to reread what you faced.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {(state.completedEncounters ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No victories in the field yet.
+            </p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {(state.completedEncounters ?? []).map((id) => {
+                const enc = ENCOUNTER_MAP[id];
+                const label = enc?.name ?? id;
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => setOpenEncounterId(id)}
+                      aria-haspopup="dialog"
+                      aria-label={`Details for ${label}`}
+                    >
+                      <Badge
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-secondary/80"
+                      >
+                        {label}
+                      </Badge>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
       <Dialog
-        open={!!openQuest}
+        open={!!openQuest || !!openEncounter}
         onOpenChange={(open) => {
-          if (!open) setOpenQuestId(null);
+          if (!open) {
+            setOpenQuestId(null);
+            setOpenEncounterId(null);
+          }
         }}
       >
         <DialogContent className="sm:max-w-md">
@@ -156,7 +204,33 @@ export function JournalTab() {
                 {openQuest.description}
               </p>
               <DialogFooter>
-                <Button type="button" variant="secondary" onClick={() => setOpenQuestId(null)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setOpenQuestId(null)}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+          {openEncounter && !openQuest && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{openEncounter.name}</DialogTitle>
+                <DialogDescription>
+                  {openLocation?.name ?? "Unknown place"}
+                </DialogDescription>
+              </DialogHeader>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {openEncounter.description}
+              </p>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setOpenEncounterId(null)}
+                >
                   Close
                 </Button>
               </DialogFooter>

@@ -68,6 +68,11 @@ export function AssistPanel() {
               <strong>{formatStat(advice.weak)}</strong> (
               {advice.stats[advice.weak]}).
             </p>
+            <p className="text-muted-foreground">
+              In combat, pick a stance that matches the enemy&apos;s weakness —
+              Strike for Strength foes, Skirmish for Dexterity, Hex for
+              Intelligence.
+            </p>
             {advice.best ? (
               <p>
                 Recommended here:{" "}

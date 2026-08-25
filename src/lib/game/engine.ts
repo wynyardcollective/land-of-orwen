@@ -9,6 +9,7 @@ import {
   QUEST_OUTCOMES,
   npcQuote,
 } from "@/content";
+import { ENCOUNTER_MAP } from "@/content/encounters";
 import {
   autoEquipForQuest,
   clamp,
@@ -17,6 +18,7 @@ import {
   paceDuration,
   successChance,
 } from "./formulas";
+import { advanceCombatUntilCaughtUp } from "./combat-engine";
 import type {
   CampfireMessage,
   GameState,
@@ -77,7 +79,15 @@ function pickGem(quest: QuestDef, wisdom: number): OwnedGem | undefined {
 }
 
 export function resolveCompletedActions(state: GameState, now = Date.now()): GameState {
-  if (!state.active || state.active.completesAt > now) return state;
+  if (!state.active) return state;
+  if (state.pendingReward) return state;
+
+  if (state.active.type === "combat") {
+    return advanceCombatUntilCaughtUp(state, now);
+  }
+
+  if (state.active.completesAt > now) return state;
+
   if (state.active.type === "travel") {
     const to = state.active.toLocationId;
     return {
@@ -157,6 +167,7 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
       : undefined;
 
   const reward: PendingReward = {
+    kind: "quest",
     questId: quest.id,
     success,
     gold,
@@ -185,7 +196,12 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
 export function claimReward(state: GameState): GameState {
   const reward = state.pendingReward;
   if (!reward) return state;
-  const quest = QUEST_MAP[reward.questId];
+  const isCombat = reward.kind === "combat";
+  const quest = !isCombat ? QUEST_MAP[reward.questId] : undefined;
+  const enc =
+    isCombat && reward.encounterId
+      ? ENCOUNTER_MAP[reward.encounterId]
+      : undefined;
   const stats = computeStats(state);
   const gold = clamp(
     state.gold + reward.gold + reward.bonusGold,
@@ -197,6 +213,7 @@ export function claimReward(state: GameState): GameState {
   const storyFlags = [...state.storyFlags];
   const unlockedLocations = [...state.unlockedLocations];
   const completedQuests = [...state.completedQuests];
+  const completedEncounters = [...(state.completedEncounters ?? [])];
   const journalUnlocked = [...state.journalUnlocked];
 
   if (reward.item) inventory.push(reward.item);
@@ -208,6 +225,15 @@ export function claimReward(state: GameState): GameState {
     }
     if (quest.unlockLocationId && !unlockedLocations.includes(quest.unlockLocationId)) {
       unlockedLocations.push(quest.unlockLocationId);
+    }
+  }
+  if (reward.success && enc) {
+    if (!completedEncounters.includes(enc.id)) completedEncounters.push(enc.id);
+    if (enc.unlockStoryFlag && !storyFlags.includes(enc.unlockStoryFlag)) {
+      storyFlags.push(enc.unlockStoryFlag);
+    }
+    if (enc.unlockLocationId && !unlockedLocations.includes(enc.unlockLocationId)) {
+      unlockedLocations.push(enc.unlockLocationId);
     }
   }
 
@@ -228,6 +254,11 @@ export function claimReward(state: GameState): GameState {
   if (reward.success && quest) {
     nextStats[quest.stat] += 1;
   }
+  // Successful quest or combat win clears wounded; combat loss sets it
+  let wounded = state.wounded ?? false;
+  if (reward.success && (quest || isCombat)) wounded = false;
+  else if (!reward.success && isCombat) wounded = true;
+  else if (reward.success && quest) wounded = false;
   if (reward.streakBonus) {
     nextStats.constitution += 1;
   }
@@ -240,7 +271,11 @@ export function claimReward(state: GameState): GameState {
 
   const records = {
     questsCompleted:
-      (state.records.questsCompleted ?? 0) + (reward.success ? 1 : 0),
+      (state.records.questsCompleted ?? 0) +
+      (reward.success && !isCombat ? 1 : 0),
+    encountersWon:
+      (state.records.encountersWon ?? 0) +
+      (reward.success && isCombat ? 1 : 0),
     goldEarned:
       (state.records.goldEarned ?? 0) + reward.gold + reward.bonusGold,
     legendaryFound:
@@ -249,8 +284,9 @@ export function claimReward(state: GameState): GameState {
   };
 
   const npcReactions = { ...state.npcReactions };
-  if (quest && reward.npcQuote && reward.npcName) {
-    npcReactions[quest.locationId] = {
+  const reactionLoc = quest?.locationId ?? enc?.locationId;
+  if (reactionLoc && reward.npcQuote && reward.npcName) {
+    npcReactions[reactionLoc] = {
       name: reward.npcName,
       quote: reward.npcQuote,
       at: Date.now(),
@@ -306,6 +342,7 @@ export function claimReward(state: GameState): GameState {
     storyFlags,
     unlockedLocations,
     completedQuests,
+    completedEncounters,
     journalUnlocked,
     stats: nextStats,
     records,
@@ -316,12 +353,13 @@ export function claimReward(state: GameState): GameState {
     lastUnlock,
     campfireMessages,
     pendingReward: null,
+    wounded,
     updatedAt: Date.now(),
   };
 }
 
 export function startTravel(state: GameState, toLocationId: string): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling or questing." };
+  if (state.active) return { error: "You are already traveling, questing, or fighting." };
   if (state.pendingReward) return { error: "Claim your reward first." };
   if (!state.unlockedLocations.includes(toLocationId)) {
     return { error: "That place is not yet on your map." };
@@ -351,7 +389,7 @@ export function startQuest(
   questId: string,
   withAutoEquip = false,
 ): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling or questing." };
+  if (state.active) return { error: "You are already traveling, questing, or fighting." };
   if (state.pendingReward) return { error: "Claim your reward first." };
   const quest = QUEST_MAP[questId];
   if (!quest) return { error: "Unknown quest." };
@@ -501,6 +539,7 @@ export function addCampfireNote(state: GameState, body: string): GameState {
     ...state,
     campfireMessages: [msg, ...state.campfireMessages].slice(0, 40),
     playerNotes: [body.trim(), ...state.playerNotes].slice(0, 20),
+    wounded: false,
     updatedAt: Date.now(),
   };
 }

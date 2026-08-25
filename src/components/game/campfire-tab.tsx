@@ -107,6 +107,10 @@ export function CampfireTab() {
               <strong>{state.records.questsCompleted}</strong>
             </p>
             <p>
+              Encounters won:{" "}
+              <strong>{state.records.encountersWon ?? 0}</strong>
+            </p>
+            <p>
               Gold earned: <strong>{state.records.goldEarned}</strong>
             </p>
             <p>

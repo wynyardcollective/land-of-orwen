@@ -1,6 +1,6 @@
 "use client";
 
-import { GEMS, ITEMS, QUEST_MAP } from "@/content";
+import { GEMS, ITEMS, QUEST_MAP, ENCOUNTER_MAP } from "@/content";
 import { rarityClass } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,13 @@ const TONE_LABEL: Record<string, string> = {
 export function RewardDialog() {
   const { state, claim } = useGame();
   const reward = state.pendingReward;
-  const quest = reward ? QUEST_MAP[reward.questId] : null;
+  const isCombat = reward?.kind === "combat";
+  const quest = reward && !isCombat ? QUEST_MAP[reward.questId] : null;
+  const enc =
+    reward && isCombat && reward.encounterId
+      ? ENCOUNTER_MAP[reward.encounterId]
+      : null;
+  const label = isCombat ? enc?.name ?? "Combat" : quest?.name ?? "Quest";
 
   return (
     <Dialog open={!!reward}>
@@ -41,11 +47,15 @@ export function RewardDialog() {
                     : reward.tone === "close-loss"
                       ? "Almost"
                       : reward.success
-                        ? "What happened"
-                        : "Hard-earned scraps"}
+                        ? isCombat
+                          ? "Victory"
+                          : "What happened"
+                        : isCombat
+                          ? "Driven back"
+                          : "Hard-earned scraps"}
               </DialogTitle>
               <DialogDescription>
-                {quest?.name ?? "Quest"} ·{" "}
+                {label} ·{" "}
                 {TONE_LABEL[reward.tone] ?? (reward.success ? "Success" : "Failure")}
                 {reward.streak > 1 ? ` · streak ${reward.streak}` : ""}
               </DialogDescription>
@@ -67,6 +77,11 @@ export function RewardDialog() {
               )}
               {reward.omen && (
                 <p className="text-orange-200/90">{reward.omen}</p>
+              )}
+              {!reward.success && isCombat && (
+                <p className="text-orange-200/90">
+                  You are wounded — −5% offense until a quest or campfire rest.
+                </p>
               )}
               <p>
                 Gold +{reward.gold}

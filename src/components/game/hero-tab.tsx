@@ -272,9 +272,10 @@ export function HeroTab() {
 
       <Separator />
       <p className="text-xs text-muted-foreground">
-        Records — quests {state.records.questsCompleted}, gold earned{" "}
-        {state.records.goldEarned}, legendaries {state.records.legendaryFound},
-        best streak {state.records.bestStreak ?? 0}
+        Records — quests {state.records.questsCompleted}, encounters won{" "}
+        {state.records.encountersWon ?? 0}, gold earned {state.records.goldEarned},
+        legendaries {state.records.legendaryFound}, best streak{" "}
+        {state.records.bestStreak ?? 0}
       </p>
     </div>
   );

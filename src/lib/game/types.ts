@@ -78,6 +78,35 @@ export interface LocationDef {
   bestFor?: QuestStat;
 }
 
+export interface EnemyDef {
+  id: string;
+  name: string;
+  level: number;
+  maxHp: number;
+  offense: number;
+  armor: number;
+  weakTo: QuestStat;
+  traits: EnemyTrait[];
+  description: string;
+}
+
+export interface EncounterDef {
+  id: string;
+  locationId: string;
+  name: string;
+  description: string;
+  enemyId: string;
+  waves?: string[];
+  durationRoundSeconds: number;
+  goldReward: number;
+  itemPool: string[];
+  itemChance: number;
+  gemChance: number;
+  unlockStoryFlag?: string;
+  unlockLocationId?: string;
+  minStoryFlags?: string[];
+}
+
 export interface QuestDef {
   id: string;
   locationId: string;
@@ -127,7 +156,38 @@ export interface ActiveQuest {
   equippedSnapshot: Partial<Record<EquipSlot, string>>;
 }
 
-export type ActiveAction = ActiveTravel | ActiveQuest | null;
+export type CombatStance = QuestStat;
+
+export type EnemyTrait = "brute" | "swift" | "warded" | "drought" | "pack";
+
+export interface CombatLogLine {
+  round: number;
+  text: string;
+  at: number;
+}
+
+export interface ActiveCombat {
+  type: "combat";
+  encounterId: string;
+  enemyId: string;
+  stance: CombatStance;
+  waveIndex: number;
+  heroHp: number;
+  heroMaxHp: number;
+  enemyHp: number;
+  enemyMaxHp: number;
+  round: number;
+  startedAt: number;
+  nextRoundAt: number;
+  log: CombatLogLine[];
+  equippedSnapshot: Partial<Record<EquipSlot, string>>;
+  /** Snapshot offense/armor/crit at fight start */
+  heroOffense: number;
+  heroArmor: number;
+  heroCrit: number;
+}
+
+export type ActiveAction = ActiveTravel | ActiveQuest | ActiveCombat | null;
 
 export type RewardTone =
   | "success"
@@ -137,7 +197,9 @@ export type RewardTone =
   | "jackpot";
 
 export interface PendingReward {
+  kind?: "quest" | "combat";
   questId: string;
+  encounterId?: string;
   success: boolean;
   gold: number;
   bonusGold: number;
@@ -176,9 +238,12 @@ export interface GameState {
   inventory: OwnedItem[];
   gems: OwnedGem[];
   completedQuests: string[];
+  completedEncounters: string[];
   journalUnlocked: string[];
   active: ActiveAction;
   pendingReward: PendingReward | null;
+  /** −5% offense on next combat until cleared by quest or campfire rest */
+  wounded: boolean;
   campfireMessages: CampfireMessage[];
   playerNotes: string[];
   loreSolved: boolean;
@@ -187,6 +252,7 @@ export interface GameState {
   settings: SettingsState;
   records: {
     questsCompleted: number;
+    encountersWon: number;
     goldEarned: number;
     legendaryFound: number;
     bestStreak: number;

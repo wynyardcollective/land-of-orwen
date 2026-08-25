@@ -14,6 +14,8 @@ import {
   socketGem,
   startQuest,
   startTravel,
+  startCombat,
+  fleeCombat,
   tryLoreGuess,
   unequipSlot,
   upgradeGem,
@@ -23,6 +25,7 @@ import {
   type Pace,
   type SettingsState,
   type TabId,
+  type CombatStance,
 } from "@/lib/game";
 import { ARRIVAL_LINES } from "@/content";
 import {
@@ -45,6 +48,11 @@ interface GameContextValue {
   setTab: (tab: TabId) => void;
   travelTo: (locationId: string) => string | null;
   attemptQuest: (questId: string, autoEquip?: boolean) => string | null;
+  engageCombat: (
+    encounterId: string,
+    stance?: CombatStance | "auto",
+  ) => string | null;
+  fleeCombat: () => string | null;
   claim: () => void;
   equip: (uid: string) => void;
   unequip: (slot: keyof GameState["equipment"]) => void;
@@ -168,16 +176,21 @@ export function GameProvider({
         }
       } else if (next.pendingReward) {
         const r = next.pendingReward;
+        const isCombat = r.kind === "combat";
         const msg =
           r.tone === "jackpot"
             ? `Jackpot! ${r.narrative}`
             : r.tone === "close-win"
-              ? `Close call — you made it. Rewards ready.`
+              ? `Close call — ${isCombat ? "fight" : "quest"} done. Rewards ready.`
               : r.tone === "close-loss"
                 ? `A hair from right. Rewards ready.`
                 : r.success
-                  ? `Quest complete. Rewards ready.`
-                  : `Quest finished roughly. Rewards ready.`;
+                  ? isCombat
+                    ? "Victory. Rewards ready."
+                    : "Quest complete. Rewards ready."
+                  : isCombat
+                    ? "You were driven back. Scrap rewards ready."
+                    : "Quest finished roughly. Rewards ready.";
         if (lastAnnounced.current !== msg) {
           lastAnnounced.current = msg;
           setAnnouncement(msg);
@@ -228,6 +241,27 @@ export function GameProvider({
     [state, update],
   );
 
+  const engageCombat = useCallback(
+    (encounterId: string, stance: CombatStance | "auto" = "auto") => {
+      if (!state) return "Not ready.";
+      const result = startCombat(state, encounterId, stance);
+      if ("error" in result) return result.error;
+      update(() => result);
+      setAnnouncement("Combat joined.");
+      return null;
+    },
+    [state, update],
+  );
+
+  const flee = useCallback(() => {
+    if (!state) return "Not ready.";
+    const result = fleeCombat(state);
+    if ("error" in result) return result.error;
+    update(() => result);
+    setAnnouncement("You disengage.");
+    return null;
+  }, [state, update]);
+
   const value = useMemo<GameContextValue | null>(() => {
     if (!state) return null;
     return {
@@ -239,6 +273,8 @@ export function GameProvider({
       setTab,
       travelTo,
       attemptQuest,
+      engageCombat,
+      fleeCombat: flee,
       claim: () =>
         update((s) => {
           const next = claimReward(s);
@@ -302,6 +338,8 @@ export function GameProvider({
     tab,
     travelTo,
     attemptQuest,
+    engageCombat,
+    flee,
     update,
     persist,
     now,
