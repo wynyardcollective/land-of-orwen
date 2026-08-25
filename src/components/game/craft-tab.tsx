@@ -14,6 +14,7 @@ export function CraftTab() {
   const [selected, setSelected] = useState<string[]>([]);
   const [socketItem, setSocketItem] = useState("");
   const [socketGem, setSocketGem] = useState("");
+  const socketReady = Boolean(socketItem && socketGem);
 
   return (
     <div className="space-y-4">
@@ -142,6 +143,12 @@ export function CraftTab() {
             moon, star — but you must place them yourself. Guesses left:{" "}
             <strong>{state.loreGuessesLeft}</strong>
           </p>
+          {!socketReady && !state.loreSolved && (
+            <p className="rounded-lg border border-border/60 bg-muted/30 p-3 text-sm text-muted-foreground">
+              Select an item and a gem in the socket panel above before you can
+              submit a lore guess.
+            </p>
+          )}
           {state.loreSolved ? (
             <p className="rounded-lg bg-emerald-950/50 p-3 text-sm text-emerald-200">
               Solved: {LORE_SOLUTION.join(" ")}. The Rainward Gate will accept you.
@@ -175,7 +182,11 @@ export function CraftTab() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  disabled={selected.length !== 3 || state.loreGuessesLeft <= 0}
+                  disabled={
+                    selected.length !== 3 ||
+                    state.loreGuessesLeft <= 0 ||
+                    !socketReady
+                  }
                   onClick={() => {
                     const err = loreGuess(selected);
                     setError(err);
