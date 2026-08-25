@@ -5,6 +5,7 @@ import {
   ITEMS,
   LOCATIONS,
   LOCATION_MAP,
+  visibleLocations,
   LOCATION_NPCS,
   LOCATION_BEATS,
   QUEST_MAP,
@@ -15,6 +16,7 @@ import {
   ENCOUNTER_MAP,
   ENEMY_MAP,
   getLocationUnlockInfo,
+  tavernAtLocation,
 } from "@/content";
 import {
   computeStats,
@@ -27,9 +29,13 @@ import {
   formatRiskBand,
   resolveStance,
   encounterAvailable,
+  tavernRoundCost,
+  tavernHitChance,
+  availableTavernRumors,
   type ActiveAction,
   type CombatStance,
   type EncounterDef,
+  type GameState,
 } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
@@ -54,7 +60,8 @@ function formatRemaining(ms: number) {
 }
 
 export function MapTab() {
-  const { state, travelTo, attemptQuest, engageCombat, fleeCombat, now } = useGame();
+  const { state, travelTo, attemptQuest, engageCombat, fleeCombat, buyTavernRound, now } =
+    useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const stats = computeStats(state);
@@ -87,6 +94,16 @@ export function MapTab() {
   const pathGlow = 0.35 + 0.08 * state.unlockedLocations.length;
   const omenFresh =
     state.omen && now - state.omen.at < 1000 * 60 * 12 ? state.omen : null;
+  const mapLocations = visibleLocations(
+    state.unlockedLocations,
+    state.storyFlags,
+  );
+  const tavernHere =
+    state.locationId === selected?.id ? tavernAtLocation(state.locationId) : null;
+  const tavernFresh =
+    state.lastTavernResult && now - state.lastTavernResult.at < 14_000
+      ? state.lastTavernResult
+      : null;
 
   const activeProgress = useMemo(() => {
     if (!state.active) return null;
@@ -117,7 +134,8 @@ export function MapTab() {
           <CardTitle className="text-base">Map of Orwen</CardTitle>
           <p className="text-sm text-muted-foreground">
             Tap a pin on the map or a name below to travel or view quests. Dim
-            locked pins can be tapped to see how to unlock them.
+            locked pins can be tapped to see how to unlock them. Secret places
+            appear only after tavern rumors pan out.
           </p>
         </CardHeader>
         <CardContent>
@@ -165,9 +183,10 @@ export function MapTab() {
                 className="map-path-glow"
               />
             </svg>
-            {LOCATIONS.map((loc) => {
+            {mapLocations.map((loc) => {
               const unlocked = state.unlockedLocations.includes(loc.id);
               const here = state.locationId === loc.id;
+              const secret = loc.secret && unlocked;
               const label = `${loc.name}${here ? ", current location" : ""}${unlocked ? "" : ", locked"}. ${loc.regionHint}`;
               return (
                 <button
@@ -185,7 +204,9 @@ export function MapTab() {
                   title={unlocked ? loc.name : `${loc.name} (locked — tap for details)`}
                   className={`absolute z-10 flex min-h-11 min-w-11 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-start gap-0.5 rounded-xl px-1 pt-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${
                     unlocked
-                      ? "cursor-pointer hover:brightness-110"
+                      ? secret
+                        ? "cursor-pointer opacity-90 hover:brightness-110"
+                        : "cursor-pointer hover:brightness-110"
                       : "cursor-pointer opacity-55 hover:opacity-70"
                   }`}
                   style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
@@ -193,9 +214,11 @@ export function MapTab() {
                   <span
                     className={`mt-1 block size-4 shrink-0 rounded-full ring-2 ring-black/50 sm:size-5 ${
                       unlocked
-                        ? here
-                          ? "bg-amber-300"
-                          : "bg-emerald-400"
+                        ? secret
+                          ? "bg-violet-400"
+                          : here
+                            ? "bg-amber-300"
+                            : "bg-emerald-400"
                         : "bg-stone-600"
                     } ${pulseIds.has(loc.id) ? "map-pin-pulse" : ""} ${
                       here && !state.settings.reducedMotion ? "map-pin-here" : ""
@@ -215,7 +238,7 @@ export function MapTab() {
           </div>
 
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {LOCATIONS.map((loc) => {
+            {mapLocations.map((loc) => {
               const unlocked = state.unlockedLocations.includes(loc.id);
               return (
                 <li key={loc.id}>
@@ -267,6 +290,27 @@ export function MapTab() {
           role="status"
         >
           Path opened: {state.lastUnlock.names.join(", ")}
+        </p>
+      )}
+
+      {tavernFresh && (
+        <p
+          className={`rounded-xl border px-3 py-2 text-sm ${
+            tavernFresh.hit
+              ? "border-violet-400/40 bg-violet-950/40 text-violet-100"
+              : "border-stone-500/40 bg-stone-900/60 text-stone-200"
+          }`}
+          role="status"
+        >
+          {tavernFresh.hit ? (
+            <>
+              <span className="font-medium">{tavernFresh.headline}</span>
+              {" — "}
+              {tavernFresh.detail}
+            </>
+          ) : (
+            tavernFresh.detail
+          )}
         </p>
       )}
 
@@ -462,6 +506,16 @@ export function MapTab() {
                       </ul>
                     </div>
                   )}
+                  {tavernHere && (
+                    <TavernPanel
+                      tavern={tavernHere}
+                      state={state}
+                      onBuy={() => {
+                        const err = buyTavernRound(tavernHere.id);
+                        if (err) setError(err);
+                      }}
+                    />
+                  )}
                 </div>
               )}
                 </>
@@ -470,6 +524,57 @@ export function MapTab() {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function TavernPanel({
+  tavern,
+  state,
+  onBuy,
+}: {
+  tavern: import("@/content/taverns").TavernDef;
+  state: GameState;
+  onBuy: () => void;
+}) {
+  const cost = tavernRoundCost(state, tavern.id);
+  const hitPct = Math.round(tavernHitChance(state) * 100);
+  const rumorsLeft = availableTavernRumors(state, tavern.id);
+  const canAfford = state.gold >= cost;
+  const busy = !!state.active || !!state.pendingReward;
+
+  return (
+    <div className="space-y-2 rounded-xl border border-violet-900/50 bg-violet-950/20 p-3 pt-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-semibold text-violet-100">{tavern.name}</h3>
+          <p className="text-xs text-muted-foreground">{tavern.keeper}</p>
+        </div>
+        <Badge variant="outline" className="border-violet-700/60">
+          {rumorsLeft} lead{rumorsLeft === 1 ? "" : "s"} left
+        </Badge>
+      </div>
+      <p className="text-sm text-muted-foreground">{tavern.description}</p>
+      <p className="text-xs text-muted-foreground">
+        Pay <strong className="text-amber-100">{cost} gold</strong> for a round
+        of rumors · ~{hitPct}% chance to learn something useful (Charisma &
+        Wisdom help). Gold is spent even on a miss.
+      </p>
+      <Button
+        type="button"
+        size="sm"
+        variant="secondary"
+        disabled={!canAfford || busy || rumorsLeft === 0}
+        onClick={onBuy}
+      >
+        {!canAfford
+          ? `Need ${cost} gold`
+          : rumorsLeft === 0
+            ? "Nothing new here"
+            : busy
+              ? "Busy…"
+              : `Buy a round (${cost}g)`}
+      </Button>
     </div>
   );
 }

@@ -76,6 +76,8 @@ export interface LocationDef {
   unlockStoryFlag?: string;
   travelSeconds: number;
   bestFor?: QuestStat;
+  /** Hidden on map until a tavern rumor or story flag reveals it */
+  secret?: boolean;
 }
 
 export interface EnemyDef {
@@ -262,7 +264,21 @@ export interface GameState {
   npcReactions: Record<string, { name: string; quote: string; at: number }>;
   omen: { text: string; at: number } | null;
   lastUnlock: { ids: string[]; names: string[]; at: number } | null;
+  /** Rumor outcome ids already claimed at taverns */
+  tavernRumorsClaimed: string[];
+  /** Last tavern buy result for UI toast */
+  lastTavernResult: TavernResult | null;
   updatedAt: number;
+}
+
+export interface TavernResult {
+  at: number;
+  tavernId: string;
+  cost: number;
+  hit: boolean;
+  rumorId?: string;
+  headline: string;
+  detail: string;
 }
 
 export const SLOT_QUEST_STAT: Record<EquipSlot, QuestStat> = {

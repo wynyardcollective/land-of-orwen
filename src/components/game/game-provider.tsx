@@ -21,6 +21,7 @@ import {
   upgradeGem,
   writeLocalSave,
   playCue,
+  buyTavernRound as purchaseTavernRound,
   type GameState,
   type Pace,
   type SettingsState,
@@ -64,6 +65,7 @@ interface GameContextValue {
   postNote: (body: string) => void;
   setName: (name: string) => void;
   patchSettings: (patch: Partial<SettingsState>) => void;
+  buyTavernRound: (tavernId: string) => string | null;
   resetGame: () => void;
   now: number;
 }
@@ -262,6 +264,28 @@ export function GameProvider({
     return null;
   }, [state, update]);
 
+  const buyTavernRound = useCallback(
+    (tavernId: string) => {
+      if (!state) return "Not ready.";
+      const result = purchaseTavernRound(state, tavernId);
+      if ("error" in result) return result.error;
+      update(() => result);
+      const tr = result.lastTavernResult;
+      if (tr) {
+        const msg = tr.hit
+          ? `${tr.headline} — ${tr.detail}`
+          : tr.detail;
+        setAnnouncement(msg);
+        playCue(
+          state.settings.soundEnabled,
+          tr.hit ? "reward" : "ambient",
+        );
+      }
+      return null;
+    },
+    [state, update],
+  );
+
   const value = useMemo<GameContextValue | null>(() => {
     if (!state) return null;
     return {
@@ -275,6 +299,7 @@ export function GameProvider({
       attemptQuest,
       engageCombat,
       fleeCombat: flee,
+      buyTavernRound,
       claim: () =>
         update((s) => {
           const next = claimReward(s);
@@ -340,6 +365,7 @@ export function GameProvider({
     attemptQuest,
     engageCombat,
     flee,
+    buyTavernRound,
     update,
     persist,
     now,

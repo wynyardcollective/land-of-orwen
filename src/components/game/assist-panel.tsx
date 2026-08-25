@@ -73,6 +73,11 @@ export function AssistPanel() {
               Strike for Strength foes, Skirmish for Dexterity, Hex for
               Intelligence.
             </p>
+            <p className="text-muted-foreground">
+              At major locations, look for a <strong>tavern</strong> on the map
+              when you are there. Spend gold for a chance to uncover secret
+              places, early routes, and journal intel.
+            </p>
             {advice.best ? (
               <p>
                 Recommended here:{" "}

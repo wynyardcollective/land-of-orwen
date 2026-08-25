@@ -1,4 +1,11 @@
-export { LOCATIONS, LOCATION_MAP } from "./locations";
+export { LOCATIONS, LOCATION_MAP, visibleLocations, isLocationVisible } from "./locations";
+export { SECRET_LOCATIONS } from "./secret-locations";
+export {
+  TAVERNS,
+  TAVERN_MAP,
+  TAVERN_RUMORS,
+  tavernAtLocation,
+} from "./taverns";
 export { getLocationUnlockInfo, type LocationUnlockInfo } from "./unlocks";
 export { ITEMS, GEMS, LORE_SYMBOLS, LORE_SOLUTION } from "./items";
 export { QUESTS, QUEST_MAP } from "./quests";

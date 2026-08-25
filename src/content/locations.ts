@@ -1,4 +1,5 @@
 import type { LocationDef } from "@/lib/game/types";
+import { SECRET_LOCATIONS } from "./secret-locations";
 
 export const LOCATIONS: LocationDef[] = [
   {
@@ -94,8 +95,32 @@ export const LOCATIONS: LocationDef[] = [
     travelSeconds: 240,
     bestFor: "intelligence",
   },
+  ...SECRET_LOCATIONS,
 ];
 
 export const LOCATION_MAP = Object.fromEntries(
   LOCATIONS.map((l) => [l.id, l]),
 ) as Record<string, LocationDef>;
+
+/** Secret pins stay hidden until a rumor or story beat reveals them. */
+export function isLocationVisible(
+  loc: LocationDef,
+  unlockedLocations: string[],
+  storyFlags: string[],
+): boolean {
+  if (!loc.secret) return true;
+  if (unlockedLocations.includes(loc.id)) return true;
+  if (loc.unlockStoryFlag && storyFlags.includes(loc.unlockStoryFlag)) {
+    return true;
+  }
+  return false;
+}
+
+export function visibleLocations(
+  unlockedLocations: string[],
+  storyFlags: string[],
+): LocationDef[] {
+  return LOCATIONS.filter((loc) =>
+    isLocationVisible(loc, unlockedLocations, storyFlags),
+  );
+}

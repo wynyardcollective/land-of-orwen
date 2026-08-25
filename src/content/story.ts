@@ -43,20 +43,60 @@ export const JOURNAL: JournalEntry[] = [
     unlockFlag: "chapter_complete",
     body: "Behind the door, a basin of still water mirrors a sky that begins to gather. The Ring of Returning Rain warms on your hand. Orwen's drought is not ended—but it has been named, and naming is the first mercy.",
   },
+  {
+    id: "tavern-drought-cult",
+    title: "Tavern — Drought Cult",
+    unlockFlag: "intel_drought_cult",
+    body: "At the Dry Kettle, traders whisper that someone pays villages to smash rain gauges. The vandalism tracks upstream toward the mill country — as if drought itself were being curated.",
+  },
+  {
+    id: "tavern-rain-saint",
+    title: "Tavern — The Rain Saint",
+    unlockFlag: "intel_rain_saint",
+    body: "Merrick remembers a mossy roadside saint whose basin never emptied — until this summer. Pilgrims still leave coins; the coins still rust.",
+  },
+  {
+    id: "tavern-flow-thief",
+    title: "Tavern — Flow Thief",
+    unlockFlag: "intel_flow_thief",
+    body: "Mill ledgers show water disappearing between stations. Not evaporation — interception. Odo thinks an old aquifer tap was reopened somewhere in the canyon.",
+  },
+  {
+    id: "tavern-shrine-symbols",
+    title: "Tavern — Shrine Symbols",
+    unlockFlag: "intel_shrine_symbols",
+    body: "Pel's beachcombers swear the sealed door wants cloud, moon, and star — but the carvings lie about the order. Compare shore rubbings to orchard ledgers in Craft.",
+  },
+  {
+    id: "tavern-rainward-gate",
+    title: "Tavern — Rainward Gate",
+    unlockFlag: "intel_rainward_gate",
+    body: "Iri heard the Rainward Gate opens when drought is named aloud and the bearer wears a ring that remembers rain. The Ring of Returning Rain may be more than loot.",
+  },
 ];
 
 export function currentGoals(flags: string[]): string[] {
   const goals: string[] = [];
   if (!flags.includes("mill_unlocked")) {
-    goals.push("Help at Merrick's Orchard until the mill appears on your map.");
+    goals.push(
+      "Help at Merrick's Orchard until the mill appears — or buy rumors at the Cider Bench / Dry Kettle.",
+    );
   } else if (!flags.includes("shore_unlocked")) {
-    goals.push("Work Tarowen Square jobs to unlock the Northern Shore.");
+    goals.push(
+      "Work Tarowen Square jobs to unlock the Northern Shore — or buy rumors at the Dry Kettle.",
+    );
   } else if (!flags.includes("canyon_unlocked")) {
-    goals.push("Prove yourself at Stonewheel Mill to open Clara's Canyon.");
+    goals.push(
+      "Prove yourself at Stonewheel Mill to open Clara's Canyon — or try the Wheelhouse Tap.",
+    );
   } else if (!flags.includes("tables_unlocked")) {
-    goals.push("Trade carefully on the Northern Shore to reveal the Tablelands.");
+    goals.push(
+      "Trade carefully on the Northern Shore to reveal the Tablelands — or ask at the Salt Gull.",
+    );
   } else if (!flags.includes("shrine_unlocked")) {
-    goals.push("Listen for shore rumors to locate the Sealed Shrine.");
+    goals.push(
+      "Listen for shore rumors to locate the Sealed Shrine — or pay for leads at the Salt Gull / Ash Canteen.",
+    );
   } else if (!flags.includes("shrine_studied")) {
     goals.push("Study the shrine door, then solve the lore puzzle in Craft.");
   } else if (!flags.includes("chapter_complete")) {

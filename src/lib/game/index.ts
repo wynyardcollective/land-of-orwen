@@ -11,3 +11,9 @@ export {
   encounterAvailable,
 } from "./combat-engine";
 export { playCue } from "./sound";
+export {
+  buyTavernRound,
+  tavernRoundCost,
+  tavernHitChance,
+  availableTavernRumors,
+} from "./tavern-engine";
