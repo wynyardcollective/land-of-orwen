@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { GEMS, ITEMS } from "@/content";
+import { ATTRIBUTE_HELP, GEMS, ITEMS } from "@/content";
 import {
   AFFINITY_STAT,
   computeStats,
   formatStat,
+  goldCap,
   rarityClass,
   SLOT_QUEST_STAT,
   type EquipSlot,
+  type HeroStat,
 } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
@@ -16,6 +18,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const SLOTS: EquipSlot[] = [
   "weapon",
@@ -28,10 +38,22 @@ const SLOTS: EquipSlot[] = [
   "amulet",
 ];
 
+const ATTRIBUTE_ORDER: HeroStat[] = [
+  "strength",
+  "dexterity",
+  "intelligence",
+  "constitution",
+  "wisdom",
+  "charisma",
+];
+
 export function HeroTab() {
   const { state, equip, unequip, sell, setName } = useGame();
   const [nameDraft, setNameDraft] = useState(state.heroName);
+  const [openStat, setOpenStat] = useState<HeroStat | null>(null);
   const stats = computeStats(state);
+  const help = openStat ? ATTRIBUTE_HELP[openStat] : null;
+  const gearBonus = openStat ? stats[openStat] - state.stats[openStat] : 0;
 
   return (
     <div className="space-y-4">
@@ -60,31 +82,72 @@ export function HeroTab() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Attributes</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Tap an attribute to learn what it does and how to raise it.
+          </p>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-          {(
-            [
-              "strength",
-              "dexterity",
-              "intelligence",
-              "constitution",
-              "wisdom",
-              "charisma",
-            ] as const
-          ).map((stat) => (
-            <div
+          {ATTRIBUTE_ORDER.map((stat) => (
+            <button
               key={stat}
-              className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2"
+              type="button"
+              onClick={() => setOpenStat(stat)}
+              className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-left transition hover:border-amber-300/70 hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+              aria-label={`${formatStat(stat)} ${stats[stat]}. Open details.`}
             >
               <p className="text-xs text-muted-foreground">{formatStat(stat)}</p>
               <p className="text-lg font-semibold">{stats[stat]}</p>
               <p className="text-[11px] text-muted-foreground">
                 base {state.stats[stat]}
               </p>
-            </div>
+            </button>
           ))}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={!!openStat}
+        onOpenChange={(open) => {
+          if (!open) setOpenStat(null);
+        }}
+      >
+        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md">
+          {help && openStat && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{formatStat(openStat)}</DialogTitle>
+                <DialogDescription>{help.summary}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 text-sm">
+                <p>
+                  Total {stats[openStat]} · base {state.stats[openStat]} · gear{" "}
+                  {gearBonus >= 0 ? "+" : ""}
+                  {gearBonus}
+                </p>
+                {openStat === "constitution" && (
+                  <p className="text-muted-foreground">
+                    Gold cap with this Constitution: {goldCap(stats.constitution)}.
+                  </p>
+                )}
+                <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                  {help.details.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+                <p>
+                  <span className="font-medium">How to raise: </span>
+                  {help.howToRaise}
+                </p>
+              </div>
+              <DialogFooter>
+                <Button type="button" onClick={() => setOpenStat(null)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="pb-2">
