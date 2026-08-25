@@ -13,6 +13,7 @@ import {
   type HeroStat,
 } from "@/lib/game";
 import { useGame } from "./game-provider";
+import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,7 @@ const ATTRIBUTE_ORDER: HeroStat[] = [
 
 export function HeroTab() {
   const { state, equip, unequip, sell, setName } = useGame();
+  const { user } = useAuth();
   const [nameDraft, setNameDraft] = useState(state.heroName);
   const [openStat, setOpenStat] = useState<HeroStat | null>(null);
   const stats = computeStats(state);
@@ -74,7 +76,7 @@ export function HeroTab() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground break-all">
-            Player id: {state.playerId}
+            Account: {user?.email ?? "signed in"}
           </p>
         </CardContent>
       </Card>

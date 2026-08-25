@@ -11,6 +11,8 @@ import { RewardDialog } from "./reward-dialog";
 import { Button } from "@/components/ui/button";
 import type { TabId } from "@/lib/game";
 import { useEffect } from "react";
+import { AuthProvider, useAuth } from "@/components/auth/auth-provider";
+import { AuthScreen } from "@/components/auth/auth-screen";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "map", label: "Map" },
@@ -78,10 +80,32 @@ function ShellInner() {
   );
 }
 
-export function GameShell() {
+function AuthenticatedGame() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background p-6 text-foreground">
+        <p role="status">Checking your account…</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
   return (
-    <GameProvider>
+    <GameProvider playerId={user.playerId} heroName={user.heroName}>
       <ShellInner />
     </GameProvider>
+  );
+}
+
+export function GameShell() {
+  return (
+    <AuthProvider>
+      <AuthenticatedGame />
+    </AuthProvider>
   );
 }

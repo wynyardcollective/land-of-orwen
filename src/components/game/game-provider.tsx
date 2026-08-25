@@ -4,9 +4,7 @@ import {
   addCampfireNote,
   claimReward,
   createInitialState,
-  createPlayerId,
   equipItem,
-  getOrCreatePlayerId,
   loadLocalSave,
   normalizeState,
   renameHero,
@@ -64,9 +62,10 @@ interface GameContextValue {
 
 const GameContext = createContext<GameContextValue | null>(null);
 
-async function fetchRemote(playerId: string): Promise<GameState | null> {
+async function fetchRemote(): Promise<GameState | null> {
   try {
-    const res = await fetch(`/api/save?playerId=${encodeURIComponent(playerId)}`);
+    const res = await fetch("/api/save", { credentials: "include" });
+    if (res.status === 401) return null;
     if (!res.ok) return null;
     const data = (await res.json()) as { state: GameState | null };
     return data.state;
@@ -79,6 +78,7 @@ async function pushRemote(state: GameState): Promise<boolean> {
   try {
     const res = await fetch("/api/save", {
       method: "PUT",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ state }),
     });
@@ -88,7 +88,15 @@ async function pushRemote(state: GameState): Promise<boolean> {
   }
 }
 
-export function GameProvider({ children }: { children: ReactNode }) {
+export function GameProvider({
+  children,
+  playerId,
+  heroName,
+}: {
+  children: ReactNode;
+  playerId: string;
+  heroName: string;
+}) {
   const [state, setState] = useState<GameState | null>(null);
   const [ready, setReady] = useState(false);
   const [syncStatus, setSyncStatus] = useState<GameContextValue["syncStatus"]>("idle");
@@ -101,17 +109,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const playerId = getOrCreatePlayerId();
-      const local = loadLocalSave();
-      const remote = await fetchRemote(playerId);
+      const localRaw = loadLocalSave();
+      const local =
+        localRaw && localRaw.playerId === playerId ? localRaw : null;
+      const remote = await fetchRemote();
       let initial: GameState;
       if (remote && local) {
         initial = remote.updatedAt >= local.updatedAt ? remote : local;
       } else {
-        initial = remote ?? local ?? createInitialState(playerId);
+        initial =
+          remote ?? local ?? createInitialState(playerId, heroName);
       }
-      if (initial.playerId !== playerId) {
-        initial = { ...initial, playerId };
+      initial = { ...initial, playerId };
+      if (!initial.heroName?.trim()) {
+        initial = { ...initial, heroName };
       }
       initial = normalizeState(initial);
       initial = resolveCompletedActions(initial);
@@ -124,7 +135,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [playerId, heroName]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 250);
@@ -275,9 +286,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           updatedAt: Date.now(),
         })),
       resetGame: () => {
-        const id = createPlayerId();
-        localStorage.setItem("orwen-player-id", id);
-        const fresh = createInitialState(id, state.heroName);
+        const fresh = createInitialState(playerId, state.heroName);
         setState(fresh);
         persist(fresh);
         setAnnouncement("New journey begun.");
@@ -296,6 +305,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     update,
     persist,
     now,
+    playerId,
   ]);
 
   if (!value) {

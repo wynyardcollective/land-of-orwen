@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useGame, paceLabel } from "./game-provider";
+import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +18,7 @@ import type { FontScale, Pace } from "@/lib/game";
 
 export function SettingsDialog() {
   const { state, patchSettings, resetGame } = useGame();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const s = state.settings;
 
@@ -120,6 +122,21 @@ export function SettingsDialog() {
           </section>
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
+            {user && (
+              <p className="w-full text-left text-xs text-muted-foreground">
+                Signed in as {user.email}
+              </p>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                await logout();
+                setOpen(false);
+              }}
+            >
+              Sign out
+            </Button>
             <Button
               type="button"
               variant="destructive"

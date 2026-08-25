@@ -1,31 +1,11 @@
 import type { GameState } from "@/lib/game/types";
+import { getD1, type D1Database } from "./db";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
 export interface SaveStore {
   get(playerId: string): Promise<GameState | null>;
   put(state: GameState): Promise<void>;
-}
-
-type D1Prepared = {
-  bind: (...args: unknown[]) => D1Prepared;
-  first: <T>() => Promise<T | null>;
-  run: () => Promise<unknown>;
-};
-
-type D1Database = {
-  prepare: (query: string) => D1Prepared;
-};
-
-async function getD1(): Promise<D1Database | null> {
-  try {
-    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-    const ctx = await getCloudflareContext({ async: true });
-    const db = (ctx.env as { DB?: D1Database }).DB;
-    return db ?? null;
-  } catch {
-    return null;
-  }
 }
 
 const DATA_DIR = path.join(process.cwd(), ".data", "saves");
