@@ -145,3 +145,58 @@ html[data-reduced-motion="1"] *::after {
     @apply outline-2 outline-offset-2 outline-amber-300;
   }
 }
+
+@keyframes pin-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(52 211 153 / 0.6);
+  }
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 8px rgb(52 211 153 / 0);
+  }
+}
+
+@keyframes pin-here {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.25);
+  }
+}
+
+.map-pin-pulse {
+  animation: pin-pulse 1.4s ease-out 3;
+}
+
+.map-pin-here {
+  animation: pin-here 2.4s ease-in-out infinite;
+}
+
+.weather-drought {
+  box-shadow: inset 0 0 40px rgb(180 120 40 / 0.15);
+}
+.weather-dust {
+  box-shadow: inset 0 0 50px rgb(160 110 40 / 0.28);
+}
+.weather-salt {
+  box-shadow: inset 0 0 45px rgb(80 160 180 / 0.25);
+}
+.weather-ash {
+  box-shadow: inset 0 0 50px rgb(80 50 30 / 0.4);
+}
+.weather-wind {
+  box-shadow: inset 0 0 40px rgb(180 90 70 / 0.22);
+}
+.weather-stone {
+  box-shadow: inset 0 0 40px rgb(90 90 80 / 0.3);
+}
+.weather-omen {
+  box-shadow: inset 0 0 55px rgb(200 80 40 / 0.35);
+}
+.weather-rain {
+  box-shadow: inset 0 0 50px rgb(70 120 180 / 0.35);
+}

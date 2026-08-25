@@ -8,6 +8,7 @@ import {
   equipItem,
   getOrCreatePlayerId,
   loadLocalSave,
+  normalizeState,
   renameHero,
   resetLoreGuesses,
   resolveCompletedActions,
@@ -24,6 +25,7 @@ import {
   type SettingsState,
   type TabId,
 } from "@/lib/game";
+import { ARRIVAL_LINES } from "@/content";
 import { playCue } from "@/lib/game/sound";
 import {
   createContext,
@@ -111,6 +113,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (initial.playerId !== playerId) {
         initial = { ...initial, playerId };
       }
+      initial = normalizeState(initial);
       initial = resolveCompletedActions(initial);
       if (!cancelled) {
         setState(initial);
@@ -144,20 +147,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (next === state) return;
     if (state.active && !next.active) {
       if (state.active.type === "travel") {
-        const msg = `Travel complete. You arrive safely.`;
+        const dest = state.active.toLocationId;
+        const msg =
+          ARRIVAL_LINES[dest] ?? `Travel complete. You arrive safely.`;
         if (lastAnnounced.current !== msg) {
           lastAnnounced.current = msg;
           setAnnouncement(msg);
           playCue(state.settings.soundEnabled, "travel");
         }
       } else if (next.pendingReward) {
-        const msg = next.pendingReward.success
-          ? `Quest complete. Rewards ready.`
-          : `Quest finished. Outcome was rough—rewards ready.`;
+        const r = next.pendingReward;
+        const msg =
+          r.tone === "jackpot"
+            ? `Jackpot! ${r.narrative}`
+            : r.tone === "close-win"
+              ? `Close call — you made it. Rewards ready.`
+              : r.tone === "close-loss"
+                ? `A hair from right. Rewards ready.`
+                : r.success
+                  ? `Quest complete. Rewards ready.`
+                  : `Quest finished roughly. Rewards ready.`;
         if (lastAnnounced.current !== msg) {
           lastAnnounced.current = msg;
           setAnnouncement(msg);
-          playCue(state.settings.soundEnabled, "reward");
+          playCue(
+            state.settings.soundEnabled,
+            r.tone === "jackpot" ? "equip" : "reward",
+          );
         }
       }
     }

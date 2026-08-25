@@ -5,6 +5,9 @@ import {
   LORE_SOLUTION,
   QUEST_MAP,
   QUESTS,
+  DROUGHT_OMENS,
+  QUEST_OUTCOMES,
+  npcQuote,
 } from "@/content";
 import {
   autoEquipForQuest,
@@ -21,6 +24,7 @@ import type {
   OwnedItem,
   PendingReward,
   QuestDef,
+  RewardTone,
 } from "./types";
 
 function uid(prefix: string) {
@@ -79,17 +83,66 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
     return { ...state, active: null, updatedAt: now };
   }
   const stats = computeStats(state);
+  const chance = state.active.successChance;
   const roll = Math.random() * 100;
-  const success = roll <= state.active.successChance;
-  const bonusGold = success
+  const success = roll <= chance;
+  const margin = Math.abs(chance - roll);
+  const close = margin <= 8;
+  const jackpot = success && Math.random() < 0.08;
+  let tone: RewardTone = success ? "success" : "fail";
+  if (jackpot) tone = "jackpot";
+  else if (success && close) tone = "close-win";
+  else if (!success && close) tone = "close-loss";
+
+  let bonusGold = success
     ? Math.floor(quest.goldReward * (0.1 + stats.charisma * 0.03))
     : 0;
-  const gold = success ? quest.goldReward : Math.max(1, Math.floor(quest.goldReward * 0.25));
-  const item = success ? pickItem(quest, stats.wisdom, stats.charisma) : undefined;
-  const gem = success ? pickGem(quest, stats.wisdom) : undefined;
-  const narrative = success
-    ? `You complete "${quest.name}". The land feels a fraction less hopeless.`
-    : `You push through "${quest.name}" but come up short. Scrap gold is all you salvage—try again when better prepared.`;
+  let gold = success
+    ? quest.goldReward
+    : Math.max(1, Math.floor(quest.goldReward * 0.25));
+  if (jackpot) {
+    gold += Math.max(3, Math.ceil(quest.goldReward * 0.5));
+    bonusGold += 2;
+  }
+  if (tone === "close-loss") gold += 1;
+
+  let item = success ? pickItem(quest, stats.wisdom, stats.charisma) : undefined;
+  let gem = success ? pickGem(quest, stats.wisdom) : undefined;
+  if (jackpot && !gem) {
+    gem = pickGem({ ...quest, gemChance: 1 }, stats.wisdom);
+  }
+  if (jackpot && !item && quest.itemPool.length) {
+    item = pickItem(quest, stats.wisdom + 4, stats.charisma);
+  }
+
+  const outcomes = QUEST_OUTCOMES[quest.id];
+  let narrative: string;
+  if (tone === "jackpot" && outcomes) narrative = outcomes.jackpot;
+  else if (tone === "close-win" && outcomes) narrative = outcomes.closeWin;
+  else if (tone === "close-loss" && outcomes) narrative = outcomes.closeLoss;
+  else if (success && outcomes) narrative = outcomes.success;
+  else if (!success && outcomes) narrative = outcomes.fail;
+  else if (success) {
+    narrative = `You complete "${quest.name}". The land feels a fraction less hopeless.`;
+  } else {
+    narrative = `You push through "${quest.name}" but come up short. Scrap gold is all you salvage.`;
+  }
+
+  const spoken = npcQuote(quest.locationId, tone);
+  const nextSuccessStreak = success ? (state.successStreak ?? 0) + 1 : 0;
+  const nextFailStreak = success ? 0 : (state.failStreak ?? 0) + 1;
+  const streakBonus =
+    success && nextSuccessStreak % 3 === 0
+      ? `Streak of ${nextSuccessStreak}. The well remembers you — Constitution +1.`
+      : undefined;
+  const omenText =
+    !success && nextFailStreak >= 2
+      ? DROUGHT_OMENS[Math.floor(Math.random() * DROUGHT_OMENS.length)]
+      : undefined;
+  const unlockName =
+    success && quest.unlockLocationId
+      ? LOCATION_MAP[quest.unlockLocationId]?.name
+      : undefined;
 
   const reward: PendingReward = {
     questId: quest.id,
@@ -99,6 +152,14 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
     item,
     gem,
     narrative,
+    tone,
+    npcName: spoken.name,
+    npcQuote: spoken.quote,
+    omen: omenText,
+    streak: nextSuccessStreak,
+    streakBonus,
+    unlockName,
+    legendary: item ? ITEMS[item.defId]?.rarity === "legendary" : false,
   };
 
   return {
@@ -114,34 +175,30 @@ export function claimReward(state: GameState): GameState {
   if (!reward) return state;
   const quest = QUEST_MAP[reward.questId];
   const stats = computeStats(state);
-  const cap = goldCap(stats.constitution);
-  let gold = clamp(state.gold + reward.gold + reward.bonusGold, 0, cap);
+  const gold = clamp(
+    state.gold + reward.gold + reward.bonusGold,
+    0,
+    goldCap(stats.constitution),
+  );
   const inventory = [...state.inventory];
   const gems = [...state.gems];
   const storyFlags = [...state.storyFlags];
   const unlockedLocations = [...state.unlockedLocations];
   const completedQuests = [...state.completedQuests];
   const journalUnlocked = [...state.journalUnlocked];
-  const records = { ...state.records };
 
   if (reward.item) inventory.push(reward.item);
   if (reward.gem) gems.push(reward.gem);
   if (reward.success && quest) {
     if (!completedQuests.includes(quest.id)) completedQuests.push(quest.id);
-    records.questsCompleted += 1;
     if (quest.storyFlagOnSuccess && !storyFlags.includes(quest.storyFlagOnSuccess)) {
       storyFlags.push(quest.storyFlagOnSuccess);
     }
     if (quest.unlockLocationId && !unlockedLocations.includes(quest.unlockLocationId)) {
       unlockedLocations.push(quest.unlockLocationId);
     }
-    if (reward.item && ITEMS[reward.item.defId]?.rarity === "legendary") {
-      records.legendaryFound += 1;
-    }
   }
-  records.goldEarned += reward.gold + reward.bonusGold;
 
-  // Unlock journal entries by flag
   const flagToJournal: Record<string, string> = {
     mill_unlocked: "mill-note",
     shore_unlocked: "shore-note",
@@ -155,10 +212,78 @@ export function claimReward(state: GameState): GameState {
     if (jid && !journalUnlocked.includes(jid)) journalUnlocked.push(jid);
   }
 
-  // Stat XP: tiny bumps on success
   const nextStats = { ...state.stats };
   if (reward.success && quest) {
     nextStats[quest.stat] += 1;
+  }
+  if (reward.streakBonus) {
+    nextStats.constitution += 1;
+  }
+
+  const successStreak = reward.success ? (state.successStreak ?? 0) + 1 : 0;
+  const failStreak = reward.success ? 0 : (state.failStreak ?? 0) + 1;
+  const omen = reward.omen
+    ? { text: reward.omen, at: Date.now() }
+    : state.omen;
+
+  const records = {
+    questsCompleted:
+      (state.records.questsCompleted ?? 0) + (reward.success ? 1 : 0),
+    goldEarned:
+      (state.records.goldEarned ?? 0) + reward.gold + reward.bonusGold,
+    legendaryFound:
+      (state.records.legendaryFound ?? 0) + (reward.legendary ? 1 : 0),
+    bestStreak: Math.max(state.records.bestStreak ?? 0, successStreak),
+  };
+
+  const npcReactions = { ...state.npcReactions };
+  if (quest && reward.npcQuote && reward.npcName) {
+    npcReactions[quest.locationId] = {
+      name: reward.npcName,
+      quote: reward.npcQuote,
+      at: Date.now(),
+    };
+  }
+
+  const newlyUnlocked = unlockedLocations.filter(
+    (id) => !state.unlockedLocations.includes(id),
+  );
+  const lastUnlock =
+    newlyUnlocked.length > 0
+      ? {
+          ids: newlyUnlocked,
+          names: newlyUnlocked.map((id) => LOCATION_MAP[id]?.name ?? id),
+          at: Date.now(),
+        }
+      : state.lastUnlock;
+
+  let campfireMessages = [...state.campfireMessages];
+  if (reward.legendary && reward.item) {
+    campfireMessages = [
+      {
+        id: uid("disc"),
+        author: "Campfire",
+        body: `${state.heroName} found the legendary ${ITEMS[reward.item.defId]?.name}.`,
+        kind: "discovery" as const,
+        at: Date.now(),
+      },
+      ...campfireMessages,
+    ].slice(0, 40);
+  }
+  if (newlyUnlocked.length) {
+    campfireMessages = [
+      {
+        id: uid("disc"),
+        author: "Campfire",
+        body: `${state.heroName} opened the path to ${newlyUnlocked
+          .map((id) => LOCATION_MAP[id]?.name)
+          .filter(Boolean)
+          .join(", ")}.`,
+        kind: "discovery" as const,
+        at: Date.now(),
+      },
+      ...campfireMessages,
+    ].slice(0, 40);
   }
 
   return {
@@ -172,6 +297,12 @@ export function claimReward(state: GameState): GameState {
     journalUnlocked,
     stats: nextStats,
     records,
+    successStreak,
+    failStreak,
+    npcReactions,
+    omen,
+    lastUnlock,
+    campfireMessages,
     pendingReward: null,
     updatedAt: Date.now(),
   };

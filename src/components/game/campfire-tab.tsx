@@ -113,6 +113,10 @@ export function CampfireTab() {
               Legendaries found:{" "}
               <strong>{state.records.legendaryFound}</strong>
             </p>
+            <p>
+              Best quest streak:{" "}
+              <strong>{state.records.bestStreak ?? 0}</strong>
+            </p>
             <p className="text-muted-foreground">
               Live multiplayer leaderboards are out of scope for this slice —
               these are your personal records, synced with cloud saves.

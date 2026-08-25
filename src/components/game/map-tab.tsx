@@ -1,15 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ITEMS, LOCATIONS, LOCATION_MAP, QUEST_MAP } from "@/content";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ITEMS,
+  LOCATIONS,
+  LOCATION_MAP,
+  LOCATION_NPCS,
+  LOCATION_BEATS,
+  QUEST_MAP,
+  TRAVEL_BEATS,
+  mapWeather,
+  rotatingBeat,
+} from "@/content";
 import {
   computeStats,
   formatStat,
   questsAtLocation,
   successChance,
 } from "@/lib/game";
-import type { QuestDef } from "@/lib/game";
+import type { ActiveAction, QuestDef } from "@/lib/game";
 import { useGame } from "./game-provider";
+import { playCue } from "@/lib/game/sound";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +48,20 @@ export function MapTab() {
   const stats = computeStats(state);
   const selected = selectedId ? LOCATION_MAP[selectedId] : null;
   const quests = selected ? questsAtLocation(selected.id) : [];
+  const weather = mapWeather(
+    state.storyFlags,
+    state.locationId,
+    state.omen?.at ?? null,
+    now,
+  );
+  const pulseIds = new Set(
+    state.lastUnlock && now - state.lastUnlock.at < 12_000
+      ? state.lastUnlock.ids
+      : [],
+  );
+  const pathGlow = 0.35 + 0.08 * state.unlockedLocations.length;
+  const omenFresh =
+    state.omen && now - state.omen.at < 1000 * 60 * 12 ? state.omen : null;
 
   const activeProgress = useMemo(() => {
     if (!state.active) return null;
@@ -58,9 +83,10 @@ export function MapTab() {
         </CardHeader>
         <CardContent>
           <div
-            className="relative aspect-square w-full overflow-visible rounded-xl border border-border/60 bg-[radial-gradient(ellipse_at_center,_#1c1917_0%,_#0c0a09_70%)]"
+            className={`map-weather relative aspect-square w-full overflow-visible rounded-xl border border-border/60 bg-[radial-gradient(ellipse_at_center,_#1c1917_0%,_#0c0a09_70%)] weather-${weather}`}
+            data-weather={weather}
             role="img"
-            aria-label="Illustrated countryside map of Orwen with location markers"
+            aria-label={`Illustrated countryside map of Orwen. Weather: ${weather}.`}
           >
             <svg
               viewBox="0 0 100 100"
@@ -89,6 +115,15 @@ export function MapTab() {
                 stroke="#57534e"
                 strokeWidth="0.8"
                 strokeDasharray="1.5 1"
+              />
+              <path
+                d="M10 70 Q30 55 45 60 T80 40"
+                fill="none"
+                stroke="#d6b15a"
+                strokeWidth="1.1"
+                strokeDasharray="2 1"
+                opacity={pathGlow}
+                className="map-path-glow"
               />
             </svg>
             {LOCATIONS.map((loc) => {
@@ -122,6 +157,8 @@ export function MapTab() {
                           ? "bg-amber-300"
                           : "bg-emerald-400"
                         : "bg-stone-600"
+                    } ${pulseIds.has(loc.id) ? "map-pin-pulse" : ""} ${
+                      here && !state.settings.reducedMotion ? "map-pin-here" : ""
                     }`}
                     aria-hidden="true"
                   />
@@ -165,26 +202,32 @@ export function MapTab() {
         </CardContent>
       </Card>
 
+      {omenFresh && (
+        <p
+          className="rounded-xl border border-orange-400/40 bg-orange-950/40 px-3 py-2 text-sm text-orange-100"
+          role="status"
+        >
+          Drought omen — {omenFresh.text}
+        </p>
+      )}
+
+      {state.lastUnlock && now - state.lastUnlock.at < 12_000 && (
+        <p
+          className="rounded-xl border border-emerald-400/40 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-100"
+          role="status"
+        >
+          Path opened: {state.lastUnlock.names.join(", ")}
+        </p>
+      )}
+
       {activeProgress && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">
-              {activeProgress.action.type === "travel" ? "Traveling" : "Questing"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm">
-              {activeProgress.action.type === "travel"
-                ? `En route to ${LOCATION_MAP[activeProgress.action.toLocationId]?.name}`
-                : QUEST_MAP[activeProgress.action.questId]?.name ?? "Quest"}
-            </p>
-            <Progress value={activeProgress.pct} aria-label="Action progress" />
-            <p className="text-xs text-muted-foreground" aria-live="polite">
-              {formatRemaining(activeProgress.remaining)} remaining ·{" "}
-              {activeProgress.pct}%
-            </p>
-          </CardContent>
-        </Card>
+        <WaitScene
+          pct={activeProgress.pct}
+          remaining={activeProgress.remaining}
+          action={activeProgress.action}
+          now={now}
+          soundEnabled={state.settings.soundEnabled}
+        />
       )}
 
       <Dialog
@@ -200,6 +243,23 @@ export function MapTab() {
                 <DialogTitle>{selected.name}</DialogTitle>
                 <DialogDescription>{selected.description}</DialogDescription>
               </DialogHeader>
+              {LOCATION_NPCS[selected.id] && (
+                <p className="rounded-lg border border-border/50 bg-muted/30 p-3 text-sm">
+                  <span className="font-medium">
+                    {LOCATION_NPCS[selected.id].name}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · {LOCATION_NPCS[selected.id].title}
+                  </span>
+                  <span className="mt-1 block text-muted-foreground italic">
+                    {state.locationId === selected.id &&
+                    state.npcReactions?.[selected.id]
+                      ? state.npcReactions[selected.id].quote
+                      : `“${LOCATION_NPCS[selected.id].greet}”`}
+                  </span>
+                </p>
+              )}
 
               {state.locationId !== selected.id ? (
                 <div className="space-y-3">
@@ -269,6 +329,61 @@ export function MapTab() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function WaitScene({
+  pct,
+  remaining,
+  action,
+  now,
+  soundEnabled,
+}: {
+  pct: number;
+  remaining: number;
+  action: NonNullable<ActiveAction>;
+  now: number;
+  soundEnabled: boolean;
+}) {
+  const locId =
+    action.type === "travel"
+      ? action.toLocationId
+      : QUEST_MAP[action.questId]?.locationId;
+  const lines =
+    action.type === "travel"
+      ? TRAVEL_BEATS[action.toLocationId]
+      : LOCATION_BEATS[locId ?? ""];
+  const beat = rotatingBeat(lines, action.startedAt, now);
+  const title =
+    action.type === "travel"
+      ? `On the road to ${LOCATION_MAP[action.toLocationId]?.name}`
+      : QUEST_MAP[action.questId]?.name ?? "Quest";
+
+  useEffect(() => {
+    if (!soundEnabled) return;
+    playCue(true, "ambient");
+    const id = window.setInterval(() => playCue(true, "ambient"), 8000);
+    return () => window.clearInterval(id);
+  }, [soundEnabled, action.startedAt]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">
+          {action.type === "travel" ? "Traveling" : "In the work"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-sm font-medium">{title}</p>
+        <p className="min-h-10 text-sm leading-relaxed text-amber-100/90" aria-live="polite">
+          {beat}
+        </p>
+        <Progress value={pct} aria-label="Action progress" />
+        <p className="text-xs text-muted-foreground" aria-live="polite">
+          {formatRemaining(remaining)} remaining · {pct}%
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 

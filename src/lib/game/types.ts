@@ -127,6 +127,13 @@ export interface ActiveQuest {
 
 export type ActiveAction = ActiveTravel | ActiveQuest | null;
 
+export type RewardTone =
+  | "success"
+  | "fail"
+  | "close-win"
+  | "close-loss"
+  | "jackpot";
+
 export interface PendingReward {
   questId: string;
   success: boolean;
@@ -135,6 +142,14 @@ export interface PendingReward {
   item?: OwnedItem;
   gem?: OwnedGem;
   narrative: string;
+  tone: RewardTone;
+  npcName?: string;
+  npcQuote?: string;
+  omen?: string;
+  streak: number;
+  streakBonus?: string;
+  unlockName?: string;
+  legendary?: boolean;
 }
 
 export interface SettingsState {
@@ -172,7 +187,13 @@ export interface GameState {
     questsCompleted: number;
     goldEarned: number;
     legendaryFound: number;
+    bestStreak: number;
   };
+  successStreak: number;
+  failStreak: number;
+  npcReactions: Record<string, { name: string; quote: string; at: number }>;
+  omen: { text: string; at: number } | null;
+  lastUnlock: { ids: string[]; names: string[]; at: number } | null;
   updatedAt: number;
 }
 

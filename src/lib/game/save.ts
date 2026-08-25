@@ -84,8 +84,38 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
       questsCompleted: 0,
       goldEarned: 0,
       legendaryFound: 0,
+      bestStreak: 0,
     },
+    successStreak: 0,
+    failStreak: 0,
+    npcReactions: {},
+    omen: null,
+    lastUnlock: null,
     updatedAt: Date.now(),
+  };
+}
+
+export function normalizeState(raw: GameState): GameState {
+  return {
+    ...raw,
+    records: {
+      questsCompleted: raw.records?.questsCompleted ?? 0,
+      goldEarned: raw.records?.goldEarned ?? 0,
+      legendaryFound: raw.records?.legendaryFound ?? 0,
+      bestStreak: raw.records?.bestStreak ?? 0,
+    },
+    successStreak: raw.successStreak ?? 0,
+    failStreak: raw.failStreak ?? 0,
+    npcReactions: raw.npcReactions ?? {},
+    omen: raw.omen ?? null,
+    lastUnlock: raw.lastUnlock ?? null,
+    pendingReward: raw.pendingReward
+      ? {
+          ...raw.pendingReward,
+          tone: raw.pendingReward.tone ?? (raw.pendingReward.success ? "success" : "fail"),
+          streak: raw.pendingReward.streak ?? 0,
+        }
+      : null,
   };
 }
 
@@ -94,7 +124,8 @@ export function loadLocalSave(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as GameState;
+    const parsed = JSON.parse(raw) as GameState;
+    return normalizeState(parsed);
   } catch {
     return null;
   }

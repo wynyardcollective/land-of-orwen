@@ -1,6 +1,6 @@
 "use client";
 
-import { JOURNAL, QUEST_MAP, currentGoals } from "@/content";
+import { JOURNAL, LOCATION_MAP, QUEST_MAP, currentGoals } from "@/content";
 import { useGame } from "./game-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,36 @@ export function JournalTab() {
                 </p>
               </article>
             ))
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Heard in the field</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {Object.keys(state.npcReactions ?? {}).length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Finish a quest and someone will have an opinion.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {Object.entries(state.npcReactions).map(([locId, rec]) => (
+                <li
+                  key={locId}
+                  className="rounded-xl border border-border/60 p-3 text-sm"
+                >
+                  <p className="font-medium text-amber-100">
+                    {rec.name}{" "}
+                    <span className="font-normal text-muted-foreground">
+                      · {LOCATION_MAP[locId]?.name}
+                    </span>
+                  </p>
+                  <p className="mt-1 italic text-muted-foreground">{rec.quote}</p>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>
