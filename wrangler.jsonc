@@ -20,7 +20,7 @@
       "database_name": "orwen-players",
       // Replace with the UUID from `wrangler d1 create orwen-players` before remote deploy
       // (or run `npm run deploy:prod` which creates it and patches this file)
-      "database_id": "local-orwen-players",
+      "database_id": "46c5328a-87fe-4dab-9e7b-d66ea7dfd131",
       "migrations_dir": "migrations"
     }
   ],
