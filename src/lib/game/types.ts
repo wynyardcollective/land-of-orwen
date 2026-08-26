@@ -191,6 +191,33 @@ export interface ActiveCombat {
   heroArmor: number;
   heroCrit: number;
   heroAccuracy: number;
+  /** Running totals for the fight UI */
+  damageDealt: number;
+  damageTaken: number;
+  heroHits: number;
+  heroMisses: number;
+  enemyHits: number;
+  enemyMisses: number;
+}
+
+/** Preserved fight summary so the log stays visible while claiming combat rewards */
+export interface CombatAftermath {
+  encounterId: string;
+  enemyId: string;
+  enemyName: string;
+  success: boolean;
+  fled?: boolean;
+  log: CombatLogLine[];
+  damageDealt: number;
+  damageTaken: number;
+  heroHits: number;
+  heroMisses: number;
+  enemyHits: number;
+  enemyMisses: number;
+  rounds: number;
+  heroHpLeft: number;
+  heroMaxHp: number;
+  at: number;
 }
 
 export interface ActiveTavern {
@@ -291,6 +318,8 @@ export interface GameState {
   tavernRumorsClaimed: string[];
   /** Last tavern buy result for UI toast */
   lastTavernResult: TavernResult | null;
+  /** Combat log + damage totals kept while combat rewards await claim */
+  lastCombat: CombatAftermath | null;
   updatedAt: number;
 }
 

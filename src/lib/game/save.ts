@@ -108,6 +108,7 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     lastUnlock: null,
     tavernRumorsClaimed: [],
     lastTavernResult: null,
+    lastCombat: null,
     updatedAt: Date.now(),
   };
 }
@@ -140,6 +141,7 @@ export function normalizeState(raw: GameState): GameState {
     lastUnlock: raw.lastUnlock ?? null,
     tavernRumorsClaimed: raw.tavernRumorsClaimed ?? [],
     lastTavernResult: raw.lastTavernResult ?? null,
+    lastCombat: raw.lastCombat ?? null,
     pendingReward: raw.pendingReward
       ? {
           ...raw.pendingReward,

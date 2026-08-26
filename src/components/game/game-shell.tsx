@@ -8,6 +8,7 @@ import { CraftTab } from "./craft-tab";
 import { JournalTab } from "./journal-tab";
 import { CampfireTab } from "./campfire-tab";
 import { RewardDialog } from "./reward-dialog";
+import { CombatResultPanel } from "./combat-result-panel";
 import { Button } from "@/components/ui/button";
 import type { TabId } from "@/lib/game";
 import { useEffect } from "react";
@@ -49,6 +50,7 @@ function ShellInner() {
         id="main"
         className="mx-auto w-full max-w-3xl flex-1 px-3 py-4 pb-28 sm:px-4"
       >
+        <CombatResultPanel />
         {tab === "map" && <MapTab />}
         {tab === "hero" && <HeroTab />}
         {tab === "craft" && <CraftTab />}

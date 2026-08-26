@@ -24,6 +24,7 @@ import {
 } from "./combat";
 import type {
   ActiveCombat,
+  CombatAftermath,
   CombatLogLine,
   CombatStance,
   EncounterDef,
@@ -35,7 +36,7 @@ import type {
   RewardTone,
 } from "./types";
 
-const LOG_CAP = 12;
+const LOG_CAP = 48;
 
 function uid(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
@@ -44,6 +45,53 @@ function uid(prefix: string) {
 function pushLog(combat: ActiveCombat, text: string): CombatLogLine[] {
   const line: CombatLogLine = { round: combat.round, text, at: Date.now() };
   return [...combat.log, line].slice(-LOG_CAP);
+}
+
+function combatTotals(combat: ActiveCombat) {
+  return {
+    damageDealt: combat.damageDealt ?? 0,
+    damageTaken: combat.damageTaken ?? 0,
+    heroHits: combat.heroHits ?? 0,
+    heroMisses: combat.heroMisses ?? 0,
+    enemyHits: combat.enemyHits ?? 0,
+    enemyMisses: combat.enemyMisses ?? 0,
+  };
+}
+
+function appendLogLines(
+  log: CombatLogLine[],
+  round: number,
+  lines: string[],
+): CombatLogLine[] {
+  const at = Date.now();
+  const next = [...log];
+  for (const text of lines) {
+    next.push({ round, text, at });
+  }
+  return next.slice(-LOG_CAP);
+}
+
+function buildAftermath(
+  combat: ActiveCombat,
+  enemyName: string,
+  success: boolean,
+  log: CombatLogLine[],
+  fled = false,
+): CombatAftermath {
+  const totals = combatTotals(combat);
+  return {
+    encounterId: combat.encounterId,
+    enemyId: combat.enemyId,
+    enemyName,
+    success,
+    fled,
+    log,
+    ...totals,
+    rounds: combat.round,
+    heroHpLeft: Math.max(0, combat.heroHp),
+    heroMaxHp: combat.heroMaxHp,
+    at: Date.now(),
+  };
 }
 
 function itemDropChance(enc: EncounterDef, wisdom: number) {
@@ -171,6 +219,12 @@ export function startCombat(
     heroArmor: sheet.armor,
     heroCrit: sheet.crit,
     heroAccuracy: sheet.accuracy,
+    damageDealt: 0,
+    damageTaken: 0,
+    heroHits: 0,
+    heroMisses: 0,
+    enemyHits: 0,
+    enemyMisses: 0,
   };
 
   return { ...next, active: combat, updatedAt: now };
@@ -187,12 +241,24 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
   const stats = computeStats(state);
   const now = Date.now();
   const fled = Math.random() < fleeChance(stats.charisma);
+  const delay =
+    now +
+    Math.max(
+      2500,
+      Math.round(
+        combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500,
+      ),
+    );
 
   if (!fled) {
     const attack = enemyAttack(enemy, combat.heroArmor);
     if (!attack.hit) {
+      const updated: ActiveCombat = {
+        ...combat,
+        enemyMisses: (combat.enemyMisses ?? 0) + 1,
+      };
       const log = pushLog(
-        combat,
+        updated,
         combatLine(
           enemy.id,
           "enemyMiss",
@@ -201,35 +267,43 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
       );
       return {
         ...state,
-        active: {
-          ...combat,
-          log,
-          nextRoundAt: now + Math.max(2500, Math.round(combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500)),
-        },
+        active: { ...updated, log, nextRoundAt: delay },
         updatedAt: now,
       };
     }
     const heroHp = Math.max(0, combat.heroHp - attack.dmg);
+    const updated: ActiveCombat = {
+      ...combat,
+      heroHp,
+      damageTaken: (combat.damageTaken ?? 0) + attack.dmg,
+      enemyHits: (combat.enemyHits ?? 0) + 1,
+    };
     const log = pushLog(
-      combat,
-      combatLine(enemy.id, "enemyHit", `${enemy.name} catches you as you turn.`),
+      updated,
+      combatLine(
+        enemy.id,
+        "enemyHit",
+        `${enemy.name} catches you for ${attack.dmg} damage.`,
+      ),
     );
     if (heroHp <= 0) {
-      return finishCombatDefeat(state, { ...combat, heroHp, log }, enc, now);
+      return finishCombatDefeat(state, { ...updated, log }, enc, now);
     }
     return {
       ...state,
-      active: {
-        ...combat,
-        heroHp,
-        log,
-        nextRoundAt: now + Math.max(2500, Math.round(combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500)),
-      },
+      active: { ...updated, log, nextRoundAt: delay },
       updatedAt: now,
     };
   }
 
   const scrap = Math.max(1, Math.floor(enc.goldReward * 0.15));
+  const totals = combatTotals(combat);
+  const log = appendLogLines(combat.log, combat.round, [
+    `You slip away from ${enemy.name}.`,
+    `Damage dealt ${totals.damageDealt} · taken ${totals.damageTaken}.`,
+    `Reward waiting — scrap gold +${scrap}.`,
+    "Claim your reward below when ready.",
+  ]);
   const reward: PendingReward = {
     kind: "combat",
     questId: "",
@@ -246,9 +320,44 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
     ...state,
     active: null,
     pendingReward: reward,
+    lastCombat: buildAftermath(
+      { ...combat, heroHp: Math.max(1, combat.heroHp) },
+      enemy.name,
+      false,
+      log,
+      true,
+    ),
     heroHp: Math.max(1, combat.heroHp),
     updatedAt: now,
   };
+}
+
+function rewardLogLines(reward: PendingReward): string[] {
+  const lines = [reward.narrative];
+  lines.push(
+    `Gold +${reward.gold}${
+      reward.bonusGold > 0 ? ` (bonus +${reward.bonusGold})` : ""
+    }.`,
+  );
+  if (reward.item) {
+    const name = ITEMS[reward.item.defId]?.name ?? "item";
+    lines.push(
+      `${reward.legendary ? "Legendary" : "Item"}: ${name} +${reward.item.power}.`,
+    );
+  }
+  if (reward.gem) {
+    lines.push(
+      `Gem: ${GEMS[reward.gem.defId]?.name ?? "gem"} T${reward.gem.tier}.`,
+    );
+  }
+  if (reward.streakBonus) lines.push(reward.streakBonus);
+  if (reward.unlockName) lines.push(`Path opened: ${reward.unlockName}.`);
+  if (reward.omen) lines.push(`Omen — ${reward.omen}`);
+  if (reward.npcQuote && reward.npcName) {
+    lines.push(`${reward.npcName}: “${reward.npcQuote}”`);
+  }
+  lines.push("Claim your reward below when ready.");
+  return lines;
 }
 
 function finishCombatVictory(
@@ -282,12 +391,17 @@ function finishCombatVictory(
   }
 
   let narrative: string;
-  if (tone === "jackpot") narrative = combatLine(enemy.id, "jackpot", `${enemy.name} falls spectacularly.`);
-  else if (tone === "close-win") narrative = combatLine(enemy.id, "closeWin", `You barely stand over ${enemy.name}.`);
-  else narrative = combatLine(enemy.id, "victory", `${enemy.name} is defeated.`);
+  if (tone === "jackpot") {
+    narrative = combatLine(enemy.id, "jackpot", `${enemy.name} falls spectacularly.`);
+  } else if (tone === "close-win") {
+    narrative = combatLine(enemy.id, "closeWin", `You barely stand over ${enemy.name}.`);
+  } else {
+    narrative = combatLine(enemy.id, "victory", `${enemy.name} is defeated.`);
+  }
 
   const spoken = combatNpcQuote(enc.locationId, tone);
   const nextSuccessStreak = (state.successStreak ?? 0) + 1;
+  const totals = combatTotals(combat);
 
   const reward: PendingReward = {
     kind: "combat",
@@ -313,10 +427,18 @@ function finishCombatVictory(
     legendary: item ? ITEMS[item.defId]?.rarity === "legendary" : false,
   };
 
+  const log = appendLogLines(combat.log, combat.round, [
+    "— Fight over —",
+    `You dealt ${totals.damageDealt} damage (${totals.heroHits} hits, ${totals.heroMisses} misses).`,
+    `${enemy.name} dealt ${totals.damageTaken} damage (${totals.enemyHits} hits, ${totals.enemyMisses} misses).`,
+    ...rewardLogLines(reward),
+  ]);
+
   return {
     ...state,
     active: null,
     pendingReward: reward,
+    lastCombat: buildAftermath(combat, enemy.name, true, log),
     heroHp: Math.max(0, combat.heroHp),
     wounded: false,
     updatedAt: now,
@@ -330,7 +452,6 @@ function finishCombatDefeat(
   now: number,
 ): GameState {
   const enemy = ENEMY_MAP[combat.enemyId]!;
-  const stats = computeStats(state);
   const nextFailStreak = (state.failStreak ?? 0) + 1;
   const omenText =
     nextFailStreak >= 2
@@ -338,6 +459,7 @@ function finishCombatDefeat(
       : undefined;
   const spoken = combatNpcQuote(enc.locationId, "fail");
   const gold = Math.max(1, Math.floor(enc.goldReward * 0.2));
+  const totals = combatTotals(combat);
 
   const reward: PendingReward = {
     kind: "combat",
@@ -354,10 +476,18 @@ function finishCombatDefeat(
     streak: 0,
   };
 
+  const log = appendLogLines(combat.log, combat.round, [
+    "— Fight over —",
+    `You dealt ${totals.damageDealt} damage (${totals.heroHits} hits, ${totals.heroMisses} misses).`,
+    `${enemy.name} dealt ${totals.damageTaken} damage (${totals.enemyHits} hits, ${totals.enemyMisses} misses).`,
+    ...rewardLogLines(reward),
+  ]);
+
   return {
     ...state,
     active: null,
     pendingReward: reward,
+    lastCombat: buildAftermath({ ...combat, heroHp: 0 }, enemy.name, false, log),
     heroHp: 0,
     wounded: true,
     updatedAt: now,
@@ -380,6 +510,12 @@ function advanceOneRound(state: GameState, now: number): GameState {
     ...combat,
     round: combat.round + 1,
     nextRoundAt: now + roundMs,
+    damageDealt: combat.damageDealt ?? 0,
+    damageTaken: combat.damageTaken ?? 0,
+    heroHits: combat.heroHits ?? 0,
+    heroMisses: combat.heroMisses ?? 0,
+    enemyHits: combat.enemyHits ?? 0,
+    enemyMisses: combat.enemyMisses ?? 0,
   };
 
   let heroHp = nextCombat.heroHp;
@@ -396,18 +532,33 @@ function advanceOneRound(state: GameState, now: number): GameState {
     );
     const eAtk = enemyAttack(enemy, nextCombat.heroArmor);
     if (!eAtk.hit) {
+      nextCombat = { ...nextCombat, enemyMisses: nextCombat.enemyMisses + 1 };
       log = pushLog(
         { ...nextCombat, log },
         combatLine(enemy.id, "enemyMiss", `${enemy.name} swings wide.`),
       );
     } else {
       heroHp -= eAtk.dmg;
+      nextCombat = {
+        ...nextCombat,
+        damageTaken: nextCombat.damageTaken + eAtk.dmg,
+        enemyHits: nextCombat.enemyHits + 1,
+      };
       log = pushLog(
         { ...nextCombat, log },
-        combatLine(enemy.id, "enemyHit", `${enemy.name} hits for ${eAtk.dmg}.`),
+        combatLine(
+          enemy.id,
+          "enemyHit",
+          `${enemy.name} hits for ${eAtk.dmg} damage.`,
+        ),
       );
       if (heroHp <= 0) {
-        return finishCombatDefeat(state, { ...nextCombat, heroHp, log }, enc, now);
+        return finishCombatDefeat(
+          state,
+          { ...nextCombat, heroHp, log },
+          enc,
+          now,
+        );
       }
     }
   }
@@ -421,6 +572,7 @@ function advanceOneRound(state: GameState, now: number): GameState {
     enemy,
   );
   if (!hit.hit) {
+    nextCombat = { ...nextCombat, heroMisses: nextCombat.heroMisses + 1 };
     log = pushLog(
       { ...nextCombat, log },
       combatLine(enemy.id, "heroMiss", `You miss ${enemy.name}.`),
@@ -428,11 +580,20 @@ function advanceOneRound(state: GameState, now: number): GameState {
   } else {
     lastHitCrit = hit.crit;
     enemyHp -= hit.dmg;
+    nextCombat = {
+      ...nextCombat,
+      damageDealt: nextCombat.damageDealt + hit.dmg,
+      heroHits: nextCombat.heroHits + 1,
+    };
     log = pushLog(
       { ...nextCombat, log },
       hit.crit
-        ? combatLine(enemy.id, "heroCrit", `Critical hit for ${hit.dmg}!`)
-        : combatLine(enemy.id, "heroHit", `You hit for ${hit.dmg}.`),
+        ? combatLine(
+            enemy.id,
+            "heroCrit",
+            `Critical hit for ${hit.dmg} damage!`,
+          )
+        : combatLine(enemy.id, "heroHit", `You hit for ${hit.dmg} damage.`),
     );
 
     if (enemyHp <= 0) {
@@ -449,18 +610,33 @@ function advanceOneRound(state: GameState, now: number): GameState {
   if (!swiftFirst) {
     const eAtk = enemyAttack(enemy, nextCombat.heroArmor);
     if (!eAtk.hit) {
+      nextCombat = { ...nextCombat, enemyMisses: nextCombat.enemyMisses + 1 };
       log = pushLog(
         { ...nextCombat, log },
         combatLine(enemy.id, "enemyMiss", `${enemy.name} misses you.`),
       );
     } else {
       heroHp -= eAtk.dmg;
+      nextCombat = {
+        ...nextCombat,
+        damageTaken: nextCombat.damageTaken + eAtk.dmg,
+        enemyHits: nextCombat.enemyHits + 1,
+      };
       log = pushLog(
         { ...nextCombat, log },
-        combatLine(enemy.id, "enemyHit", `${enemy.name} hits for ${eAtk.dmg}.`),
+        combatLine(
+          enemy.id,
+          "enemyHit",
+          `${enemy.name} hits for ${eAtk.dmg} damage.`,
+        ),
       );
       if (heroHp <= 0) {
-        return finishCombatDefeat(state, { ...nextCombat, heroHp, log }, enc, now);
+        return finishCombatDefeat(
+          state,
+          { ...nextCombat, heroHp, log },
+          enc,
+          now,
+        );
       }
     }
   }

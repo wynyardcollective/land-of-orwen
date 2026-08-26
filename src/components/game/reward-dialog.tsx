@@ -26,6 +26,8 @@ export function RewardDialog() {
   const { state, claim } = useGame();
   const reward = state.pendingReward;
   const isCombat = reward?.kind === "combat";
+  // Combat rewards use CombatResultPanel when a fight log is available
+  const useModal = !!reward && !(isCombat && state.lastCombat);
   const quest = reward && !isCombat ? QUEST_MAP[reward.questId] : null;
   const enc =
     reward && isCombat && reward.encounterId
@@ -34,7 +36,7 @@ export function RewardDialog() {
   const label = isCombat ? enc?.name ?? "Combat" : quest?.name ?? "Quest";
 
   return (
-    <Dialog open={!!reward}>
+    <Dialog open={useModal}>
       <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md" showCloseButton={false}>
         {reward && (
           <>

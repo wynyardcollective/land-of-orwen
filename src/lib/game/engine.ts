@@ -362,6 +362,7 @@ export function claimReward(state: GameState): GameState {
     lastUnlock,
     campfireMessages,
     pendingReward: null,
+    lastCombat: null,
     wounded,
     updatedAt: Date.now(),
   };

@@ -662,6 +662,8 @@ function WaitScene({
     const enemy = ENEMY_MAP[action.enemyId];
     const heroPct = Math.round((action.heroHp / action.heroMaxHp) * 100);
     const enemyPct = Math.round((action.enemyHp / action.enemyMaxHp) * 100);
+    const dealt = action.damageDealt ?? 0;
+    const taken = action.damageTaken ?? 0;
     return (
       <Card>
         <CardHeader className="pb-2">
@@ -679,6 +681,12 @@ function WaitScene({
               </span>
             </div>
             <Progress value={heroPct} aria-label="Your health" />
+            <p className="text-[11px] text-muted-foreground">
+              Damage dealt this fight:{" "}
+              <strong className="text-emerald-200">{dealt}</strong>
+              {" · "}
+              hits {action.heroHits ?? 0} / misses {action.heroMisses ?? 0}
+            </p>
           </div>
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
@@ -688,13 +696,19 @@ function WaitScene({
               </span>
             </div>
             <Progress value={enemyPct} aria-label="Enemy health" />
+            <p className="text-[11px] text-muted-foreground">
+              Damage taken from them:{" "}
+              <strong className="text-orange-200">{taken}</strong>
+              {" · "}
+              hits {action.enemyHits ?? 0} / misses {action.enemyMisses ?? 0}
+            </p>
           </div>
           <div
-            className="max-h-32 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 p-2 text-xs leading-relaxed"
+            className="max-h-52 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 p-2 text-xs leading-relaxed"
             aria-live="polite"
           >
-            {action.log.slice(-6).map((line) => (
-              <p key={`${line.at}-${line.round}`}>{line.text}</p>
+            {action.log.map((line, i) => (
+              <p key={`${line.at}-${line.round}-${i}`}>{line.text}</p>
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
