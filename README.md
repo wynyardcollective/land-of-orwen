@@ -15,7 +15,18 @@ A relaxing browser idle RPG inspired by **Land of Livia** — original world, st
 - Idle auto-combat at mid/late locations — paced rounds, stance vs enemy weakness, flee/negotiate via Charisma
 - Persistent health between fights; remedies and tavern rests restore HP for gold
 
-## Local development
+## AdSense / public pages
+
+Public marketing and policy pages (no login required):
+
+- `/` — landing
+- `/about`, `/privacy`, `/terms`
+- `/lore` and `/lore/[slug]` — crawlable journal articles
+- `/robots.txt`, `/sitemap.xml`
+
+The game itself lives at `/play` (account required).
+
+
 
 ```bash
 npm install

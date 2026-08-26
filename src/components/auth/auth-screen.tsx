@@ -172,6 +172,24 @@ export function AuthScreen() {
             )}
           </p>
         </form>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          <a href="/" className="hover:text-amber-200 hover:underline">
+            Home
+          </a>
+          {" · "}
+          <a href="/about" className="hover:text-amber-200 hover:underline">
+            About
+          </a>
+          {" · "}
+          <a href="/privacy" className="hover:text-amber-200 hover:underline">
+            Privacy
+          </a>
+          {" · "}
+          <a href="/terms" className="hover:text-amber-200 hover:underline">
+            Terms
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -14,9 +14,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Land of Orwen",
+  metadataBase: new URL("https://rough.co.nz"),
+  title: {
+    default: "The Land of Orwen",
+    template: "%s · The Land of Orwen",
+  },
   description:
     "A relaxing idle RPG inspired by Land of Livia — explore Orwen, run timed quests, craft gems, and save progress to the cloud.",
+  openGraph: {
+    type: "website",
+    locale: "en_NZ",
+    url: "https://rough.co.nz",
+    siteName: "The Land of Orwen",
+    title: "The Land of Orwen",
+    description:
+      "A relaxing idle RPG of drought, rumor, and returning rain — free in the browser.",
+  },
 };
 
 export const viewport: Viewport = {
