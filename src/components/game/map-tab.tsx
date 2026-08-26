@@ -640,6 +640,17 @@ function TavernPanel({
   );
 }
 
+function CombatLogLineText({ text }: { text: string }) {
+  const match = text.match(/^(.*?)(\s*\(\d+\s*damage\))\s*$/i);
+  if (!match) return <>{text}</>;
+  return (
+    <>
+      {match[1]}
+      <span className="font-semibold text-amber-100">{match[2]}</span>
+    </>
+  );
+}
+
 function WaitScene({
   pct,
   remaining,
@@ -708,7 +719,9 @@ function WaitScene({
             aria-live="polite"
           >
             {action.log.map((line, i) => (
-              <p key={`${line.at}-${line.round}-${i}`}>{line.text}</p>
+              <p key={`${line.at}-${line.round}-${i}`}>
+                <CombatLogLineText text={line.text} />
+              </p>
             ))}
           </div>
           <p className="text-xs text-muted-foreground">

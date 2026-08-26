@@ -47,6 +47,20 @@ function pushLog(combat: ActiveCombat, text: string): CombatLogLine[] {
   return [...combat.log, line].slice(-LOG_CAP);
 }
 
+/** Flavor line + explicit damage for the turn (flavor pools omit numbers). */
+function turnDamageLog(
+  enemyId: string,
+  kind: "heroHit" | "heroCrit" | "enemyHit" | "heroMiss" | "enemyMiss",
+  dmg: number,
+  fallback: string,
+): string {
+  const flavor = combatLine(enemyId, kind, fallback);
+  if (/\(\s*\d+\s*damage\s*\)|\d+\s+damage/i.test(flavor)) {
+    return flavor;
+  }
+  return `${flavor} (${dmg} damage)`;
+}
+
 function combatTotals(combat: ActiveCombat) {
   return {
     damageDealt: combat.damageDealt ?? 0,
@@ -259,9 +273,10 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
       };
       const log = pushLog(
         updated,
-        combatLine(
+        turnDamageLog(
           enemy.id,
           "enemyMiss",
+          0,
           `${enemy.name} lunges as you turn — and misses.`,
         ),
       );
@@ -280,10 +295,11 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
     };
     const log = pushLog(
       updated,
-      combatLine(
+      turnDamageLog(
         enemy.id,
         "enemyHit",
-        `${enemy.name} catches you for ${attack.dmg} damage.`,
+        attack.dmg,
+        `${enemy.name} catches you as you turn.`,
       ),
     );
     if (heroHp <= 0) {
@@ -535,7 +551,12 @@ function advanceOneRound(state: GameState, now: number): GameState {
       nextCombat = { ...nextCombat, enemyMisses: nextCombat.enemyMisses + 1 };
       log = pushLog(
         { ...nextCombat, log },
-        combatLine(enemy.id, "enemyMiss", `${enemy.name} swings wide.`),
+        turnDamageLog(
+          enemy.id,
+          "enemyMiss",
+          0,
+          `${enemy.name} swings wide.`,
+        ),
       );
     } else {
       heroHp -= eAtk.dmg;
@@ -546,10 +567,11 @@ function advanceOneRound(state: GameState, now: number): GameState {
       };
       log = pushLog(
         { ...nextCombat, log },
-        combatLine(
+        turnDamageLog(
           enemy.id,
           "enemyHit",
-          `${enemy.name} hits for ${eAtk.dmg} damage.`,
+          eAtk.dmg,
+          `${enemy.name} hits you.`,
         ),
       );
       if (heroHp <= 0) {
@@ -575,7 +597,7 @@ function advanceOneRound(state: GameState, now: number): GameState {
     nextCombat = { ...nextCombat, heroMisses: nextCombat.heroMisses + 1 };
     log = pushLog(
       { ...nextCombat, log },
-      combatLine(enemy.id, "heroMiss", `You miss ${enemy.name}.`),
+      turnDamageLog(enemy.id, "heroMiss", 0, `You miss ${enemy.name}.`),
     );
   } else {
     lastHitCrit = hit.crit;
@@ -588,12 +610,13 @@ function advanceOneRound(state: GameState, now: number): GameState {
     log = pushLog(
       { ...nextCombat, log },
       hit.crit
-        ? combatLine(
+        ? turnDamageLog(
             enemy.id,
             "heroCrit",
-            `Critical hit for ${hit.dmg} damage!`,
+            hit.dmg,
+            `Critical hit!`,
           )
-        : combatLine(enemy.id, "heroHit", `You hit for ${hit.dmg} damage.`),
+        : turnDamageLog(enemy.id, "heroHit", hit.dmg, `You land a hit.`),
     );
 
     if (enemyHp <= 0) {
@@ -613,7 +636,12 @@ function advanceOneRound(state: GameState, now: number): GameState {
       nextCombat = { ...nextCombat, enemyMisses: nextCombat.enemyMisses + 1 };
       log = pushLog(
         { ...nextCombat, log },
-        combatLine(enemy.id, "enemyMiss", `${enemy.name} misses you.`),
+        turnDamageLog(
+          enemy.id,
+          "enemyMiss",
+          0,
+          `${enemy.name} misses you.`,
+        ),
       );
     } else {
       heroHp -= eAtk.dmg;
@@ -624,10 +652,11 @@ function advanceOneRound(state: GameState, now: number): GameState {
       };
       log = pushLog(
         { ...nextCombat, log },
-        combatLine(
+        turnDamageLog(
           enemy.id,
           "enemyHit",
-          `${enemy.name} hits for ${eAtk.dmg} damage.`,
+          eAtk.dmg,
+          `${enemy.name} hits you.`,
         ),
       );
       if (heroHp <= 0) {

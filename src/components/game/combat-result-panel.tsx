@@ -9,6 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
+function CombatLogDamageText({ text }: { text: string }) {
+  const match = text.match(/^(.*?)(\s*\(\d+\s*damage\))\s*$/i);
+  if (!match) return <>{text}</>;
+  return (
+    <>
+      {match[1]}
+      <span className="font-semibold text-amber-100">{match[2]}</span>
+    </>
+  );
+}
+
 const TONE_LABEL: Record<string, string> = {
   success: "Victory",
   fail: "Defeat",
@@ -111,7 +122,7 @@ export function CombatResultPanel() {
                   : undefined
               }
             >
-              {line.text}
+              <CombatLogDamageText text={line.text} />
             </p>
           ))}
           <div ref={logEndRef} />
