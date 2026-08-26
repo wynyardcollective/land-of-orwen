@@ -1,20 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { loadLocalSave } from "@/lib/game/save";
 
 type Mode = "login" | "register";
 
 export function AuthScreen() {
-  const { login, register, error, clearError, loading } = useAuth();
+  const { login, register, startGuest, error, clearError, loading } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [heroName, setHeroName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [localHero, setLocalHero] = useState("Wanderer");
+  const [hasLocalSave, setHasLocalSave] = useState(false);
+
+  useEffect(() => {
+    const local = loadLocalSave();
+    setHasLocalSave(!!local);
+    if (local?.heroName?.trim()) setLocalHero(local.heroName.trim());
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +32,13 @@ export function AuthScreen() {
       if (mode === "login") {
         await login(email, password);
       } else {
-        await register(email, password, heroName || "Wanderer");
+        const local = loadLocalSave();
+        await register(
+          email,
+          password,
+          heroName || local?.heroName || "Wanderer",
+          { state: local },
+        );
       }
     } finally {
       setBusy(false);
@@ -71,10 +86,30 @@ export function AuthScreen() {
           </p>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             {mode === "login"
-              ? "Sign in to continue your journey."
-              : "Create an account to begin wandering Orwen."}
+              ? "Sign in to continue your journey — or try guest mode first."
+              : "Create an account to keep progress across devices."}
           </p>
         </header>
+
+        <div className="mb-4 space-y-2 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-lg backdrop-blur sm:p-6">
+          <h2 className="text-lg font-semibold">Play first</h2>
+          <p className="text-sm text-muted-foreground">
+            {hasLocalSave
+              ? "A guest journey is saved in this browser. Continue without signing in, then create an account later to sync to the cloud."
+              : "Wander Orwen without an account. Progress stays on this device until you create an account."}
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-11 w-full"
+            onClick={() => {
+              clearError();
+              startGuest();
+            }}
+          >
+            {hasLocalSave ? "Continue as guest" : "Play as guest"}
+          </Button>
+        </div>
 
         <form
           onSubmit={onSubmit}
@@ -86,18 +121,26 @@ export function AuthScreen() {
           </h1>
 
           {mode === "register" && (
-            <div className="space-y-2">
-              <Label htmlFor="hero-name">Hero name</Label>
-              <Input
-                id="hero-name"
-                name="heroName"
-                autoComplete="nickname"
-                maxLength={24}
-                placeholder="Wanderer"
-                value={heroName}
-                onChange={(e) => setHeroName(e.target.value)}
-              />
-            </div>
+            <>
+              {hasLocalSave && (
+                <p className="rounded-lg border border-amber-800/40 bg-amber-950/30 px-3 py-2 text-xs text-amber-100/90">
+                  Your guest progress on this device will be saved to the new
+                  account.
+                </p>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="hero-name">Hero name</Label>
+                <Input
+                  id="hero-name"
+                  name="heroName"
+                  autoComplete="nickname"
+                  maxLength={24}
+                  placeholder={localHero}
+                  value={heroName}
+                  onChange={(e) => setHeroName(e.target.value)}
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-2">

@@ -14,6 +14,7 @@ import type { TabId } from "@/lib/game";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/components/auth/auth-provider";
 import { AuthScreen } from "@/components/auth/auth-screen";
+import { getOrCreatePlayerId, loadLocalSave } from "@/lib/game";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "map", label: "Map" },
@@ -83,7 +84,7 @@ function ShellInner() {
 }
 
 function AuthenticatedGame() {
-  const { user, loading } = useAuth();
+  const { user, isGuest, loading } = useAuth();
 
   if (loading) {
     return (
@@ -93,15 +94,26 @@ function AuthenticatedGame() {
     );
   }
 
-  if (!user) {
-    return <AuthScreen />;
+  if (user) {
+    return (
+      <GameProvider playerId={user.playerId} heroName={user.heroName}>
+        <ShellInner />
+      </GameProvider>
+    );
   }
 
-  return (
-    <GameProvider playerId={user.playerId} heroName={user.heroName}>
-      <ShellInner />
-    </GameProvider>
-  );
+  if (isGuest) {
+    const local = loadLocalSave();
+    const playerId = local?.playerId ?? getOrCreatePlayerId();
+    const heroName = local?.heroName?.trim() || "Wanderer";
+    return (
+      <GameProvider playerId={playerId} heroName={heroName} guest>
+        <ShellInner />
+      </GameProvider>
+    );
+  }
+
+  return <AuthScreen />;
 }
 
 export function GameShell() {

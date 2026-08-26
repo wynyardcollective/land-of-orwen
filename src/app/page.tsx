@@ -78,9 +78,9 @@ export default function HomePage() {
             rest to recover HP.
           </li>
           <li>
-            <strong className="text-foreground">Cloud saves</strong> — create an
-            account, then progress syncs to Cloudflare-backed storage with a
-            local cache.
+            <strong className="text-foreground">Cloud saves</strong> — play as a
+            guest first, then create an account later so progress syncs to
+            Cloudflare-backed storage with a local cache.
           </li>
         </ul>
       </section>
@@ -127,9 +127,9 @@ export default function HomePage() {
       <section className="mt-12 rounded-xl border border-border/60 bg-muted/20 p-5">
         <h2 className="text-lg font-semibold text-amber-100">Ready to wander?</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Create a free account, name your hero, and begin at Merrick&apos;s
-          Orchard. Settings include Swift pace for shorter waits while you learn
-          the map.
+          Try guest mode with no signup, or create a free account to sync across
+          devices. Begin at Merrick&apos;s Orchard — Settings include Swift pace
+          for shorter waits while you learn the map.
         </p>
         <Link
           href="/play"

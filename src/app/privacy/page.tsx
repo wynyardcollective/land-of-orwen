@@ -28,6 +28,11 @@ export default function PrivacyPage() {
             when you register.
           </li>
           <li>
+            <strong className="text-foreground">Guest play</strong> — if you
+            choose guest mode, progress is stored only in your browser
+            (localStorage) until you create an account.
+          </li>
+          <li>
             <strong className="text-foreground">Game save data</strong> —
             progress such as location, inventory, quests, and settings, stored
             so you can continue across devices while signed in.

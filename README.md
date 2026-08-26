@@ -11,7 +11,7 @@ A relaxing browser idle RPG inspired by **Land of Livia** — original world, st
 - Journal story beats and a cozy campfire board
 - Accessibility: Atkinson Hyperlegible, font scale, high contrast, live regions, keyboard-friendly controls
 - Player saves via Cloudflare D1 (with local file fallback for `next dev`)
-- Email + password accounts required before play (httpOnly session cookie)
+- Email + password accounts, plus guest mode (local-only play until you register)
 - Idle auto-combat at mid/late locations — paced rounds, stance vs enemy weakness, flee/negotiate via Charisma
 - Persistent health between fights; remedies and tavern rests restore HP for gold
 
@@ -24,7 +24,7 @@ Public marketing and policy pages (no login required):
 - `/lore` and `/lore/[slug]` — crawlable journal articles
 - `/robots.txt`, `/sitemap.xml`
 
-The game itself lives at `/play` (account required).
+The game lives at `/play`. You can **Play as guest** or sign in / create an account.
 
 
 
@@ -39,16 +39,17 @@ Idle pace defaults to **Swift** so waits are short for demos. Switch to Balanced
 
 Progress is written to:
 
-1. `localStorage` immediately (cache for the signed-in account)
-2. `PUT /api/save` (debounced) — requires a session cookie; uses `.data/saves/` when D1 is unavailable, or Cloudflare D1 in production
+1. `localStorage` immediately (guest and signed-in play)
+2. `PUT /api/save` (debounced) when signed in — requires a session cookie; uses `.data/saves/` when D1 is unavailable, or Cloudflare D1 in production
 
 ## Accounts
 
-Playing requires an account. Open the site and **Create account** with email + password (min 8 characters), or **Sign in**.
+Open `/play` and choose **Play as guest**, **Create account**, or **Sign in**.
 
+- Guest progress stays on this device; create an account anytime (auth screen or Settings) to keep it in the cloud
 - Passwords are bcrypt-hashed; sessions last 30 days (httpOnly cookie `orwen_session`)
-- Saves are bound to the account — `/api/save` rejects unauthenticated requests
-- Sign out from **Settings**
+- Cloud saves are bound to the account — `/api/save` rejects unauthenticated requests
+- Sign out / end guest session from **Settings**
 - Email verification / password reset are not included yet (no email provider configured)
 
 Local auth data (when D1 is unavailable) lives under `.data/auth/`.

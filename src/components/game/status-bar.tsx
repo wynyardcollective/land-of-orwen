@@ -48,11 +48,13 @@ export function StatusBar() {
             ? "Saving…"
             : syncStatus === "saved"
               ? "Cloud saved"
-              : syncStatus === "offline"
-                ? "Local only"
-                : syncStatus === "error"
-                  ? "Save error"
-                  : "Ready"}
+              : syncStatus === "guest"
+                ? "Guest · local"
+                : syncStatus === "offline"
+                  ? "Local only"
+                  : syncStatus === "error"
+                    ? "Save error"
+                    : "Ready"}
         </Badge>
         <AssistPanel />
         <SettingsDialog />

@@ -6,11 +6,34 @@ import {
   isValidPassword,
   sessionCookieOptions,
 } from "@/lib/server/auth";
-import { createInitialState } from "@/lib/game/save";
+import { createInitialState, normalizeState } from "@/lib/game/save";
+import type { GameState } from "@/lib/game/types";
 import { getSaveStore } from "@/lib/server/save-store";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+
+function guestStateToSeed(
+  raw: unknown,
+  playerId: string,
+  heroName: string,
+): GameState | null {
+  if (!raw || typeof raw !== "object") return null;
+  const state = raw as Partial<GameState>;
+  if (state.version !== 1) return null;
+  if (typeof state.updatedAt !== "number") return null;
+  try {
+    return normalizeState({
+      ...(state as GameState),
+      version: 1,
+      playerId,
+      heroName,
+      updatedAt: Date.now(),
+    });
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -18,6 +41,7 @@ export async function POST(request: Request) {
       email?: string;
       password?: string;
       heroName?: string;
+      state?: unknown;
     };
     const email = body.email ?? "";
     const password = body.password ?? "";
@@ -46,7 +70,8 @@ export async function POST(request: Request) {
     const user = await auth.createUser({ email, passwordHash, heroName });
 
     const saveStore = await getSaveStore();
-    const initial = createInitialState(user.playerId, heroName);
+    const fromGuest = guestStateToSeed(body.state, user.playerId, user.heroName);
+    const initial = fromGuest ?? createInitialState(user.playerId, heroName);
     await saveStore.put(initial);
 
     const { token, expiresAt } = await createSessionForUser(user.id);

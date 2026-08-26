@@ -44,10 +44,11 @@ export default function AboutPage() {
         </p>
         <h2 className="pt-2 text-xl font-semibold text-amber-100">Accounts & saves</h2>
         <p className="leading-relaxed text-muted-foreground">
-          Play requires a free email and password account. Saves are bound to
-          that account and stored using Cloudflare infrastructure, with a local
-          browser cache for responsiveness. You can sign out from Settings inside
-          the game.
+          You can play as a guest with progress saved in your browser, or create
+          a free email and password account. Account saves are stored using
+          Cloudflare infrastructure, with a local browser cache for
+          responsiveness. Create an account from Settings anytime to keep guest
+          progress in the cloud.
         </p>
         <h2 className="pt-2 text-xl font-semibold text-amber-100">Accessibility</h2>
         <p className="leading-relaxed text-muted-foreground">

@@ -45,7 +45,8 @@ import {
 interface GameContextValue {
   state: GameState;
   ready: boolean;
-  syncStatus: "idle" | "saving" | "saved" | "offline" | "error";
+  isGuest: boolean;
+  syncStatus: "idle" | "saving" | "saved" | "offline" | "error" | "guest";
   announcement: string;
   tab: TabId;
   setTab: (tab: TabId) => void;
@@ -106,14 +107,18 @@ export function GameProvider({
   children,
   playerId,
   heroName,
+  guest = false,
 }: {
   children: ReactNode;
   playerId: string;
   heroName: string;
+  guest?: boolean;
 }) {
   const [state, setState] = useState<GameState | null>(null);
   const [ready, setReady] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<GameContextValue["syncStatus"]>("idle");
+  const [syncStatus, setSyncStatus] = useState<GameContextValue["syncStatus"]>(
+    guest ? "guest" : "idle",
+  );
   const [announcement, setAnnouncement] = useState("");
   const [tab, setTab] = useState<TabId>("map");
   const [now, setNow] = useState(() => Date.now());
@@ -126,7 +131,7 @@ export function GameProvider({
       const localRaw = loadLocalSave();
       const local =
         localRaw && localRaw.playerId === playerId ? localRaw : null;
-      const remote = await fetchRemote();
+      const remote = guest ? null : await fetchRemote();
       let initial: GameState;
       if (remote && local) {
         initial = remote.updatedAt >= local.updatedAt ? remote : local;
@@ -143,28 +148,36 @@ export function GameProvider({
       if (!cancelled) {
         setState(initial);
         writeLocalSave(initial);
+        setSyncStatus(guest ? "guest" : "idle");
         setReady(true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [playerId, heroName]);
+  }, [playerId, heroName, guest]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, []);
 
-  const persist = useCallback((next: GameState) => {
-    writeLocalSave(next);
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    setSyncStatus("saving");
-    saveTimer.current = setTimeout(async () => {
-      const ok = await pushRemote(next);
-      setSyncStatus(ok ? "saved" : "offline");
-    }, 600);
-  }, []);
+  const persist = useCallback(
+    (next: GameState) => {
+      writeLocalSave(next);
+      if (guest) {
+        setSyncStatus("guest");
+        return;
+      }
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      setSyncStatus("saving");
+      saveTimer.current = setTimeout(async () => {
+        const ok = await pushRemote(next);
+        setSyncStatus(ok ? "saved" : "offline");
+      }, 600);
+    },
+    [guest],
+  );
 
   useEffect(() => {
     if (!state) return;
@@ -325,6 +338,7 @@ export function GameProvider({
     return {
       state,
       ready,
+      isGuest: guest,
       syncStatus,
       announcement,
       tab,
@@ -394,6 +408,7 @@ export function GameProvider({
   }, [
     state,
     ready,
+    guest,
     syncStatus,
     announcement,
     tab,
