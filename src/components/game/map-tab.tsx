@@ -838,6 +838,7 @@ function EncounterCard({
   const risk = combatRiskBand(sheet, enemy, resolved);
   const riskVariant =
     risk === "safe" ? "secondary" : risk === "even" ? "outline" : "destructive";
+  const hitPct = Math.round(sheet.accuracy * 100);
 
   return (
     <li className="rounded-xl border border-red-900/40 bg-card p-3">
@@ -852,6 +853,10 @@ function EncounterCard({
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{encounter.description}</p>
       <p className="mt-1 text-xs text-muted-foreground italic">{enemy.description}</p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        Your hit chance with this stance: ~{hitPct}% · Damage is modest — expect
+        longer fights.
+      </p>
       <div className="mt-3 space-y-2">
         <Label htmlFor={`stance-${encounter.id}`}>Stance</Label>
         <select

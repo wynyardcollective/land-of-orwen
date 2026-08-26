@@ -71,7 +71,8 @@ export function AssistPanel() {
             <p className="text-muted-foreground">
               In combat, pick a stance that matches the enemy&apos;s weakness —
               Strike for Strength foes, Skirmish for Dexterity, Hex for
-              Intelligence.
+              Intelligence. Attacks can miss; Dexterity raises your hit chance,
+              and damage is intentionally modest.
             </p>
             <p className="text-muted-foreground">
               Health carries between fights. Use remedies from your pack or rest

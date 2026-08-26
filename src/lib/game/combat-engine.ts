@@ -17,9 +17,9 @@ import {
   combatRoundDuration,
   currentHeroHp,
   deriveCombatSheet,
-  enemyDamage,
+  enemyAttack,
   fleeChance,
-  heroDamage,
+  heroAttack,
   resolveStance,
 } from "./combat";
 import type {
@@ -170,6 +170,7 @@ export function startCombat(
     heroOffense: sheet.offense,
     heroArmor: sheet.armor,
     heroCrit: sheet.crit,
+    heroAccuracy: sheet.accuracy,
   };
 
   return { ...next, active: combat, updatedAt: now };
@@ -188,8 +189,27 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
   const fled = Math.random() < fleeChance(stats.charisma);
 
   if (!fled) {
-    const dmg = enemyDamage(enemy, combat.heroArmor, combat.stance);
-    const heroHp = Math.max(0, combat.heroHp - dmg);
+    const attack = enemyAttack(enemy, combat.heroArmor);
+    if (!attack.hit) {
+      const log = pushLog(
+        combat,
+        combatLine(
+          enemy.id,
+          "enemyMiss",
+          `${enemy.name} lunges as you turn — and misses.`,
+        ),
+      );
+      return {
+        ...state,
+        active: {
+          ...combat,
+          log,
+          nextRoundAt: now + Math.max(2500, Math.round(combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500)),
+        },
+        updatedAt: now,
+      };
+    }
+    const heroHp = Math.max(0, combat.heroHp - attack.dmg);
     const log = pushLog(
       combat,
       combatLine(enemy.id, "enemyHit", `${enemy.name} catches you as you turn.`),
@@ -199,7 +219,12 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
     }
     return {
       ...state,
-      active: { ...combat, heroHp, log, nextRoundAt: now + Math.max(2500, Math.round(combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500)) },
+      active: {
+        ...combat,
+        heroHp,
+        log,
+        nextRoundAt: now + Math.max(2500, Math.round(combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500)),
+      },
       updatedAt: now,
     };
   }
@@ -369,52 +394,74 @@ function advanceOneRound(state: GameState, now: number): GameState {
       nextCombat,
       combatLine(enemy.id, "swiftFirst", `${enemy.name} strikes first.`),
     );
-    const edmg = enemyDamage(enemy, nextCombat.heroArmor, nextCombat.stance);
-    heroHp -= edmg;
-    log = pushLog(
-      { ...nextCombat, log },
-      combatLine(enemy.id, "enemyHit", `${enemy.name} hits for ${edmg}.`),
-    );
-    if (heroHp <= 0) {
-      return finishCombatDefeat(state, { ...nextCombat, heroHp, log }, enc, now);
+    const eAtk = enemyAttack(enemy, nextCombat.heroArmor);
+    if (!eAtk.hit) {
+      log = pushLog(
+        { ...nextCombat, log },
+        combatLine(enemy.id, "enemyMiss", `${enemy.name} swings wide.`),
+      );
+    } else {
+      heroHp -= eAtk.dmg;
+      log = pushLog(
+        { ...nextCombat, log },
+        combatLine(enemy.id, "enemyHit", `${enemy.name} hits for ${eAtk.dmg}.`),
+      );
+      if (heroHp <= 0) {
+        return finishCombatDefeat(state, { ...nextCombat, heroHp, log }, enc, now);
+      }
     }
   }
 
-  const hit = heroDamage(
+  const hit = heroAttack(
     nextCombat.heroOffense,
     nextCombat.heroCrit,
+    nextCombat.heroAccuracy ?? 0.72,
     enemy.armor,
     nextCombat.stance,
     enemy,
   );
-  lastHitCrit = hit.crit;
-  enemyHp -= hit.dmg;
-  log = pushLog(
-    { ...nextCombat, log },
-    hit.crit
-      ? combatLine(enemy.id, "heroCrit", `Critical hit for ${hit.dmg}!`)
-      : combatLine(enemy.id, "heroHit", `You hit for ${hit.dmg}.`),
-  );
-
-  if (enemyHp <= 0) {
-    return finishCombatVictory(
-      state,
-      { ...nextCombat, heroHp, enemyHp: 0, log },
-      enc,
-      now,
-      lastHitCrit,
+  if (!hit.hit) {
+    log = pushLog(
+      { ...nextCombat, log },
+      combatLine(enemy.id, "heroMiss", `You miss ${enemy.name}.`),
     );
+  } else {
+    lastHitCrit = hit.crit;
+    enemyHp -= hit.dmg;
+    log = pushLog(
+      { ...nextCombat, log },
+      hit.crit
+        ? combatLine(enemy.id, "heroCrit", `Critical hit for ${hit.dmg}!`)
+        : combatLine(enemy.id, "heroHit", `You hit for ${hit.dmg}.`),
+    );
+
+    if (enemyHp <= 0) {
+      return finishCombatVictory(
+        state,
+        { ...nextCombat, heroHp, enemyHp: 0, log },
+        enc,
+        now,
+        lastHitCrit,
+      );
+    }
   }
 
   if (!swiftFirst) {
-    const edmg = enemyDamage(enemy, nextCombat.heroArmor, nextCombat.stance);
-    heroHp -= edmg;
-    log = pushLog(
-      { ...nextCombat, log },
-      combatLine(enemy.id, "enemyHit", `${enemy.name} hits for ${edmg}.`),
-    );
-    if (heroHp <= 0) {
-      return finishCombatDefeat(state, { ...nextCombat, heroHp, log }, enc, now);
+    const eAtk = enemyAttack(enemy, nextCombat.heroArmor);
+    if (!eAtk.hit) {
+      log = pushLog(
+        { ...nextCombat, log },
+        combatLine(enemy.id, "enemyMiss", `${enemy.name} misses you.`),
+      );
+    } else {
+      heroHp -= eAtk.dmg;
+      log = pushLog(
+        { ...nextCombat, log },
+        combatLine(enemy.id, "enemyHit", `${enemy.name} hits for ${eAtk.dmg}.`),
+      );
+      if (heroHp <= 0) {
+        return finishCombatDefeat(state, { ...nextCombat, heroHp, log }, enc, now);
+      }
     }
   }
 

@@ -186,10 +186,11 @@ export interface ActiveCombat {
   nextRoundAt: number;
   log: CombatLogLine[];
   equippedSnapshot: Partial<Record<EquipSlot, string>>;
-  /** Snapshot offense/armor/crit at fight start */
+  /** Snapshot offense/armor/crit/accuracy at fight start */
   heroOffense: number;
   heroArmor: number;
   heroCrit: number;
+  heroAccuracy: number;
 }
 
 export interface ActiveTavern {

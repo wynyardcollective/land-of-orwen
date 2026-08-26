@@ -15,7 +15,12 @@ export interface CombatSheet {
   offense: number;
   armor: number;
   crit: number;
+  /** Chance to land a hit (0–1) */
+  accuracy: number;
 }
+
+/** Global multiplier applied to raw damage before armor. */
+export const DAMAGE_SCALE = 0.62;
 
 export function wardenGearPower(state: GameState): number {
   let total = 0;
@@ -29,6 +34,30 @@ export function wardenGearPower(state: GameState): number {
     total += owned.power + itemPowerBonus(owned, state.gems);
   }
   return total;
+}
+
+export function heroAccuracy(
+  stats: StatLevels,
+  stance: CombatStance,
+  wounded = false,
+): number {
+  let chance =
+    0.68 +
+    stats.dexterity * 0.022 +
+    stats.wisdom * 0.008 +
+    (stance === "dexterity" ? 0.04 : 0) +
+    (stance === "intelligence" ? stats.wisdom * 0.006 : 0);
+  if (wounded) chance -= 0.05;
+  return clamp(chance, 0.45, 0.92);
+}
+
+export function enemyAccuracy(enemy: EnemyDef): number {
+  let chance = 0.62 + enemy.level * 0.018;
+  if (enemy.traits.includes("swift")) chance += 0.07;
+  if (enemy.traits.includes("brute")) chance -= 0.05;
+  if (enemy.traits.includes("pack")) chance += 0.03;
+  if (enemy.traits.includes("warded")) chance += 0.02;
+  return clamp(chance, 0.42, 0.88);
 }
 
 export function deriveCombatSheet(
@@ -47,7 +76,8 @@ export function deriveCombatSheet(
   if (wounded) offense = Math.max(1, Math.round(offense * 0.95));
   const armor = Math.round(stats.constitution + wardenPower * 0.5);
   const crit = clamp(0.05 + stats.wisdom * 0.015, 0.05, 0.35);
-  return { maxHp, offense, armor, crit };
+  const accuracy = heroAccuracy(stats, stance, wounded);
+  return { maxHp, offense, armor, crit, accuracy };
 }
 
 /** Max HP for the hero (stance-independent). */
@@ -91,8 +121,16 @@ export function combatRiskBand(
   stance: CombatStance,
 ): RiskBand {
   const stanceMult = stance === enemy.weakTo ? 1.15 : 0.85;
-  const heroDpr = Math.max(1, sheet.offense * stanceMult - enemy.armor);
-  const enemyDpr = Math.max(1, enemy.offense - sheet.armor);
+  const heroHit = sheet.accuracy * (stance === enemy.weakTo ? 1.03 : 0.97);
+  const enemyHit = enemyAccuracy(enemy);
+  const heroDpr = Math.max(
+    0.5,
+    (sheet.offense * stanceMult * DAMAGE_SCALE - enemy.armor) * heroHit,
+  );
+  const enemyDpr = Math.max(
+    0.5,
+    (enemy.offense * DAMAGE_SCALE - sheet.armor) * enemyHit,
+  );
   const roundsToKill = enemy.maxHp / heroDpr;
   const roundsToDie = sheet.maxHp / enemyDpr;
   const ratio = roundsToKill / Math.max(1, roundsToDie);
@@ -121,38 +159,78 @@ export function jitterMultiplier() {
 }
 
 export function applyDamage(raw: number, armor: number) {
-  return Math.max(1, Math.round(raw - armor));
+  return Math.max(1, Math.round(raw * DAMAGE_SCALE - armor));
 }
 
+export type AttackResult =
+  | { hit: false; dmg: 0; crit: false }
+  | { hit: true; dmg: number; crit: boolean };
+
+export function heroAttack(
+  offense: number,
+  crit: number,
+  accuracy: number,
+  enemyArmor: number,
+  stance: CombatStance,
+  enemy: EnemyDef,
+): AttackResult {
+  let hitChance = accuracy;
+  if (stance === enemy.weakTo) hitChance += 0.03;
+  else hitChance -= 0.04;
+  if (enemy.traits.includes("swift")) hitChance -= 0.03;
+  hitChance = clamp(hitChance, 0.35, 0.95);
+
+  if (Math.random() >= hitChance) {
+    return { hit: false, dmg: 0, crit: false };
+  }
+
+  let raw = offense * jitterMultiplier();
+  if (stance === enemy.weakTo) raw *= 1.15;
+  else raw *= 0.92;
+  if (enemy.traits.includes("warded") && stance === "intelligence") {
+    raw *= 0.5;
+  }
+  const isCrit = Math.random() < crit;
+  if (isCrit) raw *= 1.5;
+  return { hit: true, dmg: applyDamage(raw, enemyArmor), crit: isCrit };
+}
+
+/** @deprecated Prefer heroAttack — kept for call-site migration */
 export function heroDamage(
   offense: number,
   crit: number,
   enemyArmor: number,
   stance: CombatStance,
   enemy: EnemyDef,
-): { dmg: number; crit: boolean } {
-  let raw = offense * jitterMultiplier();
-  if (stance === enemy.weakTo) raw *= 1.15;
-  else if (stance !== enemy.weakTo) raw *= 0.92;
-  if (enemy.traits.includes("warded") && stance === "intelligence") {
-    raw *= 0.5;
-  }
-  const isCrit = Math.random() < crit;
-  if (isCrit) raw *= 1.5;
-  return { dmg: applyDamage(raw, enemyArmor), crit: isCrit };
+  accuracy = 0.75,
+): AttackResult {
+  return heroAttack(offense, crit, accuracy, enemyArmor, stance, enemy);
 }
 
-export function enemyDamage(
+export function enemyAttack(
   enemy: EnemyDef,
   heroArmor: number,
-  stance: CombatStance,
-): number {
+): AttackResult {
+  const hitChance = enemyAccuracy(enemy);
+  if (Math.random() >= hitChance) {
+    return { hit: false, dmg: 0, crit: false };
+  }
+
   let raw = enemy.offense * jitterMultiplier();
   if (enemy.traits.includes("brute")) raw *= 1.08;
   if (enemy.traits.includes("drought")) raw *= 1.05;
-  let dmg = applyDamage(raw, heroArmor);
-  if (enemy.traits.includes("pack")) dmg += 1;
-  return dmg;
+  if (enemy.traits.includes("pack")) raw *= 1.06;
+  return { hit: true, dmg: applyDamage(raw, heroArmor), crit: false };
+}
+
+/** @deprecated Prefer enemyAttack */
+export function enemyDamage(
+  enemy: EnemyDef,
+  heroArmor: number,
+  _stance?: CombatStance,
+): number {
+  const result = enemyAttack(enemy, heroArmor);
+  return result.hit ? result.dmg : 0;
 }
 
 export function encountersAtLocation(locationId: string, encounters: EncounterDef[]) {

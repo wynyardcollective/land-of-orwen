@@ -23,10 +23,11 @@ export const ATTRIBUTE_HELP: Record<HeroStat, AttributeHelp> = {
   dexterity: {
     id: "dexterity",
     summary:
-      "Balance, tracking, and quick hands. Dexterity governs climbing, herding, and other nimble work.",
+      "Balance, tracking, and quick hands. Dexterity governs climbing, herding, and how often your blows land in a fight.",
     details: [
       "Used on Dexterity quests. Higher total versus the quest level means safer attempts.",
       "Hands, legs, and feet slots always train Dexterity when filled.",
+      "Raises combat accuracy (hit chance). Skirmish stance adds a further accuracy bonus.",
     ],
     howToRaise:
       "Run grassland and canyon jobs, and wear gloves, pants, and boots.",

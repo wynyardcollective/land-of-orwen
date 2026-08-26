@@ -9,7 +9,18 @@ export interface CombatOutcome {
   defeat: string;
   jackpot: string;
   closeWin: string;
+  heroMiss?: string[];
+  enemyMiss?: string[];
 }
+
+const DEFAULT_HERO_MISS = [
+  "Your strike whistles past empty air.",
+  "They slip the blow. Dust is all you hit.",
+];
+const DEFAULT_ENEMY_MISS = [
+  "You lean aside. The attack spends itself on stone.",
+  "A clumsy swing. You stay unmarked.",
+];
 
 export const COMBAT_OUTCOMES: Record<string, CombatOutcome> = {
   "salt-wight": {
@@ -186,6 +197,12 @@ export function combatLine(
     return pool[Math.floor(Math.random() * pool.length)];
   }
   if (typeof pool === "string") return pool;
+  if (kind === "heroMiss") {
+    return DEFAULT_HERO_MISS[Math.floor(Math.random() * DEFAULT_HERO_MISS.length)];
+  }
+  if (kind === "enemyMiss") {
+    return DEFAULT_ENEMY_MISS[Math.floor(Math.random() * DEFAULT_ENEMY_MISS.length)];
+  }
   return fallback;
 }
 
