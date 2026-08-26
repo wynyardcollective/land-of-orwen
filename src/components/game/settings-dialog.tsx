@@ -272,13 +272,10 @@ export function SettingsDialog() {
                 onClick={() => {
                   if (
                     confirm(
-                      "End guest session? You can continue later from this browser if you keep the local save, or clear it now.",
+                      "Return to sign-in? Guest progress stays in this browser so you can continue later.",
                     )
                   ) {
-                    const wipe = confirm(
-                      "Also clear guest progress on this device?",
-                    );
-                    endGuest(wipe);
+                    endGuest(false);
                     setOpen(false);
                   }
                 }}
