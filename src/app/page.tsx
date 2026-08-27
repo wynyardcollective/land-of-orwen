@@ -90,10 +90,10 @@ export default function HomePage() {
           Why the land is thirsty
         </h2>
         <p className="leading-relaxed text-muted-foreground">
-          Orwen&apos;s drought is sudden and complete. Irrigation ditches hold
-          memory instead of mud. Traders smash gauges for coin. Somewhere behind
-          a sealed shrine, a gate remembers rain — if you can learn the order of
-          its symbols and carry a ring that does the same.
+          Orwen dried up fast. Ditches hold dust instead of mud. Traders break
+          rain gauges and sell the scrap. Word is a sealed shrine still has a
+          gate that might open if you learn the right symbol order and find a
+          ring that matches it.
         </p>
         <p className="leading-relaxed text-muted-foreground">
           The game is original fiction inspired by the pacing of classic idle

@@ -16,8 +16,9 @@ export default function LoreIndexPage() {
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-amber-100">Lore & journal</h1>
         <p className="leading-relaxed text-muted-foreground">
-          Short readings from Orwen — drought origins, tavern trade, combat, and
-          the Rainward Gate. These pages are free to read without an account.
+          Short readings from Orwen — how the drought started, what taverns
+          actually sell, how fights work on the road, and what people know about
+          the Rainward Gate. No account needed to read them.
         </p>
       </header>
       <ul className="mt-8 space-y-4">
