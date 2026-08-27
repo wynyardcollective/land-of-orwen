@@ -50,6 +50,36 @@ export const LOCATION_NPCS: Record<
     title: "rainward stone",
     greet: "It does not speak. It waits. That is almost the same thing.",
   },
+  "windmere-hamlet": {
+    name: "Hostess Vale",
+    title: "drying-shed keeper",
+    greet: "Cider's thin and gossip isn't. Sit if you're staying — the wind steals chairs too.",
+  },
+  "bracken-ford": {
+    name: "Ford-warden Hek",
+    title: "crossing tally",
+    greet: "Fee's on the board. Argue after you pay, not before.",
+  },
+  "ledger-house": {
+    name: "Chief Clerk Maren",
+    title: "flow recorder",
+    greet: "Ink dries faster than wells these days. State your business before the numbers shift again.",
+  },
+  "odos-relay": {
+    name: "Relay Porter Sten",
+    title: "night tally",
+    greet: "If you're sleeping here, you sweep. If you're leaving, sign the chalk.",
+  },
+  "harrow-ridge": {
+    name: "Lookout Tams",
+    title: "cloud sketcher",
+    greet: "Don't block the view. The sky might do something worth writing down.",
+  },
+  "silt-basin": {
+    name: "Mud-Sampler Edda",
+    title: "field scholar",
+    greet: "Boots off before you complain about the smell. The basin teaches patience.",
+  },
 };
 
 export const LOCATION_BEATS: Record<string, string[]> = {
@@ -101,6 +131,90 @@ export const LOCATION_BEATS: Record<string, string[]> = {
     "Dust hangs still, as if waiting for permission to fall.",
     "You think you hear a basin fill. You do not. Not yet.",
   ],
+  "windmere-hamlet": [
+    "Fruit racks creak in the drying shed. Neighbors watch each other's ditch levels.",
+    "Wind carries gossip faster than seed satchels here.",
+    "A child draws a cloud with chalk. It does not last.",
+    "Vale's cider steams thin in the afternoon heat.",
+  ],
+  "bracken-ford": [
+    "Cart wheels grind gravel where creek stones should be.",
+    "Hek's fee board lists names that owe more than gold.",
+    "Someone argues about axle width. The ford wins.",
+    "Willow roots clutch mud that cracked weeks ago.",
+  ],
+  "ledger-house": [
+    "Copyists whisper over columns that refuse to match.",
+    "A dropped ledger slaps the floor like a small verdict.",
+    "Ink stains the stairs. Everyone is in a hurry to be right.",
+    "Maren's window faces the dry riverbed. She still looks.",
+  ],
+  "odos-relay": [
+    "Chalk tallies smear when couriers slam the barn door.",
+    "Parcel tags flutter like tired flags.",
+    "Sten sweeps the same dust line twice. It returns.",
+    "Someone snores in the loft. The road outside stays empty.",
+  ],
+  "harrow-ridge": [
+    "The pennant snaps. Tams does not look away from the horizon.",
+    "Wind charts flutter on a nail. Clouds stay the wrong color.",
+    "Basalt grit underfoot. The bluff feels closer to the sky than the land.",
+    "A lookout coughs dust and keeps sketching.",
+  ],
+  "silt-basin": [
+    "Mud sucks at your boots like it remembers being a lake.",
+    "Edda labels jars while the hollow stays stubbornly dry.",
+    "A reed cracks without wind. The basin listens anyway.",
+    "Heat rises off cracked silt in slow, mean waves.",
+  ],
+  "whisper-well": [
+    "Voices echo from the cistern lip — yours, then someone else's yesterday.",
+    "Coins glitter in mud that should be deeper.",
+    "A drip sounds every minute. It is not water.",
+    "The hatch breathes cool air. The square above feels far away.",
+  ],
+  "root-cellar": [
+    "Apple smell and old paper. Merrick's real ledgers lean against the root wall.",
+    "Ink is fresh on pages that should be dry.",
+    "A root taps the ceiling like a slow clock.",
+    "Dust motes spin in the lantern. Numbers spin with them.",
+  ],
+  "gulls-rest": [
+    "Salt offerings crust in bowls that seabirds still visit.",
+    "Timber forms a pier to nowhere the tide reaches anymore.",
+    "The cove is quiet enough to hear your own pulse.",
+    "Driftwood clicks. Someone left rope coiled like a promise.",
+  ],
+  "smugglers-nook": [
+    "Crates stamped with raindrops. The wrong emblem for drought country.",
+    "Rope ladder sways. The canyon wind tries to read the labels.",
+    "A ledger lists crossings by moon phase, not date.",
+    "Salt and oil smell fight in the cave air.",
+  ],
+  "ember-hollow": [
+    "Heat pools but never rises. Your skin believes in rain for a second.",
+    "Basalt bowl reflects a sky that won't commit.",
+    "A scholar's tripod rusts in the center. Notes flutter without wind.",
+    "The hollow hums. It is not wind. It is depth.",
+  ],
+  "rain-saint-rest": [
+    "Moss stains the saint's basin where water should sit.",
+    "Coins rust in a ring around the stone feet.",
+    "Pilgrims' paths fade into dust on both sides of the road.",
+    "Someone left a fresh apple. It dried before sunset.",
+  ],
+  "broken-aqueduct": [
+    "Boards wedge the arch gap. Saw marks are recent.",
+    "Channel stone is dry but smells like old river.",
+    "A chalk arrow points upstream. Someone cared about direction.",
+    "Pigeons nest in the aqueduct crown. They look thirsty.",
+  ],
+  "ferrymans-hide": [
+    "Tarp boat bumps the willow roots in a breeze that isn't there.",
+    "Crossing ledgers list names in ferryman's shorthand.",
+    "Mud prints show carts that still try to cross at night.",
+    "Willow shade is the coolest place for miles. It is still not cool enough.",
+  ],
 };
 
 export const TRAVEL_BEATS: Record<string, string[]> = {
@@ -135,6 +249,30 @@ export const TRAVEL_BEATS: Record<string, string[]> = {
   "sealed-shrine": [
     "The last stretch is quieter than it should be.",
     "Stone begins to look intentional. You are close.",
+  ],
+  "windmere-hamlet": [
+    "Cottage smoke and drying fruit. The road forks and both forks look tired.",
+    "Windmere smells like apples that gave up early.",
+  ],
+  "bracken-ford": [
+    "Cart ruts cut the gravel where water should hiss.",
+    "The ford is a argument frozen in mud.",
+  ],
+  "ledger-house": [
+    "Quill scratches leak through the slate roof. Someone is always copying.",
+    "Steps climb to offices that believe numbers can shame the sky.",
+  ],
+  "odos-relay": [
+    "Chalk tallies on the barn door. Names of people who still move.",
+    "Dust rolls low across the north road. The relay barn holds its ground.",
+  ],
+  "harrow-ridge": [
+    "The bluff wind tries to push you back downhill. You lean anyway.",
+    "Cloud lines sketch themselves and refuse to darken.",
+  ],
+  "silt-basin": [
+    "Cracked mud rings the hollow like a failed bowl.",
+    "Reeds stand dead. The air smells like rain that changed its mind.",
   ],
 };
 
@@ -433,6 +571,15 @@ export const ARRIVAL_LINES: Record<string, string> = {
   "clara-canyon": "You have made it safely to Clara's Canyon. The wind finishes your first sentence for you.",
   "blackened-tables": "You have made it safely to the Blackened Tablelands. Heat stands up to meet you.",
   "sealed-shrine": "You have made it safely to the Sealed Shrine. The air tastes like a storm that has not been invited in.",
+  "windmere-hamlet": "You have made it safely to Windmere Hamlet. Drying fruit and tired roads greet you.",
+  "bracken-ford": "You have made it safely to Bracken Ford. Gravel and cart arguments remember where the creek was.",
+  "ledger-house": "You have made it safely to Ledger House. Pens scratch like rain that never falls.",
+  "odos-relay": "You have made it safely to Odo's Relay. Chalk tallies and dust storms share the barn.",
+  "harrow-ridge": "You have made it safely to Harrow Ridge. The wind finishes your sentences uphill.",
+  "silt-basin": "You have made it safely to the Silt Basin. Mud rings the hollow like a bowl that forgot how to fill.",
+  "rain-saint-rest": "You have made it safely to Rain Saint's Rest. Moss and rusted coins hold the silence.",
+  "broken-aqueduct": "You have made it safely to the Broken Aqueduct. Boards wedge a channel that should still run.",
+  "ferrymans-hide": "You have made it safely to the Ferryman's Hide. Willow roots clutch a boat that outlived the creek.",
 };
 
 export function rotatingBeat(
@@ -474,6 +621,7 @@ export function mapWeather(
   if (locationId === "blackened-tables") return "ash";
   if (locationId === "clara-canyon") return "wind";
   if (locationId === "stone-mill") return "stone";
+  if (locationId === "silt-basin") return "dust";
   if (flags.includes("mill_unlocked")) return "dust";
   return "drought";
 }

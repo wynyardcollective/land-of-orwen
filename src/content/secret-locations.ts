@@ -66,6 +66,43 @@ export const SECRET_LOCATIONS: LocationDef[] = [
     secret: true,
     bestFor: "intelligence",
   },
+  {
+    id: "rain-saint-rest",
+    name: "Rain Saint's Rest",
+    regionHint: "Secret · mossy roadside",
+    description:
+      "A stone saint with a basin that held moss instead of water until this summer. Coins rust in the bowl. Pilgrims stopped coming when the wells failed.",
+    x: 32,
+    y: 66,
+    unlockStoryFlag: "secret_rain_saint_rest",
+    travelSeconds: 55,
+    secret: true,
+  },
+  {
+    id: "broken-aqueduct",
+    name: "Broken Aqueduct",
+    regionHint: "Secret · above the mill channel",
+    description:
+      "Stone arches over a channel that should carry river water. Boards wedge the gap where someone diverted the flow on purpose.",
+    x: 24,
+    y: 42,
+    unlockStoryFlag: "secret_broken_aqueduct",
+    travelSeconds: 50,
+    secret: true,
+  },
+  {
+    id: "ferrymans-hide",
+    name: "Ferryman's Hide",
+    regionHint: "Secret · under the ford",
+    description:
+      "A tarp boat tied to willow roots. The ferryman left crossing ledgers from before the creek died.",
+    x: 34,
+    y: 92,
+    unlockStoryFlag: "secret_ferrymans_hide",
+    travelSeconds: 60,
+    secret: true,
+    bestFor: "dexterity",
+  },
 ];
 
 export const ALL_LOCATIONS = [...SECRET_LOCATIONS];

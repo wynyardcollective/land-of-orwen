@@ -139,9 +139,9 @@ export function MapTab() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Map of Orwen</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Tap a pin on the map or a name below to travel or view quests. Dim
-            locked pins can be tapped to see how to unlock them. Secret places
-            appear only after tavern rumors pan out.
+            Tap a pin on the map or a name below to travel or view quests. Locked
+            pins show how to open them. Secret places appear after tavern rumors.
+            New hamlets, fords, and waystations branch off the main drought road.
           </p>
         </CardHeader>
         <CardContent>
@@ -172,12 +172,60 @@ export function MapTab() {
                 </pattern>
               </defs>
               <rect width="100" height="100" fill="url(#grass)" opacity="0.5" />
+              {/* Western ridge */}
+              <path
+                d="M2 18 L8 42 L6 72 L2 88"
+                fill="none"
+                stroke="#44403c"
+                strokeWidth="0.6"
+                opacity="0.5"
+              />
+              {/* Dry eastern basin */}
+              <ellipse
+                cx="88"
+                cy="64"
+                rx="9"
+                ry="6"
+                fill="none"
+                stroke="#57534e"
+                strokeWidth="0.5"
+                strokeDasharray="1 1.5"
+                opacity="0.55"
+              />
+              {/* Southern ford creek (dry) */}
+              <path
+                d="M28 78 Q36 86 44 90 T58 88"
+                fill="none"
+                stroke="#57534e"
+                strokeWidth="0.45"
+                strokeDasharray="1.2 1.2"
+                opacity="0.45"
+              />
+              {/* Main road east */}
               <path
                 d="M10 70 Q30 55 45 60 T80 40"
                 fill="none"
                 stroke="#57534e"
                 strokeWidth="0.8"
                 strokeDasharray="1.5 1"
+              />
+              {/* South road to Bracken Ford */}
+              <path
+                d="M18 62 Q28 72 36 86"
+                fill="none"
+                stroke="#57534e"
+                strokeWidth="0.55"
+                strokeDasharray="1.2 1.2"
+                opacity="0.7"
+              />
+              {/* North spur to relay & mill */}
+              <path
+                d="M28 34 Q42 38 54 36 T72 28"
+                fill="none"
+                stroke="#57534e"
+                strokeWidth="0.55"
+                strokeDasharray="1.2 1.2"
+                opacity="0.65"
               />
               <path
                 d="M10 70 Q30 55 45 60 T80 40"
@@ -188,6 +236,46 @@ export function MapTab() {
                 opacity={pathGlow}
                 className="map-path-glow"
               />
+              <text
+                x="50"
+                y="6"
+                textAnchor="middle"
+                fill="#78716c"
+                fontSize="3"
+                opacity="0.6"
+              >
+                N
+              </text>
+              <text
+                x="4"
+                y="52"
+                textAnchor="middle"
+                fill="#78716c"
+                fontSize="2.8"
+                opacity="0.5"
+              >
+                W
+              </text>
+              <text
+                x="96"
+                y="52"
+                textAnchor="middle"
+                fill="#78716c"
+                fontSize="2.8"
+                opacity="0.5"
+              >
+                E
+              </text>
+              <text
+                x="50"
+                y="98"
+                textAnchor="middle"
+                fill="#78716c"
+                fontSize="3"
+                opacity="0.6"
+              >
+                S
+              </text>
             </svg>
             {mapLocations.map((loc) => {
               const unlocked = state.unlockedLocations.includes(loc.id);

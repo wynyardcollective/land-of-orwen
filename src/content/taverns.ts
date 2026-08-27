@@ -87,6 +87,26 @@ export const TAVERNS: TavernDef[] = [
     baseCost: 32,
     roundSeconds: 60,
   },
+  {
+    id: "drying-shed",
+    locationId: "windmere-hamlet",
+    name: "The Drying Shed",
+    keeper: "Hostess Vale",
+    description:
+      "A plank hall where fruit shrinks instead of cures. Vale pours thin cider and hears which roads still carry couriers.",
+    baseCost: 16,
+    roundSeconds: 42,
+  },
+  {
+    id: "bracken-stein",
+    locationId: "bracken-ford",
+    name: "Bracken Stein",
+    keeper: "Ford-warden Hek",
+    description:
+      "Mud-floor tavern at the crossing. Hek keeps crossing fees, grudges, and the names of everyone who still owes the ford.",
+    baseCost: 20,
+    roundSeconds: 48,
+  },
 ];
 
 export const TAVERN_MAP = Object.fromEntries(
@@ -173,6 +193,18 @@ export const TAVERN_RUMORS: TavernRumorDef[] = [
       "A drover’s trail bypasses Tarowen entirely. Stonewheel Mill is on your map.",
     skipIfLocationUnlocked: "stone-mill",
   },
+  {
+    id: "cb-rain-saint-rest",
+    tavernId: "cider-bench",
+    weight: 8,
+    kind: "secret_location",
+    flag: "secret_rain_saint_rest",
+    unlockLocationId: "rain-saint-rest",
+    headline: "Rain Saint's Rest",
+    detail:
+      "Merrick finally names the mossy saint on the south road — basin empty, coins rusting, but the spot is on your map.",
+    requiresFlags: ["windmere_unlocked"],
+  },
   // —— Wheelhouse Tap (Mill) ——
   {
     id: "wt-shore-tip",
@@ -209,6 +241,18 @@ export const TAVERN_RUMORS: TavernRumorDef[] = [
     detail:
       "A smuggler bribed Odo for safe passage. Clara's Canyon appears on your map.",
     skipIfLocationUnlocked: "clara-canyon",
+  },
+  {
+    id: "wt-broken-aqueduct",
+    tavernId: "wheelhouse-tap",
+    weight: 9,
+    kind: "secret_location",
+    flag: "secret_broken_aqueduct",
+    unlockLocationId: "broken-aqueduct",
+    headline: "Broken Aqueduct",
+    detail:
+      "Odo heard boards in the old channel above the wheel. Someone diverted the flow on purpose — it's on your map.",
+    requiresFlags: ["ledger_unlocked"],
   },
   // —— Salt Gull (Shore) ——
   {
@@ -298,6 +342,42 @@ export const TAVERN_RUMORS: TavernRumorDef[] = [
       "Iri heard the gate opens only when drought is named aloud — and when the bearer carries a ring that remembers rain.",
     requiresFlags: ["shrine_unlocked"],
   },
+  // —— Drying Shed (Windmere) ——
+  {
+    id: "ds-relay-tip",
+    tavernId: "drying-shed",
+    weight: 8,
+    kind: "early_location",
+    flag: "tavern_relay_tip",
+    unlockLocationId: "odos-relay",
+    headline: "Relay route marked",
+    detail:
+      "Vale copies a courier's chalk marks. Odo's Relay is on your map if you haven't walked it yet.",
+    skipIfLocationUnlocked: "odos-relay",
+  },
+  // —— Bracken Stein (Ford) ——
+  {
+    id: "bs-ferry-hide",
+    tavernId: "bracken-stein",
+    weight: 10,
+    kind: "secret_location",
+    flag: "secret_ferrymans_hide",
+    unlockLocationId: "ferrymans-hide",
+    headline: "Ferryman's Hide",
+    detail:
+      "Hek mentions a tarp boat under the willows. The ferryman's ledgers are still tied there — on your map.",
+  },
+  {
+    id: "bs-ford-gossip",
+    tavernId: "bracken-stein",
+    weight: 10,
+    kind: "intel",
+    flag: "intel_ford_trade",
+    journalId: "tavern-ford-trade",
+    headline: "Southern trade routes",
+    detail:
+      "Southern carts still run even without a creek. Hek says half the grain is smuggled north through the ford at night.",
+  },
 ];
 
 export const TAVERN_RUMOR_MAP = Object.fromEntries(
@@ -346,6 +426,18 @@ export const TAVERN_BEATS: Record<string, string[]> = {
     "Watchtower hands speak in half-whispers. Heat shimmer is a familiar backdrop.",
     "A scout drops a coin for another cup. Iri's eyes track who listens too closely.",
     "Cinders tap the roof. Someone mentions a gate that remembers rain.",
+  ],
+  "drying-shed": [
+    "Apple racks creak in the shed. Vale slides cups to travelers who still have routes to name.",
+    "Thin cider and thinner hope. Someone mentions a relay barn that still counts couriers.",
+    "Fruit leather dries too fast. Vale writes names she overhears on a flour sack.",
+    "Wind rattles the plank walls. Regulars trade road news like it might still matter.",
+  ],
+  "bracken-stein": [
+    "Mud sticks to every boot. Hek calls crossing fees without looking up from his ledger.",
+    "Cart wheels grind outside. Hek knows who paid and who will argue about it later.",
+    "Someone offers a ford story for ale. Hek pours anyway and listens for profit.",
+    "The stein's handle is sticky. Hek quotes a name you almost recognize from Merrick's notes.",
   ],
 };
 

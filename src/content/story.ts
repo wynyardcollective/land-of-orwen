@@ -73,6 +73,55 @@ export const JOURNAL: JournalEntry[] = [
     unlockFlag: "intel_rainward_gate",
     body: "Iri heard the Rainward Gate opens when drought is named aloud and the bearer wears a ring that remembers rain. The Ring of Returning Rain may be more than loot.",
   },
+  {
+    id: "windmere-note",
+    title: "Windmere Hamlet",
+    unlockFlag: "windmere_unlocked",
+    body:
+      "A crossroads hamlet where farmers trade ditch water by handshake. Vale at the drying shed hears every courier route worth knowing.",
+  },
+  {
+    id: "ford-note",
+    title: "Bracken Ford",
+    unlockFlag: "ford_unlocked",
+    body:
+      "The southern ford dried with the rest of Orwen, but carts still queue. Hek at Bracken Stein keeps crossing fees and grudges in one ledger.",
+  },
+  {
+    id: "ledger-note",
+    title: "Ledger House",
+    unlockFlag: "ledger_unlocked",
+    body:
+      "Clerks copy mill flow tallies and fight over numbers that do not add up. Someone is intercepting water between stations.",
+  },
+  {
+    id: "relay-note",
+    title: "Odo's Relay",
+    unlockFlag: "relay_unlocked",
+    body:
+      "A stone barn on the north road where couriers still sleep on the floor. Chalk tallies show who passed before the river failed.",
+  },
+  {
+    id: "ridge-note",
+    title: "Harrow Ridge",
+    unlockFlag: "ridge_unlocked",
+    body:
+      "Western bluffs where lookouts sketch cloud lines that never darken. Their charts disagree with Merrick's orchard ledgers.",
+  },
+  {
+    id: "basin-note",
+    title: "Silt Basin",
+    unlockFlag: "basin_unlocked",
+    body:
+      "An eastern hollow where storm water should pool. Scholars think it ties to the same aquifer the mill charts keep losing.",
+  },
+  {
+    id: "tavern-ford-trade",
+    title: "Tavern — Southern Trade",
+    unlockFlag: "intel_ford_trade",
+    body:
+      "At Bracken Stein, Hek swears half the southern grain runs north at night without paying crossing fees.",
+  },
 ];
 
 export function currentGoals(flags: string[]): string[] {

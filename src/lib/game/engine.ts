@@ -252,6 +252,12 @@ export function claimReward(state: GameState): GameState {
     canyon_unlocked: "canyon-note",
     tables_unlocked: "tables-note",
     shrine_unlocked: "shrine-note",
+    windmere_unlocked: "windmere-note",
+    ford_unlocked: "ford-note",
+    ledger_unlocked: "ledger-note",
+    relay_unlocked: "relay-note",
+    ridge_unlocked: "ridge-note",
+    basin_unlocked: "basin-note",
     chapter_complete: "ending",
   };
   for (const flag of storyFlags) {

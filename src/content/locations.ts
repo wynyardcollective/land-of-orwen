@@ -95,6 +95,78 @@ export const LOCATIONS: LocationDef[] = [
     travelSeconds: 240,
     bestFor: "intelligence",
   },
+  {
+    id: "windmere-hamlet",
+    name: "Windmere Hamlet",
+    regionHint: "Stop on the orchard road",
+    description:
+      "A dozen cottages and a drying shed where neighbors trade water rights by handshake. The drought feels personal here.",
+    x: 22,
+    y: 54,
+    unlockStoryFlag: "windmere_unlocked",
+    travelSeconds: 75,
+    bestFor: "intelligence",
+  },
+  {
+    id: "bracken-ford",
+    name: "Bracken Ford",
+    regionHint: "Southern crossing town",
+    description:
+      "The ford is a gravel scar where a creek ought to run. Carts still queue to argue over who crosses first.",
+    x: 36,
+    y: 86,
+    unlockStoryFlag: "ford_unlocked",
+    travelSeconds: 100,
+    bestFor: "strength",
+  },
+  {
+    id: "ledger-house",
+    name: "Ledger House",
+    regionHint: "Mill country records",
+    description:
+      "A slate office where clerks copy flow tallies and fight over missing buckets. Pens scratch louder than the mill wheel.",
+    x: 34,
+    y: 28,
+    unlockStoryFlag: "ledger_unlocked",
+    travelSeconds: 110,
+    bestFor: "intelligence",
+  },
+  {
+    id: "odos-relay",
+    name: "Odo's Relay",
+    regionHint: "Waystation on the north road",
+    description:
+      "A stone barn with hitching posts and a chalk tally of who passed before the river dried. Couriers sleep on the floor when dust rolls in.",
+    x: 54,
+    y: 36,
+    unlockStoryFlag: "relay_unlocked",
+    travelSeconds: 130,
+    bestFor: "dexterity",
+  },
+  {
+    id: "harrow-ridge",
+    name: "Harrow Ridge",
+    regionHint: "Western high overlook",
+    description:
+      "Wind-scoured bluffs above the grain country. Lookouts trade cloud sightings with mill clerks who never see rain.",
+    x: 8,
+    y: 40,
+    unlockStoryFlag: "ridge_unlocked",
+    travelSeconds: 140,
+    bestFor: "dexterity",
+  },
+  {
+    id: "silt-basin",
+    name: "Silt Basin",
+    regionHint: "Eastern sink where water should pool",
+    description:
+      "A broad hollow of cracked mud and dead reeds. Storm water should collect here. It hasn't for months.",
+    x: 90,
+    y: 66,
+    unlockStoryFlag: "basin_unlocked",
+    travelSeconds: 160,
+    bestFor: "intelligence",
+  },
   ...SECRET_LOCATIONS,
 ];
 
