@@ -72,6 +72,7 @@ interface GameContextValue {
   healAtTavern: (tavernId: string) => string | null;
   useItem: (uid: string) => string | null;
   resetGame: () => void;
+  dismissOpening: () => void;
   now: number;
 }
 
@@ -403,6 +404,16 @@ export function GameProvider({
         setAnnouncement("New journey begun.");
         setTab("map");
       },
+      dismissOpening: () =>
+        update((s) => {
+          if (s.storyFlags.includes("opening_seen")) return s;
+          setAnnouncement("Merrick watches you take the orchard road.");
+          return {
+            ...s,
+            storyFlags: [...s.storyFlags, "opening_seen"],
+            updatedAt: Date.now(),
+          };
+        }),
       now,
     };
   }, [

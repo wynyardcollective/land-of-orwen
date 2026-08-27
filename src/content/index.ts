@@ -19,6 +19,12 @@ export {
 } from "./encounters";
 export { COMBAT_OUTCOMES, combatLine, combatNpcQuote } from "./combat-flavor";
 export { JOURNAL, currentGoals } from "./story";
+export {
+  OPENING_TITLE,
+  OPENING_SECTIONS,
+  OPENING_MERRICK_QUOTE,
+  type OpeningSection,
+} from "./opening";
 export { ATTRIBUTE_HELP, type AttributeHelp } from "./attributes";
 export {
   ARRIVAL_LINES,

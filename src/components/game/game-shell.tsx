@@ -8,6 +8,7 @@ import { CraftTab } from "./craft-tab";
 import { JournalTab } from "./journal-tab";
 import { CampfireTab } from "./campfire-tab";
 import { RewardDialog } from "./reward-dialog";
+import { OpeningStoryDialog } from "./opening-story-dialog";
 import { CombatResultPanel } from "./combat-result-panel";
 import { Button } from "@/components/ui/button";
 import type { TabId } from "@/lib/game";
@@ -79,6 +80,7 @@ function ShellInner() {
         </ul>
       </nav>
       <RewardDialog />
+      <OpeningStoryDialog />
     </div>
   );
 }

@@ -5,7 +5,7 @@ export const JOURNAL: JournalEntry[] = [
     id: "prelude",
     title: "Prelude — Dust on the Leaves",
     unlockFlag: "prelude_start",
-    body: "You grew up hauling baskets for Old Merrick. This season the wells cough dust, the apples shrink, and even the birds sound thirsty. Merrick's ledger says the drought is wrong—too sudden, too complete. Someone must leave the orchard and learn why the clouds forgot Orwen.",
+    body: "Merrick kept you on basket work until the wells went wrong. This summer the ditch dried in a week and his rainfall tallies stopped matching the sky. He handed you forty gold, a bandage, and a dried apple — then told you to walk east and find out why the whole country lost its rain, not just the orchard. The journal entry is his. The road is yours.",
   },
   {
     id: "mill-note",
