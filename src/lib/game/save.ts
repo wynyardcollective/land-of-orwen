@@ -4,6 +4,7 @@ import type {
   SettingsState,
   StatLevels,
 } from "./types";
+import { EMPTY_SKILL_XP } from "./skill-engine";
 
 export const SAVE_KEY = "orwen-save-v1";
 export const PLAYER_ID_KEY = "orwen-player-id";
@@ -59,7 +60,7 @@ export function createPlayerId() {
 
 export function createInitialState(playerId: string, heroName = "Wanderer"): GameState {
   return {
-    version: 1,
+    version: 2,
     playerId,
     heroName,
     gold: 40,
@@ -67,6 +68,8 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     unlockedLocations: ["merrick-orchard", "tarowen-square", "ashen-grass"],
     storyFlags: ["prelude_start"],
     stats: { ...starterStats },
+    skillXp: { ...EMPTY_SKILL_XP },
+    materials: {},
     equipment: {},
     inventory: [
       {
@@ -100,6 +103,7 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
       goldEarned: 0,
       legendaryFound: 0,
       bestStreak: 0,
+      skillsCompleted: 0,
     },
     successStreak: 0,
     failStreak: 0,
@@ -118,12 +122,22 @@ export function normalizeState(raw: GameState): GameState {
     raw.active?.type === "combat" ||
     raw.active?.type === "quest" ||
     raw.active?.type === "travel" ||
-    raw.active?.type === "tavern"
+    raw.active?.type === "tavern" ||
+    raw.active?.type === "skill"
       ? raw.active
       : null;
+  const skillXp = {
+    ...EMPTY_SKILL_XP,
+    ...(raw.skillXp ?? {}),
+  };
+  const materials = raw.materials ?? {};
+  const version = raw.version === 2 ? 2 : 2;
   return {
     ...raw,
+    version,
     active,
+    skillXp,
+    materials,
     completedEncounters: raw.completedEncounters ?? [],
     wounded: raw.wounded ?? false,
     heroHp: raw.heroHp === undefined ? null : raw.heroHp,
@@ -133,6 +147,7 @@ export function normalizeState(raw: GameState): GameState {
       goldEarned: raw.records?.goldEarned ?? 0,
       legendaryFound: raw.records?.legendaryFound ?? 0,
       bestStreak: raw.records?.bestStreak ?? 0,
+      skillsCompleted: raw.records?.skillsCompleted ?? 0,
     },
     successStreak: raw.successStreak ?? 0,
     failStreak: raw.failStreak ?? 0,

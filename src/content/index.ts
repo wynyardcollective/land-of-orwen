@@ -11,6 +11,16 @@ export { getLocationUnlockInfo, type LocationUnlockInfo } from "./unlocks";
 export { ITEMS, GEMS, LORE_SYMBOLS, LORE_SOLUTION } from "./items";
 export { QUESTS, QUEST_MAP } from "./quests";
 export {
+  SKILL_ACTIVITIES,
+  SKILL_ACTIVITY_MAP,
+  RECIPES,
+  RECIPE_MAP,
+  SKILL_BEATS,
+  SKILL_LABELS,
+  activitiesAtLocation,
+  recipesForSkill,
+} from "./skills";
+export {
   ENEMIES,
   ENEMY_MAP,
   ENCOUNTERS,

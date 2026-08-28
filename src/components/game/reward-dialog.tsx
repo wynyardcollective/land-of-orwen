@@ -1,7 +1,7 @@
 "use client";
 
 import { GEMS, ITEMS, QUEST_MAP, ENCOUNTER_MAP } from "@/content";
-import { rarityClass } from "@/lib/game";
+import { rarityClass, formatSkill } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,14 +26,19 @@ export function RewardDialog() {
   const { state, claim } = useGame();
   const reward = state.pendingReward;
   const isCombat = reward?.kind === "combat";
+  const isSkill = reward?.kind === "skill";
   // Combat rewards use CombatResultPanel when a fight log is available
   const useModal = !!reward && !(isCombat && state.lastCombat);
-  const quest = reward && !isCombat ? QUEST_MAP[reward.questId] : null;
+  const quest = reward && !isCombat && !isSkill ? QUEST_MAP[reward.questId] : null;
   const enc =
     reward && isCombat && reward.encounterId
       ? ENCOUNTER_MAP[reward.encounterId]
       : null;
-  const label = isCombat ? enc?.name ?? "Combat" : quest?.name ?? "Quest";
+  const label = isSkill
+    ? reward?.activityName ?? "Training"
+    : isCombat
+      ? enc?.name ?? "Combat"
+      : quest?.name ?? "Quest";
 
   return (
     <Dialog open={useModal}>
@@ -42,7 +47,9 @@ export function RewardDialog() {
           <>
             <DialogHeader>
               <DialogTitle>
-                {reward.tone === "jackpot"
+                {isSkill
+                  ? "Work complete"
+                  : reward.tone === "jackpot"
                   ? "A pocket of luck"
                   : reward.tone === "close-win"
                     ? "Ugly, but it counted"
@@ -85,10 +92,23 @@ export function RewardDialog() {
                   You are wounded — −5% offense until a quest or campfire rest.
                 </p>
               )}
-              <p>
-                Gold +{reward.gold}
-                {reward.bonusGold > 0 ? ` (bonus +${reward.bonusGold})` : ""}
-              </p>
+              {reward.skillId && reward.skillXp && (
+                <p className="text-emerald-300">
+                  {formatSkill(reward.skillId)} +{reward.skillXp} XP
+                </p>
+              )}
+              {reward.materials &&
+                Object.entries(reward.materials).map(([id, amount]) => (
+                  <p key={id} className="text-stone-200">
+                    Material: {ITEMS[id]?.name ?? id} ×{amount}
+                  </p>
+                ))}
+              {(reward.gold > 0 || reward.bonusGold > 0) && (
+                <p>
+                  Gold +{reward.gold}
+                  {reward.bonusGold > 0 ? ` (bonus +${reward.bonusGold})` : ""}
+                </p>
+              )}
               {reward.item && (
                 <p
                   className={rarityClass(
@@ -104,7 +124,7 @@ export function RewardDialog() {
                   Gem: {GEMS[reward.gem.defId]?.name} T{reward.gem.tier}
                 </p>
               )}
-              {!reward.item && !reward.gem && reward.success && (
+              {!reward.item && !reward.gem && reward.success && !isSkill && (
                 <p className="text-muted-foreground">No item drop this time.</p>
               )}
               {reward.tone === "jackpot" && (

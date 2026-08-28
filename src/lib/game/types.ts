@@ -21,6 +21,21 @@ export type Pace = "swift" | "balanced" | "classic";
 export type FontScale = "normal" | "large" | "xlarge";
 export type TabId = "map" | "hero" | "craft" | "journal" | "campfire";
 
+export type SkillId =
+  | "fishing"
+  | "mining"
+  | "smithing"
+  | "woodcutting"
+  | "cooking";
+
+export const SKILL_IDS: SkillId[] = [
+  "fishing",
+  "mining",
+  "smithing",
+  "woodcutting",
+  "cooking",
+];
+
 export type ItemRarity = "common" | "uncommon" | "rare" | "legendary";
 
 export interface StatLevels {
@@ -45,6 +60,46 @@ export interface ItemDef {
   affinity?: SecondaryAffinity;
   /** Consumable: HP restored on use */
   healAmount?: number;
+  /** Stackable resource for skills (fishing, mining, smithing, etc.) */
+  material?: boolean;
+}
+
+export interface SkillLevels {
+  fishing: number;
+  mining: number;
+  smithing: number;
+  woodcutting: number;
+  cooking: number;
+}
+
+export interface SkillActivityDef {
+  id: string;
+  locationId: string;
+  skill: SkillId;
+  name: string;
+  description: string;
+  levelReq: number;
+  durationSeconds: number;
+  xp: number;
+  yields: { materialId: string; min: number; max: number }[];
+  rareMaterialId?: string;
+  rareChance?: number;
+}
+
+export interface RecipeDef {
+  id: string;
+  skill: SkillId;
+  name: string;
+  description: string;
+  levelReq: number;
+  durationSeconds: number;
+  xp: number;
+  inputs: { materialId: string; amount: number }[];
+  outputMaterialId?: string;
+  outputAmount?: number;
+  outputItemId?: string;
+  /** Must be at this location to craft, if set */
+  locationId?: string;
 }
 
 export interface OwnedItem {
@@ -229,11 +284,20 @@ export interface ActiveTavern {
   completesAt: number;
 }
 
+export interface ActiveSkill {
+  type: "skill";
+  activityId?: string;
+  recipeId?: string;
+  startedAt: number;
+  completesAt: number;
+}
+
 export type ActiveAction =
   | ActiveTravel
   | ActiveQuest
   | ActiveCombat
   | ActiveTavern
+  | ActiveSkill
   | null;
 
 export type RewardTone =
@@ -244,7 +308,7 @@ export type RewardTone =
   | "jackpot";
 
 export interface PendingReward {
-  kind?: "quest" | "combat";
+  kind?: "quest" | "combat" | "skill";
   questId: string;
   encounterId?: string;
   success: boolean;
@@ -261,6 +325,11 @@ export interface PendingReward {
   streakBonus?: string;
   unlockName?: string;
   legendary?: boolean;
+  /** Skill activity / recipe rewards */
+  skillId?: SkillId;
+  skillXp?: number;
+  materials?: Record<string, number>;
+  activityName?: string;
 }
 
 export interface SettingsState {
@@ -273,7 +342,7 @@ export interface SettingsState {
 }
 
 export interface GameState {
-  version: 1;
+  version: 1 | 2;
   playerId: string;
   heroName: string;
   gold: number;
@@ -281,6 +350,10 @@ export interface GameState {
   unlockedLocations: string[];
   storyFlags: string[];
   stats: StatLevels;
+  /** Cumulative XP per skill — level derived via skillLevelFromXp */
+  skillXp: SkillLevels;
+  /** Stackable materials from gathering and crafting */
+  materials: Record<string, number>;
   equipment: Partial<Record<EquipSlot, string>>;
   inventory: OwnedItem[];
   gems: OwnedGem[];
@@ -308,6 +381,7 @@ export interface GameState {
     goldEarned: number;
     legendaryFound: number;
     bestStreak: number;
+    skillsCompleted: number;
   };
   successStreak: number;
   failStreak: number;

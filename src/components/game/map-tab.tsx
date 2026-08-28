@@ -19,6 +19,9 @@ import {
   tavernAtLocation,
   TAVERN_MAP,
   TAVERN_BEATS,
+  activitiesAtLocation,
+  SKILL_ACTIVITY_MAP,
+  RECIPE_MAP,
 } from "@/content";
 import {
   computeStats,
@@ -38,6 +41,9 @@ import {
   tavernHealCost,
   currentHeroHp,
   heroMaxHp,
+  skillLevel,
+  formatSkill,
+  skillBeatForActive,
   type ActiveAction,
   type CombatStance,
   type EncounterDef,
@@ -66,7 +72,7 @@ function formatRemaining(ms: number) {
 }
 
 export function MapTab() {
-  const { state, travelTo, attemptQuest, engageCombat, fleeCombat, buyTavernRound, healAtTavern, now } =
+  const { state, travelTo, attemptQuest, attemptSkill, engageCombat, fleeCombat, buyTavernRound, healAtTavern, now } =
     useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +85,8 @@ export function MapTab() {
     ? getLocationUnlockInfo(selected.id)
     : null;
   const quests = selected && selectedUnlocked ? questsAtLocation(selected.id) : [];
+  const skillActivities =
+    selected && selectedUnlocked ? activitiesAtLocation(selected.id) : [];
   const threats = selected
     ? ENCOUNTERS.filter(
         (e) =>
@@ -537,9 +545,10 @@ export function MapTab() {
                   {state.settings.tutorialTips && (
                     <p className="rounded-lg border border-border/60 bg-muted/40 p-3 text-xs">
                       Quest success depends on your level versus the quest level.
-                      Below ~70%, grind easier work or better gear first. In combat,
-                      match your stance to the enemy&apos;s weakness — Strike, Skirmish,
-                      or Hex.
+                      Below ~70%, grind easier work or better gear first. Skills
+                      like fishing, mining, and woodcutting train at each location
+                      — no failure roll, just time and yields. In combat, match your
+                      stance to the enemy&apos;s weakness — Strike, Skirmish, or Hex.
                     </p>
                   )}
                   {state.wounded && (
@@ -577,6 +586,27 @@ export function MapTab() {
                         />
                       ))}
                     </ul>
+                  )}
+                  {skillActivities.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <h3 className="text-sm font-semibold text-emerald-100">
+                        Skills
+                      </h3>
+                      <ul className="space-y-3">
+                        {skillActivities.map((act) => (
+                          <SkillActivityCard
+                            key={act.id}
+                            activity={act}
+                            playerLevel={skillLevel(state, act.skill)}
+                            onStart={() => {
+                              const err = attemptSkill(act.id);
+                              if (err) setError(err);
+                              else setSelectedId(null);
+                            }}
+                          />
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   {threats.length > 0 && (
                     <div className="space-y-2 pt-2">
@@ -834,20 +864,31 @@ function WaitScene({
       ? action.toLocationId
       : action.type === "quest"
         ? QUEST_MAP[action.questId]?.locationId
-        : undefined;
+        : action.type === "skill" && action.activityId
+          ? SKILL_ACTIVITY_MAP[action.activityId]?.locationId
+          : action.type === "skill" && action.recipeId
+            ? RECIPE_MAP[action.recipeId]?.locationId
+            : undefined;
+
   const lines =
     action.type === "travel"
       ? TRAVEL_BEATS[action.toLocationId]
       : action.type === "tavern"
         ? TAVERN_BEATS[action.tavernId]
-        : LOCATION_BEATS[locId ?? ""];
+        : action.type === "skill"
+          ? skillBeatForActive(action)
+          : LOCATION_BEATS[locId ?? ""];
   const beat = rotatingBeat(lines, action.startedAt, now);
   const title =
     action.type === "travel"
       ? `On the road to ${LOCATION_MAP[action.toLocationId]?.name}`
       : action.type === "tavern"
         ? `${TAVERN_MAP[action.tavernId]?.name ?? "Tavern"} — listening`
-        : QUEST_MAP[action.questId]?.name ?? "Quest";
+        : action.type === "skill"
+          ? action.activityId
+            ? SKILL_ACTIVITY_MAP[action.activityId]?.name
+            : RECIPE_MAP[action.recipeId ?? ""]?.name ?? "Crafting"
+          : QUEST_MAP[action.questId]?.name ?? "Quest";
 
   useEffect(() => {
     if (!soundEnabled) return;
@@ -864,7 +905,9 @@ function WaitScene({
             ? "Traveling"
             : action.type === "tavern"
               ? "At the tavern"
-              : "In the work"}
+              : action.type === "skill"
+                ? "Training"
+                : "In the work"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -878,6 +921,47 @@ function WaitScene({
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+function SkillActivityCard({
+  activity,
+  playerLevel,
+  onStart,
+}: {
+  activity: import("@/lib/game").SkillActivityDef;
+  playerLevel: number;
+  onStart: () => void;
+}) {
+  const yields = activity.yields
+    .map((y) => ITEMS[y.materialId]?.name)
+    .filter(Boolean)
+    .join(", ");
+  const locked = playerLevel < activity.levelReq;
+
+  return (
+    <li className="rounded-xl border border-emerald-900/40 bg-card p-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="font-medium">{activity.name}</p>
+          <p className="text-xs text-muted-foreground">
+            {formatSkill(activity.skill)} · req. level {activity.levelReq}
+          </p>
+        </div>
+        <Badge variant={locked ? "destructive" : "secondary"}>
+          {locked ? `Lv ${playerLevel}` : `Lv ${playerLevel}`}
+        </Badge>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{activity.description}</p>
+      <p className="mt-2 text-xs">
+        Yields: {yields || "—"} · +{activity.xp} XP
+      </p>
+      <div className="mt-3">
+        <Button type="button" size="sm" disabled={locked} onClick={onStart}>
+          {locked ? `Need ${formatSkill(activity.skill)} ${activity.levelReq}` : "Train"}
+        </Button>
+      </div>
+    </li>
   );
 }
 

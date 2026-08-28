@@ -20,6 +20,10 @@ import {
 } from "./formulas";
 import { advanceCombatUntilCaughtUp } from "./combat-engine";
 import { completeTavernRound } from "./tavern-engine";
+import {
+  completeSkillActivity,
+  applySkillReward,
+} from "./skill-engine";
 import { currentHeroHp, heroMaxHp } from "./combat";
 import type {
   CampfireMessage,
@@ -105,6 +109,10 @@ export function resolveCompletedActions(state: GameState, now = Date.now()): Gam
       active: null,
       updatedAt: now,
     };
+  }
+
+  if (state.active.type === "skill") {
+    return completeSkillActivity(state, state.active);
   }
 
   // Quest completion -> pending reward if none waiting
@@ -206,7 +214,8 @@ export function claimReward(state: GameState): GameState {
   const reward = state.pendingReward;
   if (!reward) return state;
   const isCombat = reward.kind === "combat";
-  const quest = !isCombat ? QUEST_MAP[reward.questId] : undefined;
+  const isSkill = reward.kind === "skill";
+  const quest = !isCombat && !isSkill ? QUEST_MAP[reward.questId] : undefined;
   const enc =
     isCombat && reward.encounterId
       ? ENCOUNTER_MAP[reward.encounterId]
@@ -219,14 +228,25 @@ export function claimReward(state: GameState): GameState {
   );
   const inventory = [...state.inventory];
   const gems = [...state.gems];
+  let skillXp = state.skillXp;
+  let materials = state.materials;
+  let records = { ...state.records };
   const storyFlags = [...state.storyFlags];
   const unlockedLocations = [...state.unlockedLocations];
   const completedQuests = [...state.completedQuests];
   const completedEncounters = [...(state.completedEncounters ?? [])];
   const journalUnlocked = [...state.journalUnlocked];
 
-  if (reward.item) inventory.push(reward.item);
-  if (reward.gem) gems.push(reward.gem);
+  if (isSkill) {
+    const applied = applySkillReward(state, reward);
+    skillXp = applied.skillXp;
+    materials = applied.materials;
+    records = applied.records;
+    if (reward.item) inventory.push(reward.item);
+  } else {
+    if (reward.item) inventory.push(reward.item);
+    if (reward.gem) gems.push(reward.gem);
+  }
   if (reward.success && quest) {
     if (!completedQuests.includes(quest.id)) completedQuests.push(quest.id);
     if (quest.storyFlagOnSuccess && !storyFlags.includes(quest.storyFlagOnSuccess)) {
@@ -284,18 +304,18 @@ export function claimReward(state: GameState): GameState {
     ? { text: reward.omen, at: Date.now() }
     : state.omen;
 
-  const records = {
+  const recordsFinal = {
     questsCompleted:
-      (state.records.questsCompleted ?? 0) +
-      (reward.success && !isCombat ? 1 : 0),
+      records.questsCompleted +
+      (reward.success && !isCombat && !isSkill ? 1 : 0),
     encountersWon:
-      (state.records.encountersWon ?? 0) +
+      records.encountersWon +
       (reward.success && isCombat ? 1 : 0),
-    goldEarned:
-      (state.records.goldEarned ?? 0) + reward.gold + reward.bonusGold,
+    goldEarned: records.goldEarned + reward.gold + reward.bonusGold,
     legendaryFound:
-      (state.records.legendaryFound ?? 0) + (reward.legendary ? 1 : 0),
-    bestStreak: Math.max(state.records.bestStreak ?? 0, successStreak),
+      records.legendaryFound + (reward.legendary ? 1 : 0),
+    bestStreak: Math.max(records.bestStreak ?? 0, successStreak),
+    skillsCompleted: records.skillsCompleted ?? 0,
   };
 
   const npcReactions = { ...state.npcReactions };
@@ -354,13 +374,15 @@ export function claimReward(state: GameState): GameState {
     gold,
     inventory,
     gems,
+    skillXp,
+    materials,
     storyFlags,
     unlockedLocations,
     completedQuests,
     completedEncounters,
     journalUnlocked,
     stats: nextStats,
-    records,
+    records: recordsFinal,
     successStreak,
     failStreak,
     npcReactions,
@@ -375,7 +397,7 @@ export function claimReward(state: GameState): GameState {
 }
 
 export function startTravel(state: GameState, toLocationId: string): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling, questing, fighting, or listening at a tavern." };
+  if (state.active) return { error: "You are already traveling, working, fighting, training, or listening at a tavern." };
   if (state.pendingReward) return { error: "Claim your reward first." };
   if (!state.unlockedLocations.includes(toLocationId)) {
     return { error: "That place is not yet on your map." };
@@ -405,7 +427,7 @@ export function startQuest(
   questId: string,
   withAutoEquip = false,
 ): GameState | { error: string } {
-  if (state.active) return { error: "You are already traveling, questing, fighting, or listening at a tavern." };
+  if (state.active) return { error: "You are already traveling, working, fighting, training, or listening at a tavern." };
   if (state.pendingReward) return { error: "Claim your reward first." };
   const quest = QUEST_MAP[questId];
   if (!quest) return { error: "Unknown quest." };
@@ -594,6 +616,29 @@ export function renameHero(state: GameState, name: string): GameState {
 
 export function questsAtLocation(locationId: string): QuestDef[] {
   return QUESTS.filter((q) => q.locationId === locationId);
+}
+
+export function sellMaterial(
+  state: GameState,
+  materialId: string,
+  amount = 1,
+): GameState | { error: string } {
+  const def = ITEMS[materialId];
+  if (!def?.material) return { error: "That isn't a trade material." };
+  const have = state.materials[materialId] ?? 0;
+  if (have < amount) return { error: "Not enough material to sell." };
+  const stats = computeStats(state);
+  const cap = goldCap(stats.constitution);
+  const materials = { ...state.materials };
+  const left = have - amount;
+  if (left <= 0) delete materials[materialId];
+  else materials[materialId] = left;
+  return {
+    ...state,
+    gold: clamp(state.gold + def.sellValue * amount, 0, cap),
+    materials,
+    updatedAt: Date.now(),
+  };
 }
 
 export { autoEquipForQuest };

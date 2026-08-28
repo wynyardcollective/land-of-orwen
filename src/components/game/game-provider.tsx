@@ -15,6 +15,9 @@ import {
   startQuest,
   startTravel,
   startCombat,
+  startSkillActivity,
+  startRecipeCraft,
+  sellMaterial as sellMaterialAction,
   fleeCombat,
   tryLoreGuess,
   unequipSlot,
@@ -52,6 +55,9 @@ interface GameContextValue {
   setTab: (tab: TabId) => void;
   travelTo: (locationId: string) => string | null;
   attemptQuest: (questId: string, autoEquip?: boolean) => string | null;
+  attemptSkill: (activityId: string) => string | null;
+  craftRecipe: (recipeId: string) => string | null;
+  sellMaterial: (materialId: string, amount?: number) => string | null;
   engageCombat: (
     encounterId: string,
     stance?: CombatStance | "auto",
@@ -210,8 +216,10 @@ export function GameProvider({
       } else if (next.pendingReward) {
         const r = next.pendingReward;
         const isCombat = r.kind === "combat";
-        const msg =
-          r.tone === "jackpot"
+        const isSkill = r.kind === "skill";
+        const msg = isSkill
+          ? `${r.activityName ?? "Training"} complete. Rewards ready.`
+          : r.tone === "jackpot"
             ? `Jackpot! ${r.narrative}`
             : r.tone === "close-win"
               ? `Close call — ${isCombat ? "fight" : "quest"} done. Rewards ready.`
@@ -257,6 +265,41 @@ export function GameProvider({
       if ("error" in result) return result.error;
       update(() => result);
       setAnnouncement(`Traveling…`);
+      return null;
+    },
+    [state, update],
+  );
+
+  const attemptSkill = useCallback(
+    (activityId: string) => {
+      if (!state) return "Not ready.";
+      const result = startSkillActivity(state, activityId);
+      if ("error" in result) return result.error;
+      update(() => result);
+      setAnnouncement("Skill training started.");
+      return null;
+    },
+    [state, update],
+  );
+
+  const craftRecipe = useCallback(
+    (recipeId: string) => {
+      if (!state) return "Not ready.";
+      const result = startRecipeCraft(state, recipeId);
+      if ("error" in result) return result.error;
+      update(() => result);
+      setAnnouncement("Crafting started.");
+      return null;
+    },
+    [state, update],
+  );
+
+  const sellMaterialFn = useCallback(
+    (materialId: string, amount = 1) => {
+      if (!state) return "Not ready.";
+      const result = sellMaterialAction(state, materialId, amount);
+      if ("error" in result) return result.error;
+      update(() => result);
       return null;
     },
     [state, update],
@@ -346,6 +389,9 @@ export function GameProvider({
       setTab,
       travelTo,
       attemptQuest,
+      attemptSkill,
+      craftRecipe,
+      sellMaterial: sellMaterialFn,
       engageCombat,
       fleeCombat: flee,
       buyTavernRound,
@@ -425,6 +471,9 @@ export function GameProvider({
     tab,
     travelTo,
     attemptQuest,
+    attemptSkill,
+    craftRecipe,
+    sellMaterialFn,
     engageCombat,
     flee,
     buyTavernRound,

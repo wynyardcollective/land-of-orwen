@@ -6,13 +6,18 @@ import {
   AFFINITY_STAT,
   computeStats,
   formatStat,
+  formatSkill,
   goldCap,
   rarityClass,
   SLOT_QUEST_STAT,
+  skillLevel,
+  skillLevelFromXp,
+  SKILL_XP_PER_LEVEL,
   currentHeroHp,
   heroMaxHp,
   type EquipSlot,
   type HeroStat,
+  SKILL_IDS,
 } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -90,6 +95,38 @@ export function HeroTab() {
             </strong>
             {state.wounded ? " · wounded (−5% offense)" : ""}
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Skills</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            RuneScape-style training — fish, mine, cut wood, cook, and smith at
+            locations on the map. Craft tab holds recipes.
+          </p>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+          {SKILL_IDS.map((skill) => {
+            const xp = state.skillXp[skill] ?? 0;
+            const level = skillLevelFromXp(xp);
+            const nextAt = level * SKILL_XP_PER_LEVEL;
+            const prevAt = (level - 1) * SKILL_XP_PER_LEVEL;
+            const span = Math.max(1, nextAt - prevAt);
+            const progress = Math.min(100, Math.round(((xp - prevAt) / span) * 100));
+            return (
+              <div
+                key={skill}
+                className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2"
+              >
+                <p className="text-xs text-muted-foreground">{formatSkill(skill)}</p>
+                <p className="text-lg font-semibold">Lv {level}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {xp} XP · {progress}% to next
+                </p>
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
 

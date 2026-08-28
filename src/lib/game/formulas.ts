@@ -140,6 +140,13 @@ export function formatStat(stat: HeroStat) {
   return stat.charAt(0).toUpperCase() + stat.slice(1);
 }
 
+export function formatSkill(skill: string) {
+  return skill
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 export function rarityClass(rarity: string) {
   switch (rarity) {
     case "legendary":

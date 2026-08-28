@@ -1,23 +1,141 @@
 "use client";
 
 import { useState } from "react";
-import { GEMS, ITEMS, LORE_SOLUTION, LORE_SYMBOLS } from "@/content";
-import { AFFINITY_STAT, formatStat } from "@/lib/game";
+import { GEMS, ITEMS, LORE_SOLUTION, LORE_SYMBOLS, RECIPES } from "@/content";
+import {
+  AFFINITY_STAT,
+  formatStat,
+  formatSkill,
+  skillLevel,
+  materialCount,
+  hasMaterials,
+} from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function CraftTab() {
-  const { state, upgrade, socket, loreGuess, resetLore } = useGame();
+  const { state, upgrade, socket, loreGuess, resetLore, craftRecipe } = useGame();
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [socketItem, setSocketItem] = useState("");
   const [socketGem, setSocketGem] = useState("");
   const socketReady = Boolean(socketItem && socketGem);
 
+  const materialEntries = Object.entries(state.materials).filter(
+    ([id, n]) => n > 0 && ITEMS[id]?.material,
+  );
+
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Materials</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {materialEntries.length === 0 ? (
+            <p className="text-muted-foreground">
+              No materials yet. Fish, mine, and cut wood at locations on the map.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {materialEntries.map(([id, count]) => {
+                const def = ITEMS[id];
+                if (!def) return null;
+                return (
+                  <li
+                    key={id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 p-3"
+                  >
+                    <div>
+                      <p className="font-medium">{def.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {count} in sack · sells for {def.sellValue}g
+                      </p>
+                    </div>
+                    <Badge variant="outline">{count}</Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Smithing & cooking</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Recipes use materials from your sack. Smith at Stonewheel Mill; cook
+            anywhere once you have ingredients.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <ul className="space-y-3">
+            {RECIPES.map((recipe) => {
+              const level = skillLevel(state, recipe.skill);
+              const locked = level < recipe.levelReq;
+              const canCraft = hasMaterials(state, recipe.inputs);
+              const atMill =
+                !recipe.locationId || recipe.locationId === state.locationId;
+              const inputs = recipe.inputs
+                .map(
+                  (i) =>
+                    `${ITEMS[i.materialId]?.name ?? i.materialId} ${materialCount(state, i.materialId)}/${i.amount}`,
+                )
+                .join(" · ");
+              const output =
+                recipe.outputItemId
+                  ? ITEMS[recipe.outputItemId]?.name
+                  : recipe.outputMaterialId
+                    ? `${recipe.outputAmount ?? 1}× ${ITEMS[recipe.outputMaterialId]?.name}`
+                    : "—";
+
+              return (
+                <li
+                  key={recipe.id}
+                  className="rounded-lg border border-border/60 p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium">{recipe.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatSkill(recipe.skill)} · req. {recipe.levelReq} · you: {level}
+                      </p>
+                    </div>
+                    {recipe.locationId && (
+                      <Badge variant="outline">Mill forge</Badge>
+                    )}
+                  </div>
+                  <p className="mt-2 text-muted-foreground">{recipe.description}</p>
+                  <p className="mt-2 text-xs">Needs: {inputs}</p>
+                  <p className="mt-1 text-xs">Makes: {output}</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="mt-3"
+                    disabled={locked || !canCraft || !atMill}
+                    onClick={() => {
+                      const err = craftRecipe(recipe.id);
+                      setError(err);
+                    }}
+                  >
+                    {locked
+                      ? `Need ${formatSkill(recipe.skill)} ${recipe.levelReq}`
+                      : !atMill
+                        ? "Travel to Stonewheel Mill"
+                        : !canCraft
+                          ? "Missing materials"
+                          : "Craft"}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Gem crafting</CardTitle>

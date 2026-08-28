@@ -13,6 +13,17 @@ export {
 } from "./combat-engine";
 export { playCue } from "./sound";
 export {
+  startSkillActivity,
+  startRecipeCraft,
+  completeSkillActivity,
+  skillLevel,
+  skillLevelFromXp,
+  materialCount,
+  hasMaterials,
+  skillBeatForActive,
+  SKILL_XP_PER_LEVEL,
+} from "./skill-engine";
+export {
   startTavernRound,
   completeTavernRound,
   tavernRoundCost,
