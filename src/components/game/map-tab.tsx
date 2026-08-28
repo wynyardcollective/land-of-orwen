@@ -14,6 +14,7 @@ import {
   ENEMY_MAP,
   getLocationUnlockInfo,
   tavernAtLocation,
+  shopAtLocation,
   TAVERN_MAP,
   TAVERN_BEATS,
   activitiesAtLocation,
@@ -44,7 +45,7 @@ function formatRemaining(ms: number) {
 }
 
 export function MapTab() {
-  const { state, travelTo, attemptQuest, attemptSkill, engageCombat, fleeCombat, buyTavernRound, healAtTavern, now } =
+  const { state, travelTo, attemptQuest, attemptSkill, engageCombat, fleeCombat, buyTavernRound, healAtTavern, buyFromShop, now } =
     useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +86,8 @@ export function MapTab() {
   );
   const tavernHere =
     state.locationId === selected?.id ? tavernAtLocation(state.locationId) : null;
+  const shopHere =
+    state.locationId === selected?.id ? shopAtLocation(state.locationId) : null;
   const tavernFresh =
     state.lastTavernResult && now - state.lastTavernResult.at < 14_000
       ? state.lastTavernResult
@@ -416,6 +419,7 @@ export function MapTab() {
               skillActivities={skillActivities}
               threats={threats}
               tavern={tavernHere ?? null}
+              shop={shopHere ?? null}
               error={error}
               onClose={() => setSelectedId(null)}
               onTravel={() => {
@@ -447,6 +451,11 @@ export function MapTab() {
               onTavernHeal={() => {
                 if (!tavernHere) return;
                 const err = healAtTavern(tavernHere.id);
+                if (err) setError(err);
+              }}
+              onShopBuy={(stockId) => {
+                if (!shopHere) return;
+                const err = buyFromShop(shopHere.id, stockId);
                 if (err) setError(err);
               }}
             />

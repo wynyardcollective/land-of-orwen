@@ -346,6 +346,11 @@ export function RecipeCard({
                   Mill
                 </Badge>
               )}
+              {recipe.repeatable && (
+                <Badge variant="outline" className="text-[10px] border-amber-700/50">
+                  Repeatable
+                </Badge>
+              )}
               <Badge
                 variant="outline"
                 className={cn("text-[10px]", theme.badge)}

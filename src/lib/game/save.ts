@@ -111,6 +111,7 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     omen: null,
     lastUnlock: null,
     tavernRumorsClaimed: [],
+    shopPurchases: {},
     lastTavernResult: null,
     lastCombat: null,
     updatedAt: Date.now(),
@@ -155,6 +156,7 @@ export function normalizeState(raw: GameState): GameState {
     omen: raw.omen ?? null,
     lastUnlock: raw.lastUnlock ?? null,
     tavernRumorsClaimed: raw.tavernRumorsClaimed ?? [],
+    shopPurchases: raw.shopPurchases ?? {},
     lastTavernResult: raw.lastTavernResult ?? null,
     lastCombat: raw.lastCombat ?? null,
     pendingReward: raw.pendingReward

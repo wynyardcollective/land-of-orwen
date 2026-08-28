@@ -5,8 +5,10 @@ import {
   ITEMS,
   LOCATION_NPCS,
   ENEMY_MAP,
+  stockForShop,
 } from "@/content";
 import type { TavernDef } from "@/content/taverns";
+import type { ShopDef } from "@/lib/game/types";
 import type { LocationDef } from "@/lib/game/types";
 import type { LocationUnlockInfo } from "@/content/unlocks";
 import {
@@ -24,6 +26,8 @@ import {
   tavernRoundDuration,
   availableTavernRumors,
   tavernHealCost,
+  shopBuyPrice,
+  shopStockAvailable,
   currentHeroHp,
   heroMaxHp,
   type CombatStance,
@@ -51,9 +55,10 @@ import {
   Wine,
   Footprints,
   Lock,
+  Store,
 } from "lucide-react";
 
-type LocationSection = "quests" | "skills" | "threats" | "tavern";
+type LocationSection = "quests" | "skills" | "threats" | "tavern" | "shop";
 
 const STANCES: { id: CombatStance | "auto"; label: string }[] = [
   { id: "auto", label: "Auto (match weakness)" },
@@ -72,6 +77,7 @@ export function LocationPanel({
   skillActivities,
   threats,
   tavern,
+  shop,
   error,
   onClose,
   onTravel,
@@ -80,6 +86,7 @@ export function LocationPanel({
   onEngageCombat,
   onTavernBuy,
   onTavernHeal,
+  onShopBuy,
 }: {
   location: LocationDef;
   unlocked: boolean;
@@ -90,6 +97,7 @@ export function LocationPanel({
   skillActivities: SkillActivityDef[];
   threats: EncounterDef[];
   tavern: TavernDef | null;
+  shop: ShopDef | null;
   error: string | null;
   onClose: () => void;
   onTravel: () => void;
@@ -98,9 +106,12 @@ export function LocationPanel({
   onEngageCombat: (encounterId: string, stance: CombatStance | "auto") => void;
   onTavernBuy: () => void;
   onTavernHeal: () => void;
+  onShopBuy: (stockId: string) => void;
 }) {
   const stats = computeStats(state);
   const npc = LOCATION_NPCS[location.id];
+  const shopStock = shop ? stockForShop(shop.id) : [];
+  const shopAvailable = shopStock.filter((s) => shopStockAvailable(s, state));
 
   const sections = useMemo(() => {
     const list: { id: LocationSection; label: string; count: number }[] = [];
@@ -113,11 +124,26 @@ export function LocationPanel({
     if (atLocation && threats.length > 0) {
       list.push({ id: "threats", label: "Threats", count: threats.length });
     }
+    if (atLocation && shop) {
+      list.push({
+        id: "shop",
+        label: "Shop",
+        count: shopAvailable.length,
+      });
+    }
     if (atLocation && tavern) {
       list.push({ id: "tavern", label: "Tavern", count: 0 });
     }
     return list;
-  }, [atLocation, quests.length, skillActivities.length, threats.length, tavern]);
+  }, [
+    atLocation,
+    quests.length,
+    skillActivities.length,
+    threats.length,
+    tavern,
+    shop,
+    shopAvailable.length,
+  ]);
 
   const [section, setSection] = useState<LocationSection>("quests");
 
@@ -207,7 +233,9 @@ export function LocationPanel({
                       ? Pickaxe
                       : s.id === "threats"
                         ? Swords
-                        : Wine;
+                        : s.id === "shop"
+                          ? Store
+                          : Wine;
                 return (
                   <button
                     key={s.id}
@@ -298,6 +326,14 @@ export function LocationPanel({
               }
               onBuy={onTavernBuy}
               onHeal={onTavernHeal}
+            />
+          )}
+
+          {section === "shop" && shop && (
+            <ShopPanel
+              shop={shop}
+              state={state}
+              onBuy={onShopBuy}
             />
           )}
 
@@ -631,6 +667,103 @@ function TavernPanel({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ShopPanel({
+  shop,
+  state,
+  onBuy,
+}: {
+  shop: ShopDef;
+  state: GameState;
+  onBuy: (stockId: string) => void;
+}) {
+  const stock = stockForShop(shop.id);
+  const busy = !!state.active || !!state.pendingReward;
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-emerald-900/35 bg-emerald-950/10 p-4 backdrop-blur-sm">
+      <div>
+        <h3 className="font-heading text-sm font-semibold text-emerald-100">
+          {shop.name}
+        </h3>
+        <p className="text-xs text-muted-foreground">{shop.keeper}</p>
+      </div>
+      <p className="text-sm text-muted-foreground">{shop.description}</p>
+      <p className="text-[11px] text-muted-foreground">
+        Your gold: <strong className="text-amber-100">{state.gold}g</strong>
+        {" · "}Charisma softens prices
+      </p>
+      <ul className="space-y-2">
+        {stock.map((entry) => {
+          const def = ITEMS[entry.itemId];
+          if (!def) return null;
+          const available = shopStockAvailable(entry, state);
+          const price = shopBuyPrice(state, entry);
+          const canAfford = state.gold >= price;
+          const bought = state.shopPurchases[entry.id] ?? 0;
+          const stockLabel =
+            entry.maxPurchases != null
+              ? `${bought}/${entry.maxPurchases} bought`
+              : null;
+          const amountLabel =
+            entry.amount > 1 ? `${entry.amount}× ` : "";
+          const lockedByFlag =
+            entry.requiresFlags?.some((f) => !state.storyFlags.includes(f));
+
+          return (
+            <li
+              key={entry.id}
+              className="rounded-xl border border-border/40 bg-black/20 px-3 py-2.5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-amber-50/95">
+                    {amountLabel}{def.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                    {def.description}
+                  </p>
+                </div>
+                <Badge variant="outline" className="shrink-0 tabular-nums">
+                  {price}g
+                </Badge>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {stockLabel && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {stockLabel}
+                  </span>
+                )}
+                {lockedByFlag && !available && (
+                  <span className="text-[10px] text-orange-200/90">
+                    Unlocks with story progress
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  size="sm"
+                  className="rounded-full"
+                  disabled={!available || !canAfford || busy}
+                  onClick={() => onBuy(entry.id)}
+                >
+                  {!available
+                    ? entry.maxPurchases != null && bought >= entry.maxPurchases
+                      ? "Sold out"
+                      : "Locked"
+                    : !canAfford
+                      ? `Need ${price}g`
+                      : busy
+                        ? "Busy…"
+                        : `Buy (${price}g)`}
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

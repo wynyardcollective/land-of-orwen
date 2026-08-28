@@ -100,6 +100,28 @@ export interface RecipeDef {
   outputItemId?: string;
   /** Must be at this location to craft, if set */
   locationId?: string;
+  /** Bulk loop craft — shown in UI as repeatable mill/kitchen work */
+  repeatable?: boolean;
+}
+
+export interface ShopDef {
+  id: string;
+  locationId: string;
+  name: string;
+  keeper: string;
+  description: string;
+}
+
+export interface ShopStockEntry {
+  id: string;
+  shopId: string;
+  itemId: string;
+  /** Units granted per purchase (material stack or single item) */
+  amount: number;
+  price: number;
+  /** Max purchases of this line per save */
+  maxPurchases?: number;
+  requiresFlags?: string[];
 }
 
 export interface OwnedItem {
@@ -388,6 +410,8 @@ export interface GameState {
   npcReactions: Record<string, { name: string; quote: string; at: number }>;
   omen: { text: string; at: number } | null;
   lastUnlock: { ids: string[]; names: string[]; at: number } | null;
+  /** Purchases per shop stock line id */
+  shopPurchases: Record<string, number>;
   /** Rumor outcome ids already claimed at taverns */
   tavernRumorsClaimed: string[];
   /** Last tavern buy result for UI toast */

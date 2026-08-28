@@ -7,6 +7,14 @@ export {
   TAVERN_BEATS,
   tavernAtLocation,
 } from "./taverns";
+export {
+  SHOPS,
+  SHOP_MAP,
+  SHOP_STOCK,
+  SHOP_STOCK_MAP,
+  shopAtLocation,
+  stockForShop,
+} from "./shops";
 export { getLocationUnlockInfo, type LocationUnlockInfo } from "./unlocks";
 export { ITEMS, GEMS, LORE_SYMBOLS, LORE_SOLUTION } from "./items";
 export { QUESTS, QUEST_MAP } from "./quests";

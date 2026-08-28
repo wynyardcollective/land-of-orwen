@@ -24,9 +24,10 @@ import {
   upgradeGem,
   writeLocalSave,
   playCue,
-  buyTavernRound as startTavernRound,
+  startTavernRound,
   tavernHeal as healAtTavern,
   useConsumable as consumeItem,
+  buyShopItem,
   type GameState,
   type Pace,
   type SettingsState,
@@ -76,6 +77,7 @@ interface GameContextValue {
   patchSettings: (patch: Partial<SettingsState>) => void;
   buyTavernRound: (tavernId: string) => string | null;
   healAtTavern: (tavernId: string) => string | null;
+  buyFromShop: (shopId: string, stockId: string) => string | null;
   useItem: (uid: string) => string | null;
   resetGame: () => void;
   dismissOpening: () => void;
@@ -364,6 +366,19 @@ export function GameProvider({
     [state, update],
   );
 
+  const buyFromShopFn = useCallback(
+    (shopId: string, stockId: string) => {
+      if (!state) return "Not ready.";
+      const result = buyShopItem(state, shopId, stockId);
+      if ("error" in result) return result.error;
+      update(() => result);
+      setAnnouncement("Purchase complete.");
+      playCue(state.settings.soundEnabled, "reward");
+      return null;
+    },
+    [state, update],
+  );
+
   const useItem = useCallback(
     (uid: string) => {
       if (!state) return "Not ready.";
@@ -396,6 +411,7 @@ export function GameProvider({
       fleeCombat: flee,
       buyTavernRound,
       healAtTavern: healAtTavernFn,
+      buyFromShop: buyFromShopFn,
       useItem,
       claim: () =>
         update((s) => {
@@ -478,6 +494,7 @@ export function GameProvider({
     flee,
     buyTavernRound,
     healAtTavernFn,
+    buyFromShopFn,
     useItem,
     update,
     persist,

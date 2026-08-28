@@ -34,3 +34,8 @@ export {
   tavernHeal,
   tavernHealCost,
 } from "./tavern-engine";
+export {
+  buyShopItem,
+  shopBuyPrice,
+  shopStockAvailable,
+} from "./shop-engine";
