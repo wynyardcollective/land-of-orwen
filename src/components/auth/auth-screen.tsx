@@ -91,7 +91,7 @@ export function AuthScreen() {
           </p>
         </header>
 
-        <div className="mb-4 space-y-2 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-lg backdrop-blur sm:p-6">
+        <div className="mb-4 space-y-2 wm-surface rounded-2xl border border-border/40 p-5 sm:p-6">
           <h2 className="text-lg font-semibold">Walk first</h2>
           <p className="text-sm text-muted-foreground">
             {hasLocalSave
@@ -101,7 +101,7 @@ export function AuthScreen() {
           <Button
             type="button"
             variant="secondary"
-            className="h-11 w-full"
+            className="h-11 w-full rounded-full"
             onClick={() => {
               clearError();
               startGuest();
@@ -113,7 +113,7 @@ export function AuthScreen() {
 
         <form
           onSubmit={onSubmit}
-          className="space-y-4 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-lg backdrop-blur sm:p-6"
+          className="space-y-4 wm-surface rounded-2xl border border-border/40 p-5 sm:p-6"
           aria-labelledby="auth-heading"
         >
           <h1 id="auth-heading" className="text-lg font-semibold">
@@ -179,7 +179,7 @@ export function AuthScreen() {
             </p>
           )}
 
-          <Button type="submit" className="h-11 w-full" disabled={busy}>
+          <Button type="submit" className="h-11 w-full rounded-full" disabled={busy}>
             {busy
               ? mode === "login"
                 ? "Signing in…"

@@ -239,16 +239,24 @@ html[data-reduced-motion="1"] *::after {
   backdrop-filter: blur(8px);
 }
 
+.wm-surface {
+  background: oklch(0.2 0.02 70 / 0.55);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 0 0 1px oklch(1 0 0 / 0.04),
+    inset 0 1px 0 oklch(1 0 0 / 0.04);
+}
+
 .site-prose h2 {
   letter-spacing: -0.02em;
 }
 
 .site-cta-primary {
-  @apply inline-flex h-11 items-center justify-center rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:brightness-110;
+  @apply inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.2),inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_14px_rgba(0,0,0,0.2)] transition hover:brightness-110;
 }
 
 .site-cta-secondary {
-  @apply inline-flex h-11 items-center justify-center rounded-lg border border-border/60 bg-background/30 px-5 text-sm font-medium text-foreground transition hover:bg-muted/40;
+  @apply inline-flex h-11 items-center justify-center rounded-full border-0 bg-card/70 px-6 text-sm font-medium text-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.06),inset_0_1px_1px_rgba(255,255,255,0.1),0_4px_12px_rgba(0,0,0,0.15)] backdrop-blur-sm transition hover:bg-card/90;
 }
 
 ::selection {

@@ -133,7 +133,7 @@ Useful scripts:
 
 ## Stack
 
-Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, OpenNext Cloudflare adapter, Cloudflare D1.
+Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, [Watermelon UI](https://ui.watermelon.sh) components (hero, surfaces), OpenNext Cloudflare adapter, Cloudflare D1.
 
 ## License note
 

@@ -29,7 +29,7 @@ export default function LoreIndexPage() {
           <li key={article.slug}>
             <Link
               href={`/lore/${article.slug}`}
-              className="site-card group block rounded-xl border border-border/50 p-5 transition hover:border-amber-800/50"
+              className="wm-surface group block rounded-2xl border border-border/40 p-5 transition hover:border-amber-800/45"
             >
               <p className="text-xs text-muted-foreground">{article.date}</p>
               <h2 className="mt-2 font-heading text-lg font-medium text-amber-100 transition group-hover:text-amber-50">
