@@ -25,7 +25,7 @@ export const OPENING_SECTIONS: OpeningSection[] = [
     heading: "You are in the middle of it",
     paragraphs: [
       "Merrick did not send a company. He sent you. Not because you are the strongest walker in Orwen — because the land is running out of time and someone has to start walking.",
-      "The journal already has his notes. The map shows Merrick's Orchard, Tarowen Square, and the Ashen Grass. Work here first. Listen in taverns when gold allows. What you learn on the road is how the rest of the country opens.",
+      "The journal already has his notes. The map shows Merrick's Orchard, Tarowen Square, and the Ashen Grass — with hamlets, fords, and waystations waiting beyond the first roads.",
       "When you are ready, tap the orchard on the map, choose a quest, and let the wait run. This is an idle road. The drought did not pause for anyone — but your journey starts now.",
     ],
   },

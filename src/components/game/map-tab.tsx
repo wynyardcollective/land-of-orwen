@@ -139,9 +139,8 @@ export function MapTab() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Map of Orwen</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Tap a pin on the map or a name below to travel or view quests. Locked
-            pins show how to open them. Secret places appear after tavern rumors.
-            New hamlets, fords, and waystations branch off the main drought road.
+            Fourteen towns and eight hidden sites across the drought country.
+            Tap a pin to travel or view local work.
           </p>
         </CardHeader>
         <CardContent>

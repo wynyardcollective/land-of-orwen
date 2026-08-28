@@ -86,17 +86,17 @@ export function AuthScreen() {
           </p>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
             {mode === "login"
-              ? "Sign in to continue your journey — or try guest mode first."
-              : "Create an account to keep progress across devices."}
+              ? "Sign in to resume your journey across Orwen."
+              : "Create an account to keep progress on the road."}
           </p>
         </header>
 
         <div className="mb-4 space-y-2 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-lg backdrop-blur sm:p-6">
-          <h2 className="text-lg font-semibold">Play first</h2>
+          <h2 className="text-lg font-semibold">Walk first</h2>
           <p className="text-sm text-muted-foreground">
             {hasLocalSave
-              ? "A guest journey is saved in this browser. Continue without signing in, then create an account later to sync to the cloud."
-              : "Wander Orwen without an account. Progress stays on this device until you create an account."}
+              ? "A guest journey waits in this browser. Continue without signing in, then save to an account when you are ready."
+              : "Enter Orwen without an account. Progress stays on this device until you choose to save it."}
           </p>
           <Button
             type="button"

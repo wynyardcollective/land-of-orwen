@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s · The Land of Orwen",
   },
   description:
-    "A relaxing idle RPG inspired by Land of Livia — explore Orwen, run timed quests, craft gems, and save progress to the cloud.",
+    "Original browser idle RPG set in drought-struck Orwen — travel the map, read the journal, and pursue the Rainward Gate.",
   openGraph: {
     type: "website",
     locale: "en_NZ",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "The Land of Orwen",
     title: "The Land of Orwen",
     description:
-      "A relaxing idle RPG of drought, rumor, and returning rain — free in the browser.",
+      "Walk Orwen until the sky remembers rain — an original browser idle chronicle.",
   },
 };
 

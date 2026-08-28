@@ -219,3 +219,38 @@ html[data-reduced-motion="1"] *::after {
 [data-reduced-motion="1"] .auth-drift-slow {
   animation: none;
 }
+
+/* —— Public site polish —— */
+.site-ambient {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, oklch(0.28 0.04 70 / 0.45), transparent 55%),
+    oklch(0.16 0.02 70);
+}
+
+.site-hero {
+  background:
+    radial-gradient(ellipse at 20% 0%, oklch(0.35 0.06 85 / 0.35), transparent 50%),
+    radial-gradient(ellipse at 80% 100%, oklch(0.22 0.04 50 / 0.4), transparent 45%),
+    linear-gradient(165deg, oklch(0.14 0.02 70), oklch(0.2 0.03 75));
+}
+
+.site-card {
+  background: oklch(0.2 0.02 70 / 0.55);
+  backdrop-filter: blur(8px);
+}
+
+.site-prose h2 {
+  letter-spacing: -0.02em;
+}
+
+.site-cta-primary {
+  @apply inline-flex h-11 items-center justify-center rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:brightness-110;
+}
+
+.site-cta-secondary {
+  @apply inline-flex h-11 items-center justify-center rounded-lg border border-border/60 bg-background/30 px-5 text-sm font-medium text-foreground transition hover:bg-muted/40;
+}
+
+::selection {
+  background: oklch(0.55 0.1 85 / 0.45);
+}
