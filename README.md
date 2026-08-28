@@ -5,6 +5,7 @@ A relaxing browser idle RPG inspired by **Land of Livia** — original world, st
 ## Features
 
 - Interactive map with 8 locations, 5 secret areas, and ~24 quests
+- **Skills** — fishing, mining, woodcutting, cooking, and smithing at map locations; materials and recipes in Craft
 - **Taverns** — pay gold and wait out a round for a chance to uncover secret locations, early map routes, and journal intel
 - Strength / Dexterity / Intelligence quests plus Constitution, Wisdom, Charisma
 - Equipment, auto-equip, gem crafting, and a lore symbol puzzle

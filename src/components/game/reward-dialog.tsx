@@ -3,6 +3,7 @@
 import { GEMS, ITEMS, QUEST_MAP, ENCOUNTER_MAP } from "@/content";
 import { rarityClass, formatSkill } from "@/lib/game";
 import { useGame } from "./game-provider";
+import { SkillRewardBlock } from "./skill-ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -92,12 +93,29 @@ export function RewardDialog() {
                   You are wounded — −5% offense until a quest or campfire rest.
                 </p>
               )}
-              {reward.skillId && reward.skillXp && (
+              {isSkill && (
+                <SkillRewardBlock
+                  skillId={reward.skillId}
+                  skillXp={reward.skillXp}
+                  materials={reward.materials}
+                  item={
+                    reward.item
+                      ? {
+                          defId: reward.item.defId,
+                          power: reward.item.power,
+                          legendary: reward.legendary,
+                        }
+                      : undefined
+                  }
+                />
+              )}
+              {!isSkill && reward.skillId && reward.skillXp && (
                 <p className="text-emerald-300">
                   {formatSkill(reward.skillId)} +{reward.skillXp} XP
                 </p>
               )}
-              {reward.materials &&
+              {!isSkill &&
+                reward.materials &&
                 Object.entries(reward.materials).map(([id, amount]) => (
                   <p key={id} className="text-stone-200">
                     Material: {ITEMS[id]?.name ?? id} ×{amount}
@@ -109,7 +127,7 @@ export function RewardDialog() {
                   {reward.bonusGold > 0 ? ` (bonus +${reward.bonusGold})` : ""}
                 </p>
               )}
-              {reward.item && (
+              {reward.item && !isSkill && (
                 <p
                   className={rarityClass(
                     ITEMS[reward.item.defId]?.rarity ?? "common",

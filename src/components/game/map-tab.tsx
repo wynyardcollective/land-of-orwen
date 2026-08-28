@@ -42,7 +42,6 @@ import {
   currentHeroHp,
   heroMaxHp,
   skillLevel,
-  formatSkill,
   skillBeatForActive,
   type ActiveAction,
   type CombatStance,
@@ -63,6 +62,11 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
+import {
+  SkillActivityCard,
+  SkillTrainingCard,
+  SkillsMapHeader,
+} from "./skill-ui";
 
 function formatRemaining(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -588,10 +592,8 @@ export function MapTab() {
                     </ul>
                   )}
                   {skillActivities.length > 0 && (
-                    <div className="space-y-2 pt-2">
-                      <h3 className="text-sm font-semibold text-emerald-100">
-                        Skills
-                      </h3>
+                    <div className="space-y-3 pt-2">
+                      <SkillsMapHeader />
                       <ul className="space-y-3">
                         {skillActivities.map((act) => (
                           <SkillActivityCard
@@ -897,6 +899,25 @@ function WaitScene({
     return () => window.clearInterval(id);
   }, [soundEnabled, action.startedAt]);
 
+  if (action.type === "skill") {
+    const skillId =
+      action.activityId
+        ? SKILL_ACTIVITY_MAP[action.activityId]?.skill
+        : action.recipeId
+          ? RECIPE_MAP[action.recipeId]?.skill
+          : "woodcutting";
+    return (
+      <SkillTrainingCard
+        title={title}
+        skill={skillId}
+        beat={beat}
+        pct={pct}
+        remaining={remaining}
+        formatRemaining={formatRemaining}
+      />
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -905,9 +926,7 @@ function WaitScene({
             ? "Traveling"
             : action.type === "tavern"
               ? "At the tavern"
-              : action.type === "skill"
-                ? "Training"
-                : "In the work"}
+              : "In the work"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -921,47 +940,6 @@ function WaitScene({
         </p>
       </CardContent>
     </Card>
-  );
-}
-
-function SkillActivityCard({
-  activity,
-  playerLevel,
-  onStart,
-}: {
-  activity: import("@/lib/game").SkillActivityDef;
-  playerLevel: number;
-  onStart: () => void;
-}) {
-  const yields = activity.yields
-    .map((y) => ITEMS[y.materialId]?.name)
-    .filter(Boolean)
-    .join(", ");
-  const locked = playerLevel < activity.levelReq;
-
-  return (
-    <li className="rounded-xl border border-emerald-900/40 bg-card p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-medium">{activity.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {formatSkill(activity.skill)} · req. level {activity.levelReq}
-          </p>
-        </div>
-        <Badge variant={locked ? "destructive" : "secondary"}>
-          {locked ? `Lv ${playerLevel}` : `Lv ${playerLevel}`}
-        </Badge>
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{activity.description}</p>
-      <p className="mt-2 text-xs">
-        Yields: {yields || "—"} · +{activity.xp} XP
-      </p>
-      <div className="mt-3">
-        <Button type="button" size="sm" disabled={locked} onClick={onStart}>
-          {locked ? `Need ${formatSkill(activity.skill)} ${activity.levelReq}` : "Train"}
-        </Button>
-      </div>
-    </li>
   );
 }
 
