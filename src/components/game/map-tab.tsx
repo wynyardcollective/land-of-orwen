@@ -2,11 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  ITEMS,
-  LOCATIONS,
   LOCATION_MAP,
   visibleLocations,
-  LOCATION_NPCS,
   LOCATION_BEATS,
   QUEST_MAP,
   TRAVEL_BEATS,
@@ -24,49 +21,20 @@ import {
   RECIPE_MAP,
 } from "@/content";
 import {
-  computeStats,
   formatStat,
   questsAtLocation,
-  successChance,
   playCue,
-  deriveCombatSheet,
-  combatRiskBand,
-  formatRiskBand,
-  resolveStance,
   encounterAvailable,
-  tavernRoundCost,
-  tavernHitChance,
-  tavernRoundDuration,
-  availableTavernRumors,
-  tavernHealCost,
-  currentHeroHp,
-  heroMaxHp,
-  skillLevel,
   skillBeatForActive,
   type ActiveAction,
-  type CombatStance,
-  type EncounterDef,
-  type GameState,
 } from "@/lib/game";
 import { useGame } from "./game-provider";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { Label } from "@/components/ui/label";
-import {
-  SkillActivityCard,
-  SkillTrainingCard,
-  SkillsMapHeader,
-} from "./skill-ui";
+import { SkillTrainingCard } from "./skill-ui";
+import { LocationPanel } from "./location-panel";
 
 function formatRemaining(ms: number) {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -80,7 +48,6 @@ export function MapTab() {
     useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const stats = computeStats(state);
   const selected = selectedId ? LOCATION_MAP[selectedId] : null;
   const selectedUnlocked = selected
     ? state.unlockedLocations.includes(selected.id)
@@ -439,322 +406,53 @@ export function MapTab() {
       >
         <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
           {selected && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{selected.name}</DialogTitle>
-                <DialogDescription>{selected.description}</DialogDescription>
-              </DialogHeader>
-
-              {!selectedUnlocked ? (
-                <div className="space-y-3">
-                  <Badge variant="outline">Locked</Badge>
-                  {unlockInfo ? (
-                    <>
-                      <p className="text-sm leading-relaxed">
-                        To open this area on your map, <strong>successfully complete</strong>{" "}
-                        the quest below and claim your reward.
-                      </p>
-                      <div className="rounded-xl border border-amber-900/40 bg-muted/30 p-3 text-sm">
-                        <p className="font-medium text-amber-100">
-                          {unlockInfo.questName}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          At {unlockInfo.questLocationName} · Level {unlockInfo.level}{" "}
-                          {formatStat(unlockInfo.stat)}
-                          {unlockInfo.rumor ? " · rumor" : ""}
-                        </p>
-                        <p className="mt-2 text-muted-foreground">
-                          {unlockInfo.questDescription}
-                        </p>
-                      </div>
-                      {!state.unlockedLocations.includes(
-                        unlockInfo.questLocationId,
-                      ) && (
-                        <p className="text-sm text-orange-200/90">
-                          {unlockInfo.questLocationName} is not on your map yet —
-                          follow Journal goals to unlock it first.
-                        </p>
-                      )}
-                      {state.unlockedLocations.includes(
-                        unlockInfo.questLocationId,
-                      ) &&
-                        state.locationId !== unlockInfo.questLocationId && (
-                          <p className="text-sm text-muted-foreground">
-                            Travel to {unlockInfo.questLocationName} to attempt
-                            this quest.
-                          </p>
-                        )}
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      This place opens through story progress elsewhere. Check
-                      Journal → Current goals.
-                    </p>
-                  )}
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setSelectedId(null)}
-                    >
-                      Close
-                    </Button>
-                  </DialogFooter>
-                </div>
-              ) : (
-                <>
-              {LOCATION_NPCS[selected.id] && (
-                <p className="rounded-lg border border-border/50 bg-muted/30 p-3 text-sm">
-                  <span className="font-medium">
-                    {LOCATION_NPCS[selected.id].name}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    · {LOCATION_NPCS[selected.id].title}
-                  </span>
-                  <span className="mt-1 block text-muted-foreground italic">
-                    {state.locationId === selected.id &&
-                    state.npcReactions?.[selected.id]
-                      ? state.npcReactions[selected.id].quote
-                      : `“${LOCATION_NPCS[selected.id].greet}”`}
-                  </span>
-                </p>
-              )}
-
-              {state.locationId !== selected.id ? (
-                <div className="space-y-3">
-                  <p className="text-sm">
-                    Travel time scales with pace and Constitution.
-                  </p>
-                  {error && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {error}
-                    </p>
-                  )}
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        const err = travelTo(selected.id);
-                        if (err) setError(err);
-                        else setSelectedId(null);
-                      }}
-                    >
-                      Travel here
-                    </Button>
-                  </DialogFooter>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {state.settings.tutorialTips && (
-                    <p className="rounded-lg border border-border/60 bg-muted/40 p-3 text-xs">
-                      Quest success depends on your level versus the quest level.
-                      Below ~70%, grind easier work or better gear first. Skills
-                      like fishing, mining, and woodcutting train at each location
-                      — no failure roll, just time and yields. In combat, match your
-                      stance to the enemy&apos;s weakness — Strike, Skirmish, or Hex.
-                    </p>
-                  )}
-                  {state.wounded && (
-                    <p className="rounded-lg border border-orange-500/40 bg-orange-950/30 p-3 text-xs text-orange-100">
-                      Wounded — −5% offense until you finish a quest or rest at the
-                      campfire.
-                    </p>
-                  )}
-                  {error && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {error}
-                    </p>
-                  )}
-                  {quests.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No quests here yet.
-                    </p>
-                  ) : (
-                    <ul className="space-y-3">
-                      {quests.map((q) => (
-                        <QuestCard
-                          key={q.id}
-                          quest={q}
-                          chance={successChance(
-                            stats[q.stat],
-                            q.level,
-                            stats.charisma,
-                            q.rumor,
-                          )}
-                          onAttempt={(auto) => {
-                            const err = attemptQuest(q.id, auto);
-                            if (err) setError(err);
-                            else setSelectedId(null);
-                          }}
-                        />
-                      ))}
-                    </ul>
-                  )}
-                  {skillActivities.length > 0 && (
-                    <div className="space-y-3 pt-2">
-                      <SkillsMapHeader />
-                      <ul className="space-y-3">
-                        {skillActivities.map((act) => (
-                          <SkillActivityCard
-                            key={act.id}
-                            activity={act}
-                            playerLevel={skillLevel(state, act.skill)}
-                            onStart={() => {
-                              const err = attemptSkill(act.id);
-                              if (err) setError(err);
-                              else setSelectedId(null);
-                            }}
-                          />
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {threats.length > 0 && (
-                    <div className="space-y-2 pt-2">
-                      <h3 className="text-sm font-semibold text-amber-100">
-                        Threats
-                      </h3>
-                      <ul className="space-y-3">
-                        {threats.map((enc) => (
-                          <EncounterCard
-                            key={enc.id}
-                            encounter={enc}
-                            gameState={state}
-                            onEngage={(stance) => {
-                              const err = engageCombat(enc.id, stance);
-                              if (err) setError(err);
-                              else setSelectedId(null);
-                            }}
-                          />
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {tavernHere && (
-                    <TavernPanel
-                      tavern={tavernHere}
-                      state={state}
-                      listening={
-                        state.active?.type === "tavern" &&
-                        state.active.tavernId === tavernHere.id
-                      }
-                      onBuy={() => {
-                        const err = buyTavernRound(tavernHere.id);
-                        if (err) setError(err);
-                        else setSelectedId(null);
-                      }}
-                      onHeal={() => {
-                        const err = healAtTavern(tavernHere.id);
-                        if (err) setError(err);
-                      }}
-                    />
-                  )}
-                </div>
-              )}
-                </>
-              )}
-            </>
+            <LocationPanel
+              location={selected}
+              unlocked={selectedUnlocked}
+              atLocation={state.locationId === selected.id}
+              unlockInfo={unlockInfo}
+              state={state}
+              quests={quests}
+              skillActivities={skillActivities}
+              threats={threats}
+              tavern={tavernHere ?? null}
+              error={error}
+              onClose={() => setSelectedId(null)}
+              onTravel={() => {
+                const err = travelTo(selected.id);
+                if (err) setError(err);
+                else setSelectedId(null);
+              }}
+              onAttemptQuest={(questId, auto) => {
+                const err = attemptQuest(questId, auto);
+                if (err) setError(err);
+                else setSelectedId(null);
+              }}
+              onAttemptSkill={(activityId) => {
+                const err = attemptSkill(activityId);
+                if (err) setError(err);
+                else setSelectedId(null);
+              }}
+              onEngageCombat={(encounterId, stance) => {
+                const err = engageCombat(encounterId, stance);
+                if (err) setError(err);
+                else setSelectedId(null);
+              }}
+              onTavernBuy={() => {
+                if (!tavernHere) return;
+                const err = buyTavernRound(tavernHere.id);
+                if (err) setError(err);
+                else setSelectedId(null);
+              }}
+              onTavernHeal={() => {
+                if (!tavernHere) return;
+                const err = healAtTavern(tavernHere.id);
+                if (err) setError(err);
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function TavernPanel({
-  tavern,
-  state,
-  listening,
-  onBuy,
-  onHeal,
-}: {
-  tavern: import("@/content/taverns").TavernDef;
-  state: GameState;
-  listening: boolean;
-  onBuy: () => void;
-  onHeal: () => void;
-}) {
-  const cost = tavernRoundCost(state, tavern.id);
-  const hitPct = Math.round(tavernHitChance(state) * 100);
-  const seconds = tavernRoundDuration(state, tavern.id);
-  const rumorsLeft = availableTavernRumors(state, tavern.id);
-  const canAfford = state.gold >= cost;
-  const busy = !!state.active || !!state.pendingReward;
-  const maxHp = heroMaxHp(state);
-  const hp = currentHeroHp(state, maxHp);
-  const healCost = tavernHealCost(state);
-  const needsHeal = hp < maxHp;
-  const canAffordHeal = state.gold >= healCost;
-
-  return (
-    <div className="space-y-2 rounded-xl border border-violet-900/50 bg-violet-950/20 p-3 pt-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-semibold text-violet-100">{tavern.name}</h3>
-          <p className="text-xs text-muted-foreground">{tavern.keeper}</p>
-        </div>
-        <Badge variant="outline" className="border-violet-700/60">
-          {rumorsLeft} lead{rumorsLeft === 1 ? "" : "s"} left
-        </Badge>
-      </div>
-      <p className="text-sm text-muted-foreground">{tavern.description}</p>
-      <div className="rounded-lg border border-border/40 bg-black/20 px-3 py-2 text-xs">
-        <p>
-          Your health:{" "}
-          <strong className={hp < maxHp * 0.35 ? "text-orange-200" : "text-emerald-200"}>
-            {hp}/{maxHp} HP
-          </strong>
-          {state.wounded ? " · wounded" : ""}
-        </p>
-        <p className="mt-1 text-muted-foreground">
-          Rest here to restore all health. Cost scales with how hurt you are;
-          Charisma softens the bill.
-        </p>
-        <Button
-          type="button"
-          size="sm"
-          className="mt-2"
-          variant="outline"
-          disabled={!needsHeal || busy || !canAffordHeal}
-          onClick={onHeal}
-        >
-          {!needsHeal
-            ? "Already full health"
-            : !canAffordHeal
-              ? `Need ${healCost}g to rest`
-              : busy
-                ? "Busy…"
-                : `Rest & recover (${healCost}g)`}
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Pay <strong className="text-amber-100">{cost} gold</strong> and linger{" "}
-        <strong className="text-amber-100">~{seconds}s</strong> for a chance to
-        learn something useful (~{hitPct}%; Charisma & Wisdom help). Gold is
-        spent up front, even on a miss.
-      </p>
-      {listening ? (
-        <p className="text-xs text-violet-200" role="status">
-          You are listening for rumors…
-        </p>
-      ) : (
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={!canAfford || busy || rumorsLeft === 0}
-          onClick={onBuy}
-        >
-          {!canAfford
-            ? `Need ${cost} gold`
-            : rumorsLeft === 0
-              ? "Nothing new here"
-              : busy
-                ? "Busy…"
-                : `Buy a round (${cost}g, ~${seconds}s)`}
-        </Button>
-      )}
     </div>
   );
 }
@@ -943,123 +641,3 @@ function WaitScene({
   );
 }
 
-function QuestCard({
-  quest,
-  chance,
-  onAttempt,
-}: {
-  quest: import("@/lib/game").QuestDef;
-  chance: number;
-  onAttempt: (autoEquip: boolean) => void;
-}) {
-  return (
-    <li className="rounded-xl border border-border/70 bg-card p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-medium">{quest.name}</p>
-          <p className="text-xs text-muted-foreground">
-            Level {quest.level} {formatStat(quest.stat)}
-            {quest.rumor ? " · rumor" : ""}
-          </p>
-        </div>
-        <Badge variant={chance >= 70 ? "secondary" : "destructive"}>
-          {chance}% success
-        </Badge>
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{quest.description}</p>
-      <p className="mt-2 text-xs">
-        Gold {quest.goldReward} · Possible loot:{" "}
-        {quest.itemPool.map((id) => ITEMS[id]?.name).filter(Boolean).join(", ") ||
-          "—"}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" size="sm" onClick={() => onAttempt(false)}>
-          Attempt
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => onAttempt(true)}
-        >
-          Auto-equip & attempt
-        </Button>
-      </div>
-    </li>
-  );
-}
-
-const STANCES: { id: CombatStance | "auto"; label: string }[] = [
-  { id: "auto", label: "Auto (match weakness)" },
-  { id: "strength", label: "Strike (Strength)" },
-  { id: "dexterity", label: "Skirmish (Dexterity)" },
-  { id: "intelligence", label: "Hex (Intelligence)" },
-];
-
-function EncounterCard({
-  encounter,
-  gameState,
-  onEngage,
-}: {
-  encounter: EncounterDef;
-  gameState: import("@/lib/game").GameState;
-  onEngage: (stance: CombatStance | "auto") => void;
-}) {
-  const [stance, setStance] = useState<CombatStance | "auto">("auto");
-  const enemy = ENEMY_MAP[encounter.enemyId];
-  if (!enemy) return null;
-  const stats = computeStats(gameState);
-  const resolved = resolveStance(stance, enemy);
-  const sheet = deriveCombatSheet(stats, resolved, gameState, gameState.wounded);
-  const risk = combatRiskBand(sheet, enemy, resolved);
-  const riskVariant =
-    risk === "safe" ? "secondary" : risk === "even" ? "outline" : "destructive";
-  const hitPct = Math.round(sheet.accuracy * 100);
-
-  return (
-    <li className="rounded-xl border border-red-900/40 bg-card p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-medium">{encounter.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {enemy.name} · L{enemy.level} · weak to {formatStat(enemy.weakTo)}
-          </p>
-        </div>
-        <Badge variant={riskVariant}>{formatRiskBand(risk)}</Badge>
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{encounter.description}</p>
-      <p className="mt-1 text-xs text-muted-foreground italic">{enemy.description}</p>
-      <p className="mt-2 text-xs text-muted-foreground">
-        Your hit chance with this stance: ~{hitPct}% · Damage is modest — expect
-        longer fights.
-      </p>
-      <div className="mt-3 space-y-2">
-        <Label htmlFor={`stance-${encounter.id}`}>Stance</Label>
-        <select
-          id={`stance-${encounter.id}`}
-          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
-          value={stance}
-          onChange={(e) =>
-            setStance(e.target.value as CombatStance | "auto")
-          }
-        >
-          {STANCES.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p className="mt-2 text-xs">
-        Gold {encounter.goldReward} · Possible loot:{" "}
-        {encounter.itemPool.map((id) => ITEMS[id]?.name).filter(Boolean).join(", ") ||
-          "—"}
-      </p>
-      <div className="mt-3">
-        <Button type="button" size="sm" onClick={() => onEngage(stance)}>
-          Engage
-        </Button>
-      </div>
-    </li>
-  );
-}
