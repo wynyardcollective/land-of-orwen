@@ -216,8 +216,21 @@ html[data-reduced-motion="1"] *::after {
   animation: auth-drift 22s ease-in-out infinite alternate-reverse;
 }
 [data-reduced-motion="1"] .auth-drift,
-[data-reduced-motion="1"] .auth-drift-slow {
+[data-reduced-motion="1"] .auth-drift-slow,
+[data-reduced-motion="1"] .play-bg-pan {
   animation: none;
+}
+
+@keyframes play-bg-pan {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-1.5%, 1%, 0);
+  }
+}
+.play-bg-pan {
+  animation: play-bg-pan 36s ease-in-out infinite alternate;
 }
 
 /* —— Public site polish —— */

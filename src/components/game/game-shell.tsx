@@ -91,7 +91,9 @@ function AuthenticatedGame() {
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background p-6 text-foreground">
-        <p role="status">Checking your account…</p>
+        <p role="status" className="text-sm text-muted-foreground">
+          Opening the map…
+        </p>
       </div>
     );
   }
