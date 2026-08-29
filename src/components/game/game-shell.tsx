@@ -1,5 +1,6 @@
 "use client";
 
+import { MobileAdMob } from "@/components/site/mobile-admob";
 import { GameProvider, useGame } from "./game-provider";
 import { StatusBar } from "./status-bar";
 import { MapTab } from "./map-tab";
@@ -61,7 +62,7 @@ function ShellInner() {
       </main>
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-card/95 backdrop-blur"
+        className="fixed inset-x-0 bottom-[var(--admob-banner-height,0px)] z-40 border-t border-border/80 bg-card/95 backdrop-blur"
       >
         <ul className="mx-auto grid max-w-3xl grid-cols-5 gap-1 px-1 py-2">
           {TABS.map((t) => (
@@ -123,6 +124,7 @@ function AuthenticatedGame() {
 export function GameShell() {
   return (
     <AuthProvider>
+      <MobileAdMob />
       <AuthenticatedGame />
     </AuthProvider>
   );

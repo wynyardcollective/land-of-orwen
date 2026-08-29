@@ -7,6 +7,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
 export const SESSION_COOKIE = "rough_session";
+const LEGACY_SESSION_COOKIE = "orwen_session";
 const SESSION_DAYS = 30;
 const BCRYPT_ROUNDS = 10;
 
@@ -421,7 +422,7 @@ export function parseSessionCookie(cookieHeader: string | null): string | null {
   const parts = cookieHeader.split(";");
   for (const part of parts) {
     const [rawName, ...rest] = part.trim().split("=");
-    if (rawName === SESSION_COOKIE) {
+    if (rawName === SESSION_COOKIE || rawName === LEGACY_SESSION_COOKIE) {
       return decodeURIComponent(rest.join("="));
     }
   }

@@ -10,7 +10,7 @@ This build is designed to align with common Google Play requirements:
 |-------------|-------------------|
 | **Privacy policy** | Public URL: https://rough.co.nz/privacy — link in Play Console store listing |
 | **Data collection** | Email, password hash, game saves — disclosed in privacy policy and Data safety form |
-| **Ads in WebView** | AdSense is **not** loaded when `source=android-app` (see site middleware) |
+| **Ads in WebView** | Website AdSense disabled in app WebView; **native AdMob** banner via `@capacitor-community/admob` |
 | **Permissions** | `INTERNET` only — no location, camera, contacts, etc. |
 | **Target API** | Capacitor 7 targets current SDK requirements |
 | **Deceptive behavior** | Store listing describes an online idle RPG; no fake system UI |
@@ -78,7 +78,13 @@ npm run android:debug
 
 Upload the AAB to [Google Play Console](https://play.google.com/console).
 
-## Store listing & Data safety
+## Play Store submission
+
+See **`PLAY_PUBLISHING.md`** for the full checklist (signing, Data safety, content rating, store assets).
+
+## AdMob
+
+See **`ADMOB.md`** for App ID / ad unit IDs and env vars.
 
 - Copy: `store-listing/short_description.txt`, `full_description.txt`
 - Data safety draft answers: `store-listing/data_safety.md`

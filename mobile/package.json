@@ -11,6 +11,7 @@
     "fingerprint:debug": "keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android -keypass android 2>/dev/null | grep SHA256"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^7.2.0",
     "@capacitor/android": "^7.2.0",
     "@capacitor/app": "^7.0.1",
     "@capacitor/core": "^7.2.0",
@@ -22,6 +23,8 @@
     "typescript": "^5"
   },
   "capacitor": {
-    "platforms": ["android"]
+    "platforms": [
+      "android"
+    ]
   }
 }
