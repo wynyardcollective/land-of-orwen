@@ -13,11 +13,35 @@ export default function PrivacyPage() {
     <SiteShell currentPath="/privacy">
       <article className="space-y-5 text-sm leading-relaxed text-muted-foreground sm:text-base">
         <h1 className="text-3xl font-semibold text-amber-100">Privacy Policy</h1>
-        <p>Last updated: 26 August 2026</p>
+        <p>Last updated: 29 August 2026</p>
         <p>
           This Privacy Policy explains how {SITE.operator} (&quot;we&quot;,
           &quot;us&quot;) collects and uses information when you visit{" "}
-          {SITE.domain} or play {SITE.name}.
+          {SITE.domain}, play {SITE.name} in a browser, or use our official
+          Android app on Google Play.
+        </p>
+
+        <h2 className="text-xl font-semibold text-amber-100">Android app</h2>
+        <p>
+          The Land of Orwen Android app is a secure client for the same online
+          game at {SITE.domain}. It requires an internet connection. The app
+          does <strong className="text-foreground">not</strong> show
+          third-party advertisements (unlike the public website, which may use
+          Google AdSense). Data collection for accounts and cloud saves is the
+          same as browser play. The app requests network access only — no
+          location, camera, contacts, or other sensitive permissions.
+        </p>
+        <p>
+          Package name:{" "}
+          <code className="text-foreground">nz.co.wynyardcollective.landoforwen</code>
+          . Privacy questions for the app:{" "}
+          <a
+            className="text-amber-200 hover:underline"
+            href={`mailto:${SITE.contactEmail}`}
+          >
+            {SITE.contactEmail}
+          </a>
+          .
         </p>
 
         <h2 className="text-xl font-semibold text-amber-100">Information we collect</h2>
@@ -63,10 +87,10 @@ export default function PrivacyPage() {
 
         <h2 className="text-xl font-semibold text-amber-100">Advertising</h2>
         <p>
-          We use Google AdSense to display advertisements. Google and its
-          partners may use cookies or similar technologies to serve ads based on
-          your prior visits to this or other websites. You can learn more and
-          manage ad personalization at{" "}
+          On the public website (not in the Android app), we use Google AdSense
+          to display advertisements. Google and its partners may use cookies or
+          similar technologies to serve ads based on your prior visits to this
+          or other websites. You can learn more and manage ad personalization at{" "}
           <a
             className="text-amber-200 hover:underline"
             href="https://www.google.com/settings/ads"
@@ -95,10 +119,27 @@ export default function PrivacyPage() {
           affect login and some site features.
         </p>
 
+        <h2 className="text-xl font-semibold text-amber-100">
+          Account and data deletion
+        </h2>
+        <p>
+          You may request deletion of your account and associated cloud save data
+          by emailing{" "}
+          <a
+            className="text-amber-200 hover:underline"
+            href={`mailto:${SITE.contactEmail}`}
+          >
+            {SITE.contactEmail}
+          </a>
+          . We will verify ownership of the account and delete personal data
+          within a reasonable period, except where retention is required for
+          security or legal obligations.
+        </p>
+
         <h2 className="text-xl font-semibold text-amber-100">Data retention</h2>
         <p>
-          We retain account and save data while your account remains active. You
-          may request deletion by emailing{" "}
+          We retain account and save data while your account remains active unless
+          you request deletion. Contact{" "}
           <a
             className="text-amber-200 hover:underline"
             href={`mailto:${SITE.contactEmail}`}

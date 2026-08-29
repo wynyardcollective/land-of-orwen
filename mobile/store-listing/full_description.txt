@@ -1,0 +1,15 @@
+The Land of Orwen is an original idle RPG set in a drought-struck countryside. Travel the map in real time, pursue quests, gather materials, craft gear, visit taverns, and work toward the Rainward Gate.
+
+This Android app is the official mobile client for rough.co.nz. Gameplay runs online — an internet connection is required. You can play as a guest (progress on this device) or create an account to sync saves across devices.
+
+Features:
+• Interactive map with towns, secrets, and skill locations
+• Fishing, mining, woodcutting, cooking, and smithing
+• Shops, taverns, equipment, and gem crafting
+• Accessibility options including font scale and high contrast
+
+Privacy policy: https://rough.co.nz/privacy
+Terms: https://rough.co.nz/terms
+Support: admin@wynyardcollective.co.nz
+
+No third-party ads are shown inside the Android app.

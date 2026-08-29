@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Geist_Mono } from "next/font/google";
+import { AdSenseScript } from "@/components/site/adsense-script";
+import { AppModeHint } from "@/components/site/app-mode-hint";
 import "./globals.css";
 
 const atkinson = Atkinson_Hyperlegible({
@@ -30,6 +32,12 @@ export const metadata: Metadata = {
     description:
       "Walk Orwen until the sky remembers rain — an original browser idle chronicle.",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Orwen",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
@@ -45,14 +53,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`dark ${atkinson.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Plain tag required — next/script rewrites this and AdSense verification fails */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8224711942994508"
-          crossOrigin="anonymous"
-        />
+        <AdSenseScript />
       </head>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <AppModeHint />
+        {children}
+      </body>
     </html>
   );
 }

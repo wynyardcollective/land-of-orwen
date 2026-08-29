@@ -1,0 +1,27 @@
+{
+  "name": "land-of-orwen-mobile",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Android wrapper for The Land of Orwen (Google Play)",
+  "scripts": {
+    "cap:sync": "cap sync android",
+    "cap:open": "cap open android",
+    "android:bundle": "cd android && ./gradlew bundleRelease",
+    "android:debug": "cd android && ./gradlew assembleDebug",
+    "fingerprint:debug": "keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android -keypass android 2>/dev/null | grep SHA256"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/splash-screen": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.0",
+    "typescript": "^5"
+  },
+  "capacitor": {
+    "platforms": ["android"]
+  }
+}

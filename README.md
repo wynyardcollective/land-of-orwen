@@ -133,8 +133,35 @@ Useful scripts:
 | `npm run db:migrate:local` | Apply D1 migrations locally |
 | `npm run db:migrate:remote` | Apply D1 migrations remotely |
 | `npm run cf-typegen` | Generate Cloudflare binding types |
+| `npm run icons:generate` | PWA + Android launcher icons |
+| `npm run mobile:sync` | Install Capacitor deps and sync Android project |
 
-## Stack
+## Android app (Google Play)
+
+Official Android client in `mobile/` — Capacitor 7 shell loading `https://rough.co.nz/play?source=android-app`.
+
+- **Privacy policy:** https://rough.co.nz/privacy (required for Play Console)
+- **Package ID:** `nz.co.wynyardcollective.landoforwen`
+- **No in-app ads** — AdSense is disabled when the app session cookie/header is set
+- **Permissions:** `INTERNET` only
+
+```bash
+npm run icons:generate    # once, or after icon art changes
+npm run mobile:sync       # sync web assets into android/
+```
+
+Build a release AAB locally with Android Studio or Gradle (requires Android SDK):
+
+```bash
+cd mobile
+npm run android:bundle
+# Output: mobile/android/app/build/outputs/bundle/release/app-release.aab
+```
+
+See `mobile/README.md` for signing, Play Console checklist, and store listing copy in `mobile/store-listing/`.
+
+After creating a release keystore, update `public/.well-known/assetlinks.json` with your SHA-256 fingerprint and deploy the site (needed for Trusted Web Activity / domain verification).
+
 
 Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, [Watermelon UI](https://ui.watermelon.sh) components (hero, surfaces), OpenNext Cloudflare adapter, Cloudflare D1.
 

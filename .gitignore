@@ -29,6 +29,12 @@
 .DS_Store
 *.pem
 
+# mobile (Capacitor)
+/mobile/node_modules/
+/mobile/android/.gradle/
+/mobile/android/**/build/
+/mobile/android/local.properties
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+*.keystore
+!android/app/debug.keystore
+
+# Capacitor sync artifacts (regenerated)
+www/
+
+# IDE
+.idea/
+*.iml
