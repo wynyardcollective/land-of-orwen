@@ -10,7 +10,7 @@ This build is designed to align with common Google Play requirements:
 |-------------|-------------------|
 | **Privacy policy** | Public URL: https://rough.co.nz/privacy — link in Play Console store listing |
 | **Data collection** | Email, password hash, game saves — disclosed in privacy policy and Data safety form |
-| **Ads in WebView** | Website AdSense disabled in app WebView; **native AdMob** banner via `@capacitor-community/admob` |
+| **Ads** | Native AdMob rewarded (2× speed boost) + interstitial at natural pauses; no banner |
 | **Permissions** | `INTERNET` only — no location, camera, contacts, etc. |
 | **Target API** | Capacitor 7 targets current SDK requirements |
 | **Deceptive behavior** | Store listing describes an online idle RPG; no fake system UI |

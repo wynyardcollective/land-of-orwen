@@ -9,21 +9,24 @@ Native **rewarded** and **interstitial** ads — no banner. Website AdSense is u
 | **Rewarded** | Player opts in → **2× timer speed for 5 minutes** (10 min cooldown before next watch) |
 | **Interstitial** | Full-screen at natural pauses (quest/skill/combat reward, travel arrival) — max once per 3 minutes |
 
-## Production setup
+## Production IDs (rough)
 
-1. [AdMob](https://admob.google.com/) → app `nz.co.wynyardcollective.rough`
-2. Create ad units: **Rewarded** and **Interstitial**
-3. Set IDs:
+| Setting | Value |
+|---------|--------|
+| **App ID** | `ca-app-pub-9932949328522902~2169058797` → `strings.xml` `admob_app_id` |
+| **Interstitial** | `ca-app-pub-9932949328522902/8920450776` → default in `src/content/ads.ts` |
+| **Rewarded** | Create in AdMob → set `NEXT_PUBLIC_ADMOB_ANDROID_REWARDED_ID` (still test unit until then) |
+
+New ad units can take up to an hour before ads fill.
+
+## Override via env (optional)
 
 ```bash
-# Banner unit is not used
 NEXT_PUBLIC_ADMOB_ANDROID_REWARDED_ID=ca-app-pub-XXXX/YYYY
 NEXT_PUBLIC_ADMOB_ANDROID_INTERSTITIAL_ID=ca-app-pub-XXXX/ZZZZ
 ```
 
-4. `mobile/android/app/src/main/res/values/strings.xml` → `admob_app_id` (App ID, not unit ID)
-
-Until set, Google **test ad units** are used automatically.
+`mobile/android/app/src/main/res/values/strings.xml` → `admob_app_id` must match your AdMob **App ID**.
 
 ## Play Console
 
