@@ -30,8 +30,8 @@ From `mobile/store-listing/`:
 
 - Short description (≤80 chars)
 - Full description
-- **App icon** 512×512 PNG
-- **Feature graphic** 1024×500 PNG
+- **App icon** 512×512 PNG → `mobile/store-listing/app-icon-512.png`
+- **Feature graphic** 1024×500 PNG → `mobile/store-listing/feature-graphic-1024x500.png`
 - **Phone screenshots** (min 2) — map + play UI
 
 ## 4. Release

@@ -18,7 +18,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "db:migrate:local": "wrangler d1 migrations apply rough-players --local",
     "db:migrate:remote": "wrangler d1 migrations apply rough-players --remote",
-    "icons:generate": "node scripts/generate-app-icons.mjs && node scripts/generate-android-mipmaps.mjs",
+    "icons:generate": "node scripts/generate-play-store-graphics.mjs && node scripts/generate-android-mipmaps.mjs",
     "mobile:install": "cd mobile && npm install",
     "mobile:sync": "cd mobile && npm install && npx cap sync android",
     "mobile:open": "cd mobile && npx cap open android",
