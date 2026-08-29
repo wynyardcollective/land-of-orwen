@@ -491,12 +491,15 @@ export function GameProvider({
         }),
       watchRewardedSpeedBoost: async () => {
         if (!canWatchRewardedAd(state, Date.now())) {
-          return "Rewarded ad is on cooldown. Try again soon.";
+          const msg = "Rewarded ad is on cooldown. Try again soon.";
+          setAnnouncement(msg);
+          return msg;
         }
         const { showRewardedSpeedBoostAd } = await import("@/lib/mobile/admob");
-        const rewarded = await showRewardedSpeedBoostAd();
-        if (!rewarded) {
-          return "Ad not completed — no speed boost.";
+        const result = await showRewardedSpeedBoostAd();
+        if (!result.ok) {
+          setAnnouncement(result.reason);
+          return result.reason;
         }
         update((s) => applyRewardedSpeedBoost(s, Date.now()));
         setAnnouncement("2× speed active for 5 minutes.");

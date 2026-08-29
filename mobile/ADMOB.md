@@ -19,6 +19,8 @@ Native **rewarded** and **interstitial** ads — no banner. Website AdSense is u
 
 New ad units can take up to an hour before ads fill.
 
+**Emulators (BlueStacks, Android Studio AVD):** production units usually return no fill. The app auto-detects common emulator user agents and switches to [Google test ad units](https://developers.google.com/admob/android/test-ads). For a real-device production check, use Internal testing on a phone.
+
 ## Override via env (optional)
 
 ```bash

@@ -61,6 +61,7 @@ export function AdSpeedBoostButton() {
           setLoading(false);
         }
       }}
+      aria-live="polite"
     >
       {label}
     </Button>
