@@ -1,18 +1,26 @@
-import { ADMOB } from "@/content/ads";
+import { ADMOB, AD_INTERSTITIAL_COOLDOWN_MS } from "@/content/ads";
 
-export async function initMobileAdMob(): Promise<void> {
+let sdkReady = false;
+let interstitialLoaded = false;
+let interstitialShowing = false;
+let lastInterstitialAt = 0;
+
+async function getAdMob() {
   const { Capacitor } = await import("@capacitor/core");
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
-    return;
+    return null;
   }
 
-  const {
-    AdMob,
-    AdmobConsentStatus,
-    BannerAdPluginEvents,
-    BannerAdPosition,
-    BannerAdSize,
-  } = await import("@capacitor-community/admob");
+  const admob = await import("@capacitor-community/admob");
+  return { Capacitor, ...admob };
+}
+
+/** Consent + SDK init (no banner). */
+export async function initMobileAdSdk(): Promise<boolean> {
+  const ctx = await getAdMob();
+  if (!ctx) return false;
+
+  const { AdMob, AdmobConsentStatus } = ctx;
 
   await AdMob.initialize({
     initializeForTesting: ADMOB.isTestMode,
@@ -27,20 +35,88 @@ export async function initMobileAdMob(): Promise<void> {
   }
 
   if (!consent.canRequestAds) {
-    return;
+    return false;
   }
 
-  await AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size) => {
-    document.documentElement.style.setProperty(
-      "--admob-banner-height",
-      `${size.height}px`,
-    );
-  });
+  sdkReady = true;
+  await preloadInterstitial();
+  return true;
+}
 
-  await AdMob.showBanner({
-    adId: ADMOB.androidBannerId,
-    adSize: BannerAdSize.ADAPTIVE_BANNER,
-    position: BannerAdPosition.BOTTOM_CENTER,
-    margin: 0,
-  });
+export async function preloadInterstitial(): Promise<void> {
+  if (!sdkReady || interstitialShowing) return;
+  const ctx = await getAdMob();
+  if (!ctx) return;
+
+  try {
+    await ctx.AdMob.prepareInterstitial({
+      adId: ADMOB.androidInterstitialId,
+    });
+    interstitialLoaded = true;
+  } catch {
+    interstitialLoaded = false;
+  }
+}
+
+/** Show at natural pauses (quest/travel/skill complete) with cooldown. */
+export async function maybeShowInterstitial(): Promise<void> {
+  if (!sdkReady || interstitialShowing) return;
+
+  const now = Date.now();
+  if (now - lastInterstitialAt < AD_INTERSTITIAL_COOLDOWN_MS) return;
+
+  const ctx = await getAdMob();
+  if (!ctx) return;
+
+  if (!interstitialLoaded) {
+    await preloadInterstitial();
+    if (!interstitialLoaded) return;
+  }
+
+  interstitialShowing = true;
+  try {
+    await ctx.AdMob.showInterstitial();
+    lastInterstitialAt = Date.now();
+  } catch {
+    /* skip if no fill */
+  } finally {
+    interstitialLoaded = false;
+    interstitialShowing = false;
+    void preloadInterstitial();
+  }
+}
+
+/** Watch rewarded video; returns true only if the user earned the reward. */
+export async function showRewardedSpeedBoostAd(): Promise<boolean> {
+  if (!sdkReady) return false;
+
+  const ctx = await getAdMob();
+  if (!ctx) return false;
+
+  const { AdMob, RewardAdPluginEvents } = ctx;
+  let rewarded = false;
+
+  const handle = await AdMob.addListener(
+    RewardAdPluginEvents.Rewarded,
+    () => {
+      rewarded = true;
+    },
+  );
+
+  try {
+    await AdMob.prepareRewardVideoAd({
+      adId: ADMOB.androidRewardedId,
+    });
+    await AdMob.showRewardVideoAd();
+  } catch {
+    rewarded = false;
+  } finally {
+    await handle.remove();
+  }
+
+  return rewarded;
+}
+
+export function isMobileAdSdkReady(): boolean {
+  return sdkReady;
 }

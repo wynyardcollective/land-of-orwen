@@ -5,6 +5,7 @@ import { LOCATION_MAP } from "@/content";
 import { useGame } from "./game-provider";
 import { SettingsDialog } from "./settings-dialog";
 import { AssistPanel } from "./assist-panel";
+import { AdSpeedBoostButton } from "./ad-speed-boost-button";
 import { Badge } from "@/components/ui/badge";
 
 export function StatusBar() {
@@ -56,6 +57,7 @@ export function StatusBar() {
                     ? "Save error"
                     : "Ready"}
         </Badge>
+        <AdSpeedBoostButton />
         <AssistPanel />
         <SettingsDialog />
       </div>

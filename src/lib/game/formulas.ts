@@ -18,10 +18,17 @@ export function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-export function paceDuration(baseSeconds: number, pace: Pace, constitution = 0) {
+export function paceDuration(
+  baseSeconds: number,
+  pace: Pace,
+  constitution = 0,
+  speedFactor = 1,
+) {
   const cut = constitution * 0.04;
-  const scaled = baseSeconds * PACE_MULTIPLIER[pace] * (1 - clamp(cut, 0, 0.4));
-  return Math.max(2, Math.round(scaled));
+  const scaled =
+    baseSeconds * PACE_MULTIPLIER[pace] * (1 - clamp(cut, 0, 0.4));
+  const boosted = scaled / Math.max(1, speedFactor);
+  return Math.max(2, Math.round(boosted));
 }
 
 export function goldCap(constitution: number) {

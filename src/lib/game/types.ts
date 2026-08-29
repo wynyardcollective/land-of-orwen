@@ -418,7 +418,14 @@ export interface GameState {
   lastTavernResult: TavernResult | null;
   /** Combat log + damage totals kept while combat rewards await claim */
   lastCombat: CombatAftermath | null;
+  /** Android app: rewarded ad speed boost + cooldown timestamps */
+  mobileAds?: MobileAdsState;
   updatedAt: number;
+}
+
+export interface MobileAdsState {
+  speedBoostUntil: number | null;
+  rewardCooldownUntil: number | null;
 }
 
 export interface TavernResult {

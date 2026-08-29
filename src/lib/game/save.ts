@@ -5,6 +5,7 @@ import type {
   StatLevels,
 } from "./types";
 import { EMPTY_SKILL_XP } from "./skill-engine";
+import { normalizeMobileAds, emptyMobileAds } from "./ad-boost";
 
 export const SAVE_KEY = "rough-save-v1";
 export const PLAYER_ID_KEY = "rough-player-id";
@@ -134,6 +135,7 @@ export function createInitialState(playerId: string, heroName = "Wanderer"): Gam
     shopPurchases: {},
     lastTavernResult: null,
     lastCombat: null,
+    mobileAds: emptyMobileAds(),
     updatedAt: Date.now(),
   };
 }
@@ -179,6 +181,7 @@ export function normalizeState(raw: GameState): GameState {
     shopPurchases: raw.shopPurchases ?? {},
     lastTavernResult: raw.lastTavernResult ?? null,
     lastCombat: raw.lastCombat ?? null,
+    mobileAds: normalizeMobileAds(raw.mobileAds),
     pendingReward: raw.pendingReward
       ? {
           ...raw.pendingReward,

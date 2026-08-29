@@ -2,16 +2,16 @@
 
 import { useEffect } from "react";
 
-/** Initializes native AdMob banner when running inside the Capacitor Android app. */
+/** Initializes AdMob SDK (rewarded + interstitial) in the Capacitor Android app. */
 export function MobileAdMob() {
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       try {
-        const { initMobileAdMob } = await import("@/lib/mobile/admob");
+        const { initMobileAdSdk } = await import("@/lib/mobile/admob");
         if (!cancelled) {
-          await initMobileAdMob();
+          await initMobileAdSdk();
         }
       } catch (error) {
         console.warn("AdMob init skipped:", error);

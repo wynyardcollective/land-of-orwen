@@ -5,6 +5,7 @@ import {
   SKILL_BEATS,
 } from "@/content";
 import { paceDuration, clamp, computeStats } from "./formulas";
+import { adSpeedFactor } from "./ad-boost";
 import type {
   ActiveSkill,
   GameState,
@@ -115,6 +116,7 @@ export function startSkillActivity(
     activity.durationSeconds,
     state.settings.pace,
     stats.constitution,
+    adSpeedFactor(state),
   );
   const now = Date.now();
   return {
@@ -160,6 +162,7 @@ export function startRecipeCraft(
     recipe.durationSeconds,
     state.settings.pace,
     stats.constitution,
+    adSpeedFactor(state),
   );
   const now = Date.now();
   return {

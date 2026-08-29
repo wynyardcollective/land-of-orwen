@@ -2,7 +2,9 @@
 
 import {
   addCampfireNote,
+  applyRewardedSpeedBoost,
   claimReward,
+  canWatchRewardedAd,
   createInitialState,
   equipItem,
   loadLocalSave,
@@ -81,6 +83,7 @@ interface GameContextValue {
   useItem: (uid: string) => string | null;
   resetGame: () => void;
   dismissOpening: () => void;
+  watchRewardedSpeedBoost: () => Promise<string | null>;
   now: number;
 }
 
@@ -244,6 +247,16 @@ export function GameProvider({
         }
       }
     }
+
+    const naturalPause =
+      (!state.pendingReward && next.pendingReward) ||
+      (state.active?.type === "travel" && !next.active && !next.pendingReward);
+    if (naturalPause) {
+      void import("@/lib/mobile/admob").then(({ maybeShowInterstitial }) =>
+        maybeShowInterstitial(),
+      );
+    }
+
     setState(next);
     persist(next);
   }, [now, state, persist]);
@@ -476,6 +489,20 @@ export function GameProvider({
             updatedAt: Date.now(),
           };
         }),
+      watchRewardedSpeedBoost: async () => {
+        if (!canWatchRewardedAd(state, Date.now())) {
+          return "Rewarded ad is on cooldown. Try again soon.";
+        }
+        const { showRewardedSpeedBoostAd } = await import("@/lib/mobile/admob");
+        const rewarded = await showRewardedSpeedBoostAd();
+        if (!rewarded) {
+          return "Ad not completed — no speed boost.";
+        }
+        update((s) => applyRewardedSpeedBoost(s, Date.now()));
+        setAnnouncement("2× speed active for 5 minutes.");
+        playCue(state.settings.soundEnabled, "reward");
+        return null;
+      },
       now,
     };
   }, [

@@ -108,8 +108,14 @@ export function combatRoundDuration(
   encounter: EncounterDef,
   pace: GameState["settings"]["pace"],
   constitution: number,
+  speedFactor = 1,
 ) {
-  return paceDuration(encounter.durationRoundSeconds, pace, constitution);
+  return paceDuration(
+    encounter.durationRoundSeconds,
+    pace,
+    constitution,
+    speedFactor,
+  );
 }
 
 export type RiskBand = "safe" | "even" | "deadly";

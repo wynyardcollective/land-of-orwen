@@ -18,6 +18,7 @@ import {
   paceDuration,
   successChance,
 } from "./formulas";
+import { adSpeedFactor } from "./ad-boost";
 import { advanceCombatUntilCaughtUp } from "./combat-engine";
 import { completeTavernRound } from "./tavern-engine";
 import {
@@ -408,7 +409,12 @@ export function startTravel(state: GameState, toLocationId: string): GameState |
   const loc = LOCATION_MAP[toLocationId];
   if (!loc) return { error: "Unknown location." };
   const stats = computeStats(state);
-  const seconds = paceDuration(loc.travelSeconds, state.settings.pace, stats.constitution);
+  const seconds = paceDuration(
+    loc.travelSeconds,
+    state.settings.pace,
+    stats.constitution,
+    adSpeedFactor(state),
+  );
   const now = Date.now();
   return {
     ...state,
@@ -440,7 +446,12 @@ export function startQuest(
   let next = withAutoEquip ? autoEquipForQuest(state, quest) : state;
   const stats = computeStats(next);
   const chance = successChance(stats[quest.stat], quest.level, stats.charisma, quest.rumor);
-  const seconds = paceDuration(quest.durationSeconds, next.settings.pace, stats.constitution);
+  const seconds = paceDuration(
+    quest.durationSeconds,
+    next.settings.pace,
+    stats.constitution,
+    adSpeedFactor(next),
+  );
   const now = Date.now();
   return {
     ...next,

@@ -13,6 +13,7 @@ import {
   clamp,
   computeStats,
 } from "./formulas";
+import { adSpeedFactor } from "./ad-boost";
 import {
   combatRoundDuration,
   currentHeroHp,
@@ -203,7 +204,12 @@ export function startCombat(
   }
   const now = Date.now();
   const roundMs =
-    combatRoundDuration(enc, next.settings.pace, stats.constitution) * 1000;
+    combatRoundDuration(
+      enc,
+      next.settings.pace,
+      stats.constitution,
+      adSpeedFactor(next),
+    ) * 1000;
 
   const combat: ActiveCombat = {
     type: "combat",
@@ -260,7 +266,12 @@ export function fleeCombat(state: GameState): GameState | { error: string } {
     Math.max(
       2500,
       Math.round(
-        combatRoundDuration(enc, state.settings.pace, stats.constitution) * 500,
+        combatRoundDuration(
+          enc,
+          state.settings.pace,
+          stats.constitution,
+          adSpeedFactor(state),
+        ) * 500,
       ),
     );
 
@@ -521,7 +532,12 @@ function advanceOneRound(state: GameState, now: number): GameState {
 
   const stats = computeStats(state);
   const roundMs =
-    combatRoundDuration(enc, state.settings.pace, stats.constitution) * 1000;
+    combatRoundDuration(
+      enc,
+      state.settings.pace,
+      stats.constitution,
+      adSpeedFactor(state),
+    ) * 1000;
   let nextCombat: ActiveCombat = {
     ...combat,
     round: combat.round + 1,

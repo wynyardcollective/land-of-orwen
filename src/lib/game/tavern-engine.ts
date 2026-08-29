@@ -6,6 +6,7 @@ import {
   type TavernRumorDef,
 } from "@/content/taverns";
 import { clamp, computeStats, goldCap, paceDuration } from "./formulas";
+import { adSpeedFactor } from "./ad-boost";
 import { currentHeroHp, heroMaxHp } from "./combat";
 import type { ActiveTavern, GameState, TavernResult } from "./types";
 import { LOCATION_MAP } from "@/content";
@@ -75,6 +76,7 @@ export function tavernRoundDuration(state: GameState, tavernId: string): number 
     tavern.roundSeconds,
     state.settings.pace,
     stats.constitution,
+    adSpeedFactor(state),
   );
 }
 

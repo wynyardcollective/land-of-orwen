@@ -17,6 +17,7 @@ import {
   formatRiskBand,
   successChance,
   paceDuration,
+  adSpeedFactor,
   deriveCombatSheet,
   combatRiskBand,
   resolveStance,
@@ -158,6 +159,7 @@ export function LocationPanel({
     location.travelSeconds,
     state.settings.pace,
     stats.constitution,
+    adSpeedFactor(state),
   );
 
   return (

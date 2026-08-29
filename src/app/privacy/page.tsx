@@ -25,13 +25,12 @@ export default function PrivacyPage() {
         <p>
           rough Android app is a secure client for the same online
           game at {SITE.domain}. It requires an internet connection. The app
-          shows <strong className="text-foreground">Google AdMob</strong> banner
-          advertisements (native ads, not website AdSense). Data collection for
-          accounts and cloud saves is the same as browser play. Google may collect
-          an advertising identifier and related signals for ad delivery and
-          measurement, subject to your consent choices where required (including
-          the EU User Messaging Platform). The app requests network access only —
-          no location, camera, contacts, or other sensitive permissions.
+          shows <strong className="text-foreground">Google AdMob</strong> rewarded
+          and interstitial advertisements (native ads, not website AdSense).
+          Rewarded ads optionally grant a temporary in-game speed boost. Google
+          may collect an advertising identifier and related signals for ad
+          delivery and measurement, subject to your consent choices where
+          required. The app requests network access only.
         </p>
         <p>
           Package name:{" "}
@@ -90,9 +89,9 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-semibold text-amber-100">Advertising</h2>
         <p>
           On the public website we may use Google AdSense. In the Android app we
-          use Google AdMob (native banner ads). Google and its partners may use
-          cookies, advertising identifiers, or similar technologies to serve and
-          measure ads. You can learn more and manage ad personalization at{" "}
+          use Google AdMob rewarded and interstitial ads. Google and its partners
+          may use cookies, advertising identifiers, or similar technologies to
+          serve and measure ads. You can learn more and manage ad personalization at{" "}
           <a
             className="text-amber-200 hover:underline"
             href="https://www.google.com/settings/ads"
