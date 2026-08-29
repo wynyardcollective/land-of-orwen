@@ -2,7 +2,7 @@
 
 A relaxing browser idle RPG inspired by **Land of Livia** — original world, story, and art. Travel a countryside map, wait out real-time journeys and quests, loot gear, craft gems, and keep progress in the cloud.
 
-**GitHub:** [github.com/wynyardcollective/land-of-orwen](https://github.com/wynyardcollective/land-of-orwen) · **Live:** [rough.co.nz](https://rough.co.nz)
+**GitHub:** [github.com/wynyardcollective/rough](https://github.com/wynyardcollective/rough) · **Live:** [rough.co.nz](https://rough.co.nz)
 
 ## Features
 
