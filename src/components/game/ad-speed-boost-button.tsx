@@ -37,13 +37,13 @@ export function AdSpeedBoostButton() {
   const boostLeft = speedBoostRemainingMs(state, now);
   const cooldownLeft = rewardCooldownRemainingMs(state, now);
 
-  let label = "Watch ad · 2× speed (5m)";
+  let label = "Watch ad · 5 min speed boost";
   if (loading) {
     label = "Loading ad…";
   } else if (boostActive) {
     label = `2× speed · ${formatCountdown(boostLeft)}`;
   } else if (!canWatch) {
-    label = `Ad cooldown · ${formatCountdown(cooldownLeft)}`;
+    label = `Cooldown · ${formatCountdown(cooldownLeft)}`;
   }
 
   return (

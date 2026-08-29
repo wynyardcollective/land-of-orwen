@@ -15,7 +15,7 @@ Native **rewarded** and **interstitial** ads — no banner. Website AdSense is u
 |---------|--------|
 | **App ID** | `ca-app-pub-9932949328522902~2169058797` → `strings.xml` `admob_app_id` |
 | **Interstitial** | `ca-app-pub-9932949328522902/8920450776` → default in `src/content/ads.ts` |
-| **Rewarded** | Create in AdMob → set `NEXT_PUBLIC_ADMOB_ANDROID_REWARDED_ID` (still test unit until then) |
+| **Rewarded** | `ca-app-pub-9932949328522902/8542895456` — reward item: **5 Minute Speed Boost** (2× timers in app) |
 
 New ad units can take up to an hour before ads fill.
 
