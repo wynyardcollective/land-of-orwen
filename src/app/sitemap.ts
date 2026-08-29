@@ -3,7 +3,14 @@ import { LORE_ARTICLES } from "@/content/lore";
 import { SITE } from "@/content/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticRoutes = ["", "/about", "/privacy", "/terms", "/lore"].map(
+  const staticRoutes = [
+    "",
+    "/about",
+    "/privacy",
+    "/delete-account",
+    "/terms",
+    "/lore",
+  ].map(
     (path) => ({
       url: `${SITE.url}${path || "/"}`,
       lastModified: new Date("2026-08-26"),

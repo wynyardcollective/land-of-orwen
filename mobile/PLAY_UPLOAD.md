@@ -16,6 +16,7 @@ Use the **signed AAB** (not the debug APK).
 | Section | Value |
 |---------|--------|
 | Privacy policy | https://rough.co.nz/privacy |
+| Data deletion | https://rough.co.nz/delete-account |
 | Ads | **Yes, contains ads** (AdMob rewarded + interstitial) |
 | App access | Full access (no special login for reviewers) |
 | Content rating | Start questionnaire (IARC) — game, mild fantasy combat |

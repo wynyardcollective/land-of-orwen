@@ -6,7 +6,7 @@ Use this when completing the Play Console **Data safety** form for `nz.co.wynyar
 
 - Online game client (WebView loads https://rough.co.nz)
 - Internet required for gameplay and account features
-- **Contains ads** (Google AdMob banner in Android app)
+- **Contains ads** (Google AdMob rewarded + interstitial in Android app)
 
 ## Data collected (user-provided)
 
@@ -38,7 +38,9 @@ Use this when completing the Play Console **Data safety** form for `nz.co.wynyar
 
 ## Account deletion
 
-Users can request account and save deletion by emailing admin@wynyardcollective.co.nz (document in store listing / privacy policy).
+**Data deletion URL:** https://rough.co.nz/delete-account
+
+Users can also email admin@wynyardcollective.co.nz from their account email.
 
 ## Children
 
@@ -47,5 +49,5 @@ Not directed at children under 13 (see privacy policy). AdMob: configure child-d
 ## Ads
 
 - **Website:** Google AdSense (browser only)
-- **Android app:** Google AdMob native banner — declare **Yes, contains ads** in Play Console
+- **Android app:** Google AdMob rewarded + interstitial — declare **Yes, contains ads** in Play Console
 - Website AdSense is **not** loaded in the app WebView (`source=android-app`)

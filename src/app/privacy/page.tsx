@@ -120,12 +120,23 @@ export default function PrivacyPage() {
           affect login and some site features.
         </p>
 
-        <h2 className="text-xl font-semibold text-amber-100">
+        <h2
+          id="account-deletion"
+          className="text-xl font-semibold text-amber-100"
+        >
           Account and data deletion
         </h2>
         <p>
           You may request deletion of your account and associated cloud save data
-          by emailing{" "}
+          at{" "}
+          <a
+            className="text-amber-200 hover:underline"
+            href={`${SITE.url}/delete-account`}
+          >
+            {SITE.url}/delete-account
+          </a>
+          {" "}
+          or by emailing{" "}
           <a
             className="text-amber-200 hover:underline"
             href={`mailto:${SITE.contactEmail}`}
