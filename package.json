@@ -1,8 +1,8 @@
 {
-  "name": "land-of-orwen",
+  "name": "rough",
   "version": "0.1.0",
   "private": true,
-  "description": "The Land of Orwen — browser idle RPG (rough.co.nz)",
+  "description": "rough — browser idle RPG (rough.co.nz)",
   "repository": {
     "type": "git",
     "url": "https://github.com/wynyardcollective/land-of-orwen.git"
@@ -16,8 +16,8 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "deploy:prod": "bash scripts/cf-deploy.sh",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "db:migrate:local": "wrangler d1 migrations apply orwen-players --local",
-    "db:migrate:remote": "wrangler d1 migrations apply orwen-players --remote",
+    "db:migrate:local": "wrangler d1 migrations apply rough-players --local",
+    "db:migrate:remote": "wrangler d1 migrations apply rough-players --remote",
     "icons:generate": "node scripts/generate-app-icons.mjs && node scripts/generate-android-mipmaps.mjs",
     "mobile:install": "cd mobile && npm install",
     "mobile:sync": "cd mobile && npm install && npx cap sync android",

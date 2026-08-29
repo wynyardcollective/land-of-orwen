@@ -1,8 +1,8 @@
 {
-  "name": "land-of-orwen-mobile",
+  "name": "rough-mobile",
   "private": true,
   "version": "1.0.0",
-  "description": "Android wrapper for The Land of Orwen (Google Play)",
+  "description": "Android wrapper for rough (Google Play)",
   "scripts": {
     "cap:sync": "cap sync android",
     "cap:open": "cap open android",

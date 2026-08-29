@@ -6,8 +6,28 @@ import type {
 } from "./types";
 import { EMPTY_SKILL_XP } from "./skill-engine";
 
-export const SAVE_KEY = "orwen-save-v1";
-export const PLAYER_ID_KEY = "orwen-player-id";
+export const SAVE_KEY = "rough-save-v1";
+export const PLAYER_ID_KEY = "rough-player-id";
+const LEGACY_SAVE_KEY = "orwen-save-v1";
+const LEGACY_PLAYER_ID_KEY = "orwen-player-id";
+
+function migrateLegacyLocalStorage() {
+  if (typeof window === "undefined") return;
+  if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem(LEGACY_SAVE_KEY)) {
+    localStorage.setItem(SAVE_KEY, localStorage.getItem(LEGACY_SAVE_KEY)!);
+    localStorage.removeItem(LEGACY_SAVE_KEY);
+  }
+  if (
+    !localStorage.getItem(PLAYER_ID_KEY) &&
+    localStorage.getItem(LEGACY_PLAYER_ID_KEY)
+  ) {
+    localStorage.setItem(
+      PLAYER_ID_KEY,
+      localStorage.getItem(LEGACY_PLAYER_ID_KEY)!,
+    );
+    localStorage.removeItem(LEGACY_PLAYER_ID_KEY);
+  }
+}
 
 const defaultSettings: SettingsState = {
   pace: "swift",
@@ -171,6 +191,7 @@ export function normalizeState(raw: GameState): GameState {
 
 export function loadLocalSave(): GameState | null {
   if (typeof window === "undefined") return null;
+  migrateLegacyLocalStorage();
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
@@ -189,6 +210,7 @@ export function writeLocalSave(state: GameState) {
 
 export function getOrCreatePlayerId(): string {
   if (typeof window === "undefined") return createPlayerId();
+  migrateLegacyLocalStorage();
   const existing = localStorage.getItem(PLAYER_ID_KEY);
   if (existing) return existing;
   const id = createPlayerId();

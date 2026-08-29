@@ -1,4 +1,4 @@
-package nz.co.wynyardcollective.landoforwen;
+package nz.co.wynyardcollective.rough;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -171,7 +171,7 @@ export function Hero2({
                   {(hoveredLink === link.label ||
                     (!hoveredLink && activeLink === link.label)) && (
                     <motion.span
-                      layoutId="orwenActiveDot"
+                      layoutId="roughActiveDot"
                       className="absolute -bottom-1.5 h-1 w-1 rounded-full bg-amber-300"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />

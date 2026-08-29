@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site/site-chrome";
-import { OrwenHero } from "@/components/site/orwen-hero";
+import { RoughHero } from "@/components/site/rough-hero";
 import { LORE_ARTICLES } from "@/content/lore";
 import { HOME_PILLARS, HOME_WORLD } from "@/content/marketing";
 import { SITE } from "@/content/site";
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      <OrwenHero />
+      <RoughHero />
       <div className="site-ambient border-t border-border/40">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16">
           <section className="grid gap-4 sm:grid-cols-2">

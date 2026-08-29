@@ -1,4 +1,4 @@
-# The Land of Orwen
+# rough
 
 A relaxing browser idle RPG inspired by **Land of Livia** — original world, story, and art. Travel a countryside map, wait out real-time journeys and quests, loot gear, craft gems, and keep progress in the cloud.
 
@@ -50,7 +50,7 @@ Progress is written to:
 Open `/play` and choose **Play as guest**, **Create account**, or **Sign in**.
 
 - Guest progress stays on this device; create an account anytime (auth screen or Settings) to keep it in the cloud
-- Passwords are bcrypt-hashed; sessions last 30 days (httpOnly cookie `orwen_session`)
+- Passwords are bcrypt-hashed; sessions last 30 days (httpOnly cookie `rough_session`)
 - Cloud saves are bound to the account — `/api/save` rejects unauthenticated requests
 - Sign out / end guest session from **Settings**
 - Email verification / password reset are not included yet (no email provider configured)
@@ -79,7 +79,7 @@ npm run deploy:prod
 
 That script will:
 
-1. Create (or reuse) the remote D1 database `orwen-players` and write its `database_id` into `wrangler.jsonc`
+1. Create (or reuse) the remote D1 database `rough-players` and write its `database_id` into `wrangler.jsonc`
 2. Apply D1 migrations remotely
 3. Build with OpenNext and deploy the Worker, attaching `rough.co.nz` and `www.rough.co.nz`
 
@@ -87,7 +87,7 @@ After a successful deploy:
 
 - https://rough.co.nz
 - https://www.rough.co.nz
-- `https://land-of-orwen.<account>.workers.dev` (default workers.dev URL)
+- `https://rough.<account>.workers.dev` (default workers.dev URL)
 
 ### Manual steps (same outcome)
 
@@ -95,7 +95,7 @@ After a successful deploy:
 npx wrangler login
 # or: export CLOUDFLARE_API_TOKEN=...
 
-npx wrangler d1 create orwen-players
+npx wrangler d1 create rough-players
 # Paste database_id into wrangler.jsonc → d1_databases[0].database_id
 
 npm run db:migrate:remote
@@ -109,7 +109,7 @@ npm run deploy
 | Custom domain create fails | Zone `rough.co.nz` must be **Active** on the same Cloudflare account as the Worker |
 | Deploy fails on size / quota | Upgrade to **Workers Paid** |
 | www works, apex does not | Both patterns are in `wrangler.jsonc` `routes`; re-run deploy after the zone is Active |
-| Saves empty after deploy | Confirm `database_id` is a real UUID (not `local-orwen-players`) and migrations ran |
+| Saves empty after deploy | Confirm `database_id` is a real UUID (not `local-rough-players`) and migrations ran |
 
 ## Cloudflare notes (general)
 
@@ -141,7 +141,7 @@ Useful scripts:
 Official Android client in `mobile/` — Capacitor 7 shell loading `https://rough.co.nz/play?source=android-app`.
 
 - **Privacy policy:** https://rough.co.nz/privacy (required for Play Console)
-- **Package ID:** `nz.co.wynyardcollective.landoforwen`
+- **Package ID:** `nz.co.wynyardcollective.rough`
 - **No in-app ads** — AdSense is disabled when the app session cookie/header is set
 - **Permissions:** `INTERNET` only
 

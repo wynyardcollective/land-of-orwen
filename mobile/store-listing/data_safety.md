@@ -1,6 +1,6 @@
 # Google Play Data safety (draft answers)
 
-Use this when completing the Play Console **Data safety** form for `nz.co.wynyardcollective.landoforwen`.
+Use this when completing the Play Console **Data safety** form for `nz.co.wynyardcollective.rough`.
 
 ## App type
 

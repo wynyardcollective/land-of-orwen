@@ -6,7 +6,7 @@ import { getD1, type D1Database } from "./db";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
-export const SESSION_COOKIE = "orwen_session";
+export const SESSION_COOKIE = "rough_session";
 const SESSION_DAYS = 30;
 const BCRYPT_ROUNDS = 10;
 

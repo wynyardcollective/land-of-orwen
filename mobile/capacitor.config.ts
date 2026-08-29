@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "nz.co.wynyardcollective.landoforwen",
-  appName: "Land of Orwen",
+  appId: "nz.co.wynyardcollective.rough",
+  appName: "rough",
   webDir: "www",
   server: {
     url: "https://rough.co.nz/play?source=android-app",

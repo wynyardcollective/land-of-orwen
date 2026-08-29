@@ -7,7 +7,7 @@ import { SITE } from "@/content/site";
 export const metadata: Metadata = {
   title: "Journal",
   description:
-    "Long-form journal entries from the drought country of Orwen — orchards, taverns, combat on the road, and the Rainward Gate.",
+    "Long-form journal entries from the drought country of rough — orchards, taverns, combat on the road, and the Rainward Gate.",
   alternates: { canonical: "/lore" },
 };
 
@@ -16,7 +16,7 @@ export default function LoreIndexPage() {
     <SiteShell currentPath="/lore">
       <header className="site-prose max-w-3xl">
         <h1 className="font-heading text-3xl font-semibold text-amber-100 sm:text-4xl">
-          Journal of Orwen
+          Journal of rough
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-stone-300">
           Field notes and road prose from the drought — how Merrick&apos;s ledgers

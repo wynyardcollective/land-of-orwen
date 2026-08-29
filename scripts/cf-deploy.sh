@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-shot: ensure D1 exists, migrate, build + deploy Land of Orwen to Cloudflare
+# One-shot: ensure D1 exists, migrate, build + deploy rough to Cloudflare
 # including custom domains rough.co.nz / www.rough.co.nz from wrangler.jsonc.
 #
 # Auth (pick one):
@@ -12,8 +12,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 CONFIG="wrangler.jsonc"
-DB_NAME="orwen-players"
-PLACEHOLDER_ID="local-orwen-players"
+DB_NAME="rough-players"
+PLACEHOLDER_ID="local-rough-players"
 
 echo "==> Checking Cloudflare auth..."
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" && -z "${CLOUDFLARE_API_KEY:-}" ]]; then
@@ -108,7 +108,7 @@ echo ""
 echo "Deploy finished."
 echo "  Apex:  https://rough.co.nz"
 echo "  WWW:   https://www.rough.co.nz"
-echo "  Also:  https://land-of-orwen.<your-subdomain>.workers.dev"
+echo "  Also:  https://rough.<your-subdomain>.workers.dev"
 echo ""
 echo "If custom domains fail: add rough.co.nz as a Cloudflare zone,"
 echo "wait for Active, then re-run. Workers Paid is required for this bundle size."

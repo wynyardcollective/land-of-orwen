@@ -101,7 +101,7 @@ export function HeroTab() {
             Road skills
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Fish, mine, cut, cook, and smith across Orwen. Train at map locations;
+            Fish, mine, cut, cook, and smith across rough. Train at map locations;
             craft recipes on the Craft tab.
           </p>
         </CardHeader>

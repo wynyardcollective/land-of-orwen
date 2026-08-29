@@ -9,7 +9,7 @@ export function AppModeHint() {
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone;
     if (standalone) {
-      document.documentElement.dataset.orwenApp = "1";
+      document.documentElement.dataset.roughApp = "1";
     }
   }, []);
 

@@ -1,7 +1,7 @@
 {
-  "name": "The Land of Orwen",
-  "short_name": "Orwen",
-  "description": "Idle RPG across drought-struck Orwen — map, quests, craft, and campfire.",
+  "name": "rough",
+  "short_name": "rough",
+  "description": "Idle RPG across drought-struck rough — map, quests, craft, and campfire.",
   "start_url": "/play?source=android-app",
   "scope": "/",
   "display": "standalone",

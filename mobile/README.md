@@ -1,4 +1,4 @@
-# Land of Orwen — Android app (Google Play)
+# rough — Android app (Google Play)
 
 Native Android shell for the live game at [rough.co.nz](https://rough.co.nz/play). The app loads the same web game in a secure WebView; accounts, saves, and gameplay run on our servers.
 
@@ -55,8 +55,8 @@ npm run android:debug
 1. Create a release keystore (keep offline, never commit):
 
    ```bash
-   keytool -genkey -v -keystore land-of-orwen-release.keystore \
-     -alias landoforwen -keyalg RSA -keysize 2048 -validity 10000
+   keytool -genkey -v -keystore rough-release.keystore \
+     -alias rough -keyalg RSA -keysize 2048 -validity 10000
    ```
 
 2. Add signing config in `android/app/build.gradle` or Android Studio **Build → Generate Signed Bundle**.
@@ -64,7 +64,7 @@ npm run android:debug
 3. Get SHA-256 fingerprint and update `public/.well-known/assetlinks.json` on the website:
 
    ```bash
-   keytool -list -v -keystore land-of-orwen-release.keystore -alias landoforwen
+   keytool -list -v -keystore rough-release.keystore -alias rough
    ```
 
 4. Deploy website so `https://rough.co.nz/.well-known/assetlinks.json` is live.
@@ -86,12 +86,12 @@ Upload the AAB to [Google Play Console](https://play.google.com/console).
 
 ## Store listing copy (suggested)
 
-- **App name:** Land of Orwen
-- **Short description:** Idle RPG across drought-struck Orwen — map, quests, craft, taverns.
+- **App name:** rough
+- **Short description:** Idle RPG across drought-struck rough — map, quests, craft, taverns.
 - **Full description:** Mention online play, account optional, privacy policy URL.
 - **Category:** Games
 - **Privacy policy URL:** https://rough.co.nz/privacy
 
 ## Package ID
 
-`nz.co.wynyardcollective.landoforwen`
+`nz.co.wynyardcollective.rough`

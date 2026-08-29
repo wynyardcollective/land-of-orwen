@@ -340,7 +340,7 @@ export const QUESTS: QuestDef[] = [
     locationId: "blackened-tables",
     name: "Survey Heat Vents",
     description:
-      "Record which vents still breathe. Patterns may explain why clouds refuse Orwen.",
+      "Record which vents still breathe. Patterns may explain why clouds refuse rough.",
     level: 5,
     stat: "intelligence",
     durationSeconds: 210,
@@ -398,7 +398,7 @@ export const QUESTS: QuestDef[] = [
     locationId: "sealed-shrine",
     name: "Open the Rainward Gate",
     description:
-      "With lore solved and courage gathered, push the door. If fortune smiles, Orwen remembers rain.",
+      "With lore solved and courage gathered, push the door. If fortune smiles, rough remembers rain.",
     level: 6,
     stat: "intelligence",
     durationSeconds: 220,

@@ -162,7 +162,7 @@ export function AuthScreen() {
       >
         <motion.header variants={rise} className="mb-6 text-center sm:mb-8">
           <p className="font-heading text-3xl font-semibold tracking-tight text-stone-50 sm:text-4xl">
-            Enter Orwen
+            Enter rough
           </p>
           <div className="relative mt-3 h-6 overflow-hidden">
             <AnimatePresence mode="wait">

@@ -23,7 +23,7 @@ export default function PrivacyPage() {
 
         <h2 className="text-xl font-semibold text-amber-100">Android app</h2>
         <p>
-          The Land of Orwen Android app is a secure client for the same online
+          rough Android app is a secure client for the same online
           game at {SITE.domain}. It requires an internet connection. The app
           does <strong className="text-foreground">not</strong> show
           third-party advertisements (unlike the public website, which may use
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           Package name:{" "}
-          <code className="text-foreground">nz.co.wynyardcollective.landoforwen</code>
+          <code className="text-foreground">nz.co.wynyardcollective.rough</code>
           . Privacy questions for the app:{" "}
           <a
             className="text-amber-200 hover:underline"

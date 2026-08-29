@@ -119,7 +119,7 @@ export function MapTab() {
     <div className="space-y-4">
       <Card className="border-amber-900/40 bg-gradient-to-b from-stone-900 to-stone-950">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Map of Orwen</CardTitle>
+          <CardTitle className="text-base">Map of rough</CardTitle>
           <p className="text-sm text-muted-foreground">
             Fourteen towns and eight hidden sites across the drought country.
             Tap a pin to travel or view local work.
@@ -130,7 +130,7 @@ export function MapTab() {
             className={`map-weather relative aspect-square w-full overflow-visible rounded-xl border border-border/60 bg-[radial-gradient(ellipse_at_center,_#1c1917_0%,_#0c0a09_70%)] weather-${weather}`}
             data-weather={weather}
             role="img"
-            aria-label={`Illustrated countryside map of Orwen. Weather: ${weather}.`}
+            aria-label={`Illustrated countryside map of rough. Weather: ${weather}.`}
           >
             <svg
               viewBox="0 0 100 100"

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "land-of-orwen",
+  "name": "rough",
   "main": ".open-next/worker.js",
   "compatibility_date": "2024-12-30",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -11,14 +11,14 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "land-of-orwen"
+      "service": "rough"
     }
   ],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "orwen-players",
-      // Replace with the UUID from `wrangler d1 create orwen-players` before remote deploy
+      "database_name": "rough-players",
+      // Replace with the UUID from `wrangler d1 create rough-players` before remote deploy
       // (or run `npm run deploy:prod` which creates it and patches this file)
       "database_id": "46c5328a-87fe-4dab-9e7b-d66ea7dfd131",
       "migrations_dir": "migrations"

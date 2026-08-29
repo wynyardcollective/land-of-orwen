@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const APP_COOKIE = "orwen_client";
+const APP_COOKIE = "rough_client";
+const LEGACY_APP_COOKIE = "orwen_client";
 const APP_VALUE = "android-app";
 
 /** Tag Android app / TWA sessions so we can disable web-only ads (Play policy). */
 export function middleware(request: NextRequest) {
   const source = request.nextUrl.searchParams.get("source");
-  const hasAppCookie = request.cookies.get(APP_COOKIE)?.value === APP_VALUE;
+  const hasAppCookie =
+    request.cookies.get(APP_COOKIE)?.value === APP_VALUE ||
+    request.cookies.get(LEGACY_APP_COOKIE)?.value === APP_VALUE;
   const isAppClient = source === APP_VALUE || hasAppCookie;
 
   const requestHeaders = new Headers(request.headers);
   if (isAppClient) {
-    requestHeaders.set("x-orwen-client", APP_VALUE);
+    requestHeaders.set("x-rough-client", APP_VALUE);
   }
 
   const response = NextResponse.next({

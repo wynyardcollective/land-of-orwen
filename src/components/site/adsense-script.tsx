@@ -1,8 +1,10 @@
 import { cookies, headers } from "next/headers";
 
-const APP_COOKIE = "orwen_client";
+const APP_COOKIE = "rough_client";
+const LEGACY_APP_COOKIE = "orwen_client";
 const APP_VALUE = "android-app";
-const APP_HEADER = "x-orwen-client";
+const APP_HEADER = "x-rough-client";
+const LEGACY_APP_HEADER = "x-orwen-client";
 
 /**
  * AdSense is for the public website only — not loaded in the Android app wrapper
@@ -13,7 +15,9 @@ export async function AdSenseScript() {
   const cookieStore = await cookies();
   if (
     headerStore.get(APP_HEADER) === APP_VALUE ||
-    cookieStore.get(APP_COOKIE)?.value === APP_VALUE
+    headerStore.get(LEGACY_APP_HEADER) === APP_VALUE ||
+    cookieStore.get(APP_COOKIE)?.value === APP_VALUE ||
+    cookieStore.get(LEGACY_APP_COOKIE)?.value === APP_VALUE
   ) {
     return null;
   }

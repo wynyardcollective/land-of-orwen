@@ -180,7 +180,7 @@ export const COMBAT_OUTCOMES: Record<string, CombatOutcome> = {
     swiftFirst: [],
     victory: "The Gate Sentinel salutes and crumbles. The Rainward Gate listens.",
     defeat: "The gate remains sealed. You remain alive — barely.",
-    jackpot: "Orwen remembers rain. The sentinel falls in awe.",
+    jackpot: "rough remembers rain. The sentinel falls in awe.",
     closeWin: "On your knees, you hear the gate begin to breathe.",
   },
 };

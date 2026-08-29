@@ -4,9 +4,9 @@ import { SITE } from "./site";
 
 export const HOME_HERO = {
   eyebrow: "An original idle chronicle",
-  title: "Walk Orwen until the sky remembers rain.",
+  title: "Walk rough until the sky remembers rain.",
   lead:
-    "The Land of Orwen is a browser role-playing game set in a countryside where drought arrived all at once — wrong ledgers, dry fords, and a sealed shrine that still expects a storm. Travel named places, work timed quests, listen in taverns, and carry your progress forward.",
+    "rough is a browser role-playing game set in a countryside where drought arrived all at once — wrong ledgers, dry fords, and a sealed shrine that still expects a storm. Travel named places, work timed quests, listen in taverns, and carry your progress forward.",
   primaryCta: "Enter the game",
   secondaryCta: "Read the journal",
 } as const;
@@ -37,7 +37,7 @@ export const HOME_PILLARS = [
 export const HOME_WORLD = {
   title: "The country in drought",
   paragraphs: [
-    "Orwen is not a single village with a quest board. It is a lattice of places that used to share water: orchard ditches, market wells, mill channels, canyon cracks, and a eastern basin that should still pool after storms.",
+    "rough is not a single village with a quest board. It is a lattice of places that used to share water: orchard ditches, market wells, mill channels, canyon cracks, and a eastern basin that should still pool after storms.",
     "The main story follows that lattice inland — from Merrick's ledgers to Stonewheel Mill, the northern wreck line, Clara's Canyon, the Blackened Tablelands, and the Sealed Shrine. Side roads branch south to Bracken Ford and west to Harrow Ridge, where clerks and lookouts argue about the same missing rain from different angles.",
     "Every location has named work, local voices, and ambient detail. Secret sites appear only when rumor or fieldwork earns them — whisper wells under Tarowen, a broken aqueduct above the mill wheel, a ferryman's hide where the southern creek used to run.",
   ],
@@ -47,7 +47,7 @@ export const ABOUT_SECTIONS = [
   {
     heading: "What this is",
     body:
-      "The Land of Orwen is an original browser idle RPG created for rough.co.nz. It is inspired by the patient pacing of classic idle adventures, but the world, map, journal, and systems are written specifically for Orwen's drought — not a reskin of another property.",
+      "rough is an original browser idle RPG created for rough.co.nz. It is inspired by the patient pacing of classic idle adventures, but the world, map, journal, and systems are written specifically for rough's drought — not a reskin of another property.",
   },
   {
     heading: "What you do",

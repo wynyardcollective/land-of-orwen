@@ -31,7 +31,7 @@ export const LORE_ARTICLES: LoreArticle[] = [
       "The Dry Kettle in Tarowen still pours something that counts as ale. Senna makes more from what she hears: hatch locations under the square, mill roads that skip orchard errands, and the names of men who smash rain gauges for coin.",
       "Inland, the Wheelhouse Tap keeps debt and sightings on one chalk board. The Salt Gull trades brine tea for cove coordinates. Ash Canteen logs heat vents that sink instead of rise — nobody agrees why.",
       "Windmere's drying shed and Bracken Stein at the southern ford run the same economy on smaller scales: cider that tastes like patience, crossing fees written in mud, couriers who still sign relay tallies as if the north road matters.",
-      "A lead costs gold before you know if it is worth anything. Sometimes the room goes quiet and you pay for silence. That is still the best deal in Orwen most nights, because the alternative is walking blind while the wells go empty.",
+      "A lead costs gold before you know if it is worth anything. Sometimes the room goes quiet and you pay for silence. That is still the best deal in rough most nights, because the alternative is walking blind while the wells go empty.",
       "The best rumors do not sound dramatic. They sound like a drover forgetting a name, or a clerk leaving a page uncopied. You learn to listen for what people almost say.",
     ],
   },
@@ -42,11 +42,11 @@ export const LORE_ARTICLES: LoreArticle[] = [
     summary:
       "Fights on the shore and in the tablelands are slow, messy, and they follow you after they end.",
     body: [
-      "Enemies on the coast and in the canyon do not wait for you to be ready. You pick a stance — Strike, Skirmish, or Hex — and hope it matches what that thing is weak to. Old soldiers say wars were faster. In Orwen, every round is a negotiation with tired arms.",
+      "Enemies on the coast and in the canyon do not wait for you to be ready. You pick a stance — Strike, Skirmish, or Hex — and hope it matches what that thing is weak to. Old soldiers say wars were faster. In rough, every round is a negotiation with tired arms.",
       "Damage is lower than the ballads suggest. Armor helps. Dexterity keeps your aim steady. When you miss, the log shows zero and you still lose a beat in the round — time you cannot buy back with gold.",
       "Health does not snap back when the fight ends. Bandages and tavern beds fix some of it. If you lose badly you stay wounded until you pay for care — or eat the last dried apple in your pack and hope the next quest clears the shame.",
       "Watchtower guards on the tablelands mark your signal fires. Beachcombers on the shore bet on whether you return. The land keeps score even when no one is cheering.",
-      "Combat is not the center of Orwen. It is a toll gate on the road to places that will not open for talk alone — wreck lines, ash vents, shrine stone that remembers weight.",
+      "Combat is not the center of rough. It is a toll gate on the road to places that will not open for talk alone — wreck lines, ash vents, shrine stone that remembers weight.",
     ],
   },
   {
@@ -82,13 +82,13 @@ export const LORE_ARTICLES: LoreArticle[] = [
     title: "South of the Grass",
     date: "2026-08-27",
     summary:
-      "Bracken Ford still charges crossing fees for a creek that died — and half the grain in Orwen crosses at night.",
+      "Bracken Ford still charges crossing fees for a creek that died — and half the grain in rough crosses at night.",
     body: [
       "Bracken Ford is a gravel scar south of the Ashen Grasslands. Shepherd Joss sends walkers down the dry creek bed when wagon ruts still show where water ran. The ford should be empty. Carts still queue.",
       "Ford-warden Hek keeps fees on a board written in mud and temper. Bracken Stein serves what passes for ale and sharper gossip: which carts run north without paying, which names match Merrick's missing gauge payments, where a tarp boat still ties to willow roots under the crossing.",
       "Windmere Hamlet sits between orchard and ford — a crossroads where Vale at the drying shed hears couriers before the square does. Water rights are traded by handshake there because law moved slower than thirst.",
       "The Ferryman's Hide is what Hek will not put on the fee board: ledgers from when the creek ran, crossings logged by moon phase, proof that southern trade never stopped — only went quiet.",
-      "South of the grass is where Orwen's hunger shows without poetry. No shrine symbols. Just carts, fees, and the question of who still profits when the sky refuses.",
+      "South of the grass is where rough's hunger shows without poetry. No shrine symbols. Just carts, fees, and the question of who still profits when the sky refuses.",
     ],
   },
 ];

@@ -12,7 +12,7 @@ const NAV: NavLink[] = [
   { label: "Play", href: "/play" },
 ];
 
-export function OrwenHero() {
+export function RoughHero() {
   return (
     <Hero2
       className="min-h-[88vh] md:min-h-[92vh] bg-background selection:bg-amber-200/30 selection:text-amber-50"
@@ -20,7 +20,7 @@ export function OrwenHero() {
       navLinks={NAV}
       headline={
         <>
-          Walk Orwen until
+          Walk rough until
           <br />
           the sky{" "}
           <span className="font-serif italic text-amber-200/95">remembers rain.</span>
@@ -43,7 +43,7 @@ export function OrwenHero() {
 }
 
 /** Watermelon-style top nav for inner pages */
-export function OrwenSiteNav({ currentPath }: { currentPath?: string }) {
+export function RoughSiteNav({ currentPath }: { currentPath?: string }) {
   const links = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },

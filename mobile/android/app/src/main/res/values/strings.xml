@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Land of Orwen</string>
-    <string name="title_activity_main">Land of Orwen</string>
-    <string name="package_name">nz.co.wynyardcollective.landoforwen</string>
-    <string name="custom_url_scheme">nz.co.wynyardcollective.landoforwen</string>
+    <string name="app_name">rough</string>
+    <string name="title_activity_main">rough</string>
+    <string name="package_name">nz.co.wynyardcollective.rough</string>
+    <string name="custom_url_scheme">nz.co.wynyardcollective.rough</string>
     <string name="privacy_policy_url">https://rough.co.nz/privacy</string>
     <string name="play_store_description">Online idle RPG — requires internet. Privacy: rough.co.nz/privacy</string>
 </resources>

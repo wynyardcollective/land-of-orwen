@@ -18,24 +18,24 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://rough.co.nz"),
   title: {
-    default: "The Land of Orwen",
-    template: "%s · The Land of Orwen",
+    default: "rough",
+    template: "%s · rough",
   },
   description:
-    "Original browser idle RPG set in drought-struck Orwen — travel the map, read the journal, and pursue the Rainward Gate.",
+    "Original browser idle RPG set in drought-struck rough — travel the map, read the journal, and pursue the Rainward Gate.",
   openGraph: {
     type: "website",
     locale: "en_NZ",
     url: "https://rough.co.nz",
-    siteName: "The Land of Orwen",
-    title: "The Land of Orwen",
+    siteName: "rough",
+    title: "rough",
     description:
-      "Walk Orwen until the sky remembers rain — an original browser idle chronicle.",
+      "Walk rough until the sky remembers rain — an original browser idle chronicle.",
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Orwen",
+    title: "rough",
     statusBarStyle: "black-translucent",
   },
 };

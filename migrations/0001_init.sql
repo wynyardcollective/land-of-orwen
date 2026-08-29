@@ -1,4 +1,4 @@
--- Player progress for The Land of Orwen
+-- Player progress for rough
 CREATE TABLE IF NOT EXISTS player_saves (
   player_id TEXT PRIMARY KEY NOT NULL,
   hero_name TEXT NOT NULL DEFAULT 'Wanderer',

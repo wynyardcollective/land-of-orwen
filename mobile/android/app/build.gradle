@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "nz.co.wynyardcollective.landoforwen"
+    namespace "nz.co.wynyardcollective.rough"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "nz.co.wynyardcollective.landoforwen"
+        applicationId "nz.co.wynyardcollective.rough"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

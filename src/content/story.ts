@@ -41,7 +41,7 @@ export const JOURNAL: JournalEntry[] = [
     id: "ending",
     title: "Rain Remembers",
     unlockFlag: "chapter_complete",
-    body: "Behind the door, a basin of still water mirrors a sky that begins to gather. The Ring of Returning Rain warms on your hand. Orwen's drought is not ended—but it has been named, and naming is the first mercy.",
+    body: "Behind the door, a basin of still water mirrors a sky that begins to gather. The Ring of Returning Rain warms on your hand. rough's drought is not ended—but it has been named, and naming is the first mercy.",
   },
   {
     id: "tavern-drought-cult",
@@ -85,7 +85,7 @@ export const JOURNAL: JournalEntry[] = [
     title: "Bracken Ford",
     unlockFlag: "ford_unlocked",
     body:
-      "The southern ford dried with the rest of Orwen, but carts still queue. Hek at Bracken Stein keeps crossing fees and grudges in one ledger.",
+      "The southern ford dried with the rest of rough, but carts still queue. Hek at Bracken Stein keeps crossing fees and grudges in one ledger.",
   },
   {
     id: "ledger-note",

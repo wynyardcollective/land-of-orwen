@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { PUBLIC_NAV, SITE } from "@/content/site";
-import { OrwenSiteNav } from "@/components/site/orwen-hero";
+import { RoughSiteNav } from "@/components/site/rough-hero";
 
 export function SiteHeader({ currentPath }: { currentPath?: string }) {
-  return <OrwenSiteNav currentPath={currentPath} />;
+  return <RoughSiteNav currentPath={currentPath} />;
 }
 
 export function SiteFooter() {

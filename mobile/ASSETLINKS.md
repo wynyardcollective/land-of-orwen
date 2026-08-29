@@ -20,7 +20,7 @@ keytool -list -v -keystore ~/.android/debug.keystore \
 **Release** (Play Store signing key):
 
 ```bash
-keytool -list -v -keystore land-of-orwen-release.keystore -alias landoforwen
+keytool -list -v -keystore rough-release.keystore -alias rough
 ```
 
 Copy the `SHA256:` line, remove colons, and use uppercase hex (e.g. `AB12CD...`).

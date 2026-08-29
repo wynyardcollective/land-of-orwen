@@ -73,7 +73,7 @@ export function SettingsDialog() {
           <DialogHeader>
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>
-              Accessibility, pace, and journey options for Orwen.
+              Accessibility, pace, and journey options for rough.
             </DialogDescription>
           </DialogHeader>
 

@@ -121,7 +121,7 @@ export const ITEMS: Record<string, ItemDef> = {
     basePower: 5,
     sellValue: 80,
     description:
-      "A legendary band said to remember the last storm that blessed Orwen.",
+      "A legendary band said to remember the last storm that blessed rough.",
   },
   "shore-sandals": {
     id: "shore-sandals",
