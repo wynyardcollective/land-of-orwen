@@ -21,7 +21,10 @@
     "icons:generate": "node scripts/generate-app-icons.mjs && node scripts/generate-android-mipmaps.mjs",
     "mobile:install": "cd mobile && npm install",
     "mobile:sync": "cd mobile && npm install && npx cap sync android",
-    "mobile:open": "cd mobile && npx cap open android"
+    "mobile:open": "cd mobile && npx cap open android",
+    "android:keystore": "bash scripts/generate-android-keystore.sh",
+    "android:release": "bash scripts/android-release-build.sh",
+    "android:fingerprint": "bash scripts/android-release-fingerprint.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

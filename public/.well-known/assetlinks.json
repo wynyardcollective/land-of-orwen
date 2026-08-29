@@ -5,8 +5,7 @@
       "namespace": "android_app",
       "package_name": "nz.co.wynyardcollective.rough",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_RELEASE_SHA256",
-        "REPLACE_WITH_DEBUG_SHA256"
+        "E3B27C53B9A44141B09317C395F8F1B59606B8AEF7C2C3DAA4BF85FEBD226560"
       ]
     }
   }
