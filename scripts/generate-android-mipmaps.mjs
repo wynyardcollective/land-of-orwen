@@ -1,9 +1,11 @@
 /**
  * Resize launcher icons into Android mipmap folders.
- * Uses the same full-bleed artwork for legacy + adaptive foreground so the
- * on-device icon matches the Play hi-res icon (no offset/crop drift).
  *
- * Source: public/icons/icon-512.png (from generate-play-store-graphics.mjs)
+ * Play hi-res icon stays full-bleed (public/icons/icon-512.png).
+ * Launcher mipmaps inset the artwork ~14% so Android adaptive-icon
+ * masks (circle/squircle) do not crop the ROUGH wordmark on the sides.
+ *
+ * Tune with LAUNCHER_ICON_SCALE (default 0.86).
  *
  * Run: node scripts/generate-android-mipmaps.mjs
  */
@@ -17,6 +19,9 @@ const src = join(root, "public/icons/icon-512.png");
 const resRoot = join(root, "mobile/android/app/src/main/res");
 const bgColorFile = join(resRoot, "values/ic_launcher_background.xml");
 
+/** Artwork scale inside launcher canvas (lower = more border). */
+const LAUNCHER_SCALE = Number(process.env.LAUNCHER_ICON_SCALE ?? "0.86");
+
 const sizes = [
   { folder: "mipmap-mdpi", size: 48 },
   { folder: "mipmap-hdpi", size: 72 },
@@ -27,18 +32,39 @@ const sizes = [
 
 const input = readFileSync(src);
 
-/** Sample top-left pixel for adaptive-icon background (matches icon field). */
+async function sampleBackground(buffer) {
+  const { data } = await sharp(buffer).ensureAlpha().raw().toBuffer({
+    resolveWithObject: true,
+  });
+  return { r: data[0], g: data[1], b: data[2] };
+}
+
 async function sampleBackgroundHex(buffer) {
-  const { data, info } = await sharp(buffer)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  const i = 0;
-  const r = data[i];
-  const g = data[i + 1];
-  const b = data[i + 2];
+  const { r, g, b } = await sampleBackground(buffer);
   const hex = (n) => n.toString(16).padStart(2, "0");
   return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+async function makeLauncherPng(sourceBuffer, size) {
+  const bg = await sampleBackground(sourceBuffer);
+  const inner = Math.max(1, Math.round(size * LAUNCHER_SCALE));
+  const pad = Math.round((size - inner) / 2);
+  const scaled = await sharp(sourceBuffer)
+    .resize(inner, inner, { fit: "contain" })
+    .png()
+    .toBuffer();
+
+  return sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 3,
+      background: bg,
+    },
+  })
+    .composite([{ input: scaled, left: pad, top: pad }])
+    .png()
+    .toBuffer();
 }
 
 const bgHex = await sampleBackgroundHex(input);
@@ -50,11 +76,12 @@ writeFileSync(
 for (const { folder, size } of sizes) {
   const dir = join(resRoot, folder);
   mkdirSync(dir, { recursive: true });
-  const png = await sharp(input).resize(size, size, { fit: "fill" }).png().toBuffer();
+  const png = await makeLauncherPng(input, size);
   writeFileSync(join(dir, "ic_launcher.png"), png);
   writeFileSync(join(dir, "ic_launcher_round.png"), png);
-  // Same full artwork — background color handles adaptive mask edges
   writeFileSync(join(dir, "ic_launcher_foreground.png"), png);
 }
 
-console.log(`Android mipmap icons updated (background ${bgHex})`);
+console.log(
+  `Android mipmap icons updated (background ${bgHex}, scale ${LAUNCHER_SCALE})`,
+);
