@@ -20,7 +20,7 @@ const resRoot = join(root, "mobile/android/app/src/main/res");
 const bgColorFile = join(resRoot, "values/ic_launcher_background.xml");
 
 /** Artwork scale inside launcher canvas (1.0 when ROUGH_icon.png already has safe-zone padding). */
-const LAUNCHER_SCALE = Number(process.env.LAUNCHER_ICON_SCALE ?? "1");
+const LAUNCHER_SCALE = Number(process.env.LAUNCHER_ICON_SCALE ?? "0.8");
 
 const sizes = [
   { folder: "mipmap-mdpi", size: 48 },
