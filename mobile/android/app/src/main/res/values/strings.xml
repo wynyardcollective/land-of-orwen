@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">rough</string>
-    <string name="title_activity_main">rough</string>
+    <string name="app_name">Rough</string>
+    <string name="title_activity_main">Rough</string>
     <string name="package_name">nz.co.wynyardcollective.rough</string>
     <string name="custom_url_scheme">nz.co.wynyardcollective.rough</string>
     <string name="privacy_policy_url">https://rough.co.nz/privacy</string>

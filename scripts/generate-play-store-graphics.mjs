@@ -1,15 +1,29 @@
 /**
- * Play Store listing assets: 512 app icon + 1024×500 feature graphic.
+ * Play Store listing assets + launcher icons (must match Play hi-res icon).
+ *
+ * Optional: copy your Play icon to mobile/store-listing/source/ROUGH_icon.png
+ * and it will be used instead of the generated SVG.
+ *
  * Run: node scripts/generate-play-store-graphics.mjs
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "mobile/store-listing");
+const sourceDir = join(outDir, "source");
+const customIconPath = join(sourceDir, "ROUGH_icon.png");
 mkdirSync(outDir, { recursive: true });
+mkdirSync(sourceDir, { recursive: true });
+
+/** Matches Play listing: dark field + ROUGH with gold circle O */
+const BRAND = {
+  bg: "#2b2433",
+  text: "#f0ebe3",
+  gold: "#d9a441",
+};
 
 const C = {
   bg: "#12100e",
@@ -23,60 +37,69 @@ const C = {
   rain: "#94a3b8",
 };
 
-function appIconSvg(size, maskable = false) {
+/** Play / launcher icon — ROUGH wordmark (must match store listing). */
+function roughStoreIconSvg(size, maskable = false) {
+  const inset = maskable ? size * 0.12 : 0;
+  const s = size - inset * 2;
+  const fs = s * 0.19;
   const cx = size / 2;
-  const cy = size / 2 - size * 0.02;
-  const r = size * 0.26;
-  const pad = maskable ? size * 0.18 : size * 0.1;
+  const cy = size * 0.54;
+  const oR = fs * 0.42;
+  const gap = fs * 0.06;
+  const rW = fs * 0.58;
+  const uW = fs * 0.62;
+  const gW = fs * 0.62;
+  const hW = fs * 0.62;
+  const totalW = rW + gap + oR * 2 + gap + uW + gap + gW + gap + hW;
+  let x = cx - totalW / 2;
+
+  const rX = x + rW / 2;
+  x += rW + gap;
+  const oX = x + oR;
+  x += oR * 2 + gap;
+  const uX = x + uW / 2;
+  x += uW + gap;
+  const gX = x + gW / 2;
+  x += gW + gap;
+  const hX = x + hW / 2;
 
   return Buffer.from(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <defs>
-        <radialGradient id="glow" cx="50%" cy="42%" r="55%">
-          <stop offset="0%" stop-color="${C.amber}" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="${C.bg}" stop-opacity="0"/>
-        </radialGradient>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2a2520"/>
-          <stop offset="100%" stop-color="${C.bg}"/>
-        </linearGradient>
-      </defs>
-      <rect width="${size}" height="${size}" fill="url(#sky)"/>
-      <rect width="${size}" height="${size}" fill="url(#glow)"/>
-      <rect x="${pad}" y="${pad}" width="${size - pad * 2}" height="${size - pad * 2}"
-        rx="${size * 0.14}" fill="${C.stone}" stroke="${C.stoneLight}" stroke-width="${size * 0.004}"/>
-
-      <!-- dry hills -->
-      <path fill="${C.stoneLight}" opacity="0.55"
-        d="M ${pad} ${size - pad} L ${size * 0.35} ${size * 0.62} L ${size * 0.55} ${size - pad} Z"/>
-      <path fill="${C.dust}" opacity="0.35"
-        d="M ${size * 0.42} ${size - pad} L ${size * 0.68} ${size * 0.58} L ${size - pad} ${size - pad} Z"/>
-
-      <!-- sun -->
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.amberSoft}"/>
-      <circle cx="${cx}" cy="${cy}" r="${r * 0.78}" fill="${C.amber}" opacity="0.92"/>
-      <circle cx="${cx}" cy="${cy}" r="${r * 0.52}" fill="${C.amberText}" opacity="0.35"/>
-
-      <!-- drought cracks -->
-      <g stroke="${C.bg}" stroke-width="${size * 0.018}" stroke-linecap="round" opacity="0.75">
-        <line x1="${cx - r * 0.15}" y1="${cy - r * 0.55}" x2="${cx + r * 0.35}" y2="${cy + r * 0.2}"/>
-        <line x1="${cx + r * 0.1}" y1="${cy - r * 0.45}" x2="${cx - r * 0.4}" y2="${cy + r * 0.35}"/>
-        <line x1="${cx - r * 0.05}" y1="${cy + r * 0.1}" x2="${cx + r * 0.5}" y2="${cy + r * 0.55}"/>
-      </g>
-
-      <!-- rain drop (hope) -->
-      <path fill="${C.rain}" opacity="0.85"
-        d="M ${cx + r * 0.55} ${cy + r * 0.72}
-           C ${cx + r * 0.55} ${cy + r * 0.55} ${cx + r * 0.72} ${cy + r * 0.58} ${cx + r * 0.72} ${cy + r * 0.75}
-           C ${cx + r * 0.72} ${cy + r * 0.92} ${cx + r * 0.55} ${cy + r * 0.98} ${cx + r * 0.55} ${cy + r * 0.98}
-           C ${cx + r * 0.38} ${cy + r * 0.98} ${cx + r * 0.38} ${cy + r * 0.92} ${cx + r * 0.38} ${cy + r * 0.75}
-           C ${cx + r * 0.38} ${cy + r * 0.58} ${cx + r * 0.55} ${cy + r * 0.55} ${cx + r * 0.55} ${cy + r * 0.72} Z"/>
-
-      <text x="${cx}" y="${size - pad * 1.35}" text-anchor="middle"
-        font-family="system-ui, -apple-system, Segoe UI, sans-serif"
-        font-size="${size * 0.11}" font-weight="700" fill="${C.amberText}" letter-spacing="${size * 0.02}">rough</text>
+      <rect width="${size}" height="${size}" fill="${BRAND.bg}"/>
+      <text x="${rX}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="${fs}" font-weight="800" fill="${BRAND.text}">R</text>
+      <circle cx="${oX}" cy="${cy - fs * 0.02}" r="${oR}" fill="${BRAND.gold}"/>
+      <text x="${uX}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="${fs}" font-weight="800" fill="${BRAND.text}">U</text>
+      <text x="${gX}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="${fs}" font-weight="800" fill="${BRAND.text}">G</text>
+      <text x="${hX}" y="${cy}" text-anchor="middle" dominant-baseline="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="${fs}" font-weight="800" fill="${BRAND.text}">H</text>
     </svg>`,
   );
+}
+
+/** Foreground layer for Android adaptive icon (logo in safe zone). */
+function roughStoreIconForegroundSvg(size) {
+  const pad = size * 0.18;
+  const inner = size - pad * 2;
+  return roughStoreIconSvg(inner, false);
+}
+
+async function loadStoreIcon512() {
+  if (existsSync(customIconPath)) {
+    console.log(`Using custom icon: ${customIconPath}`);
+    return sharp(readFileSync(customIconPath))
+      .resize(512, 512, { fit: "cover" })
+      .png()
+      .toBuffer();
+  }
+  console.log("Generating ROUGH store icon (place ROUGH_icon.png in store-listing/source/ to override)");
+  return sharp(roughStoreIconSvg(512)).png().toBuffer();
 }
 
 function featureGraphicSvg(w, h) {
@@ -106,29 +129,20 @@ function featureGraphicSvg(w, h) {
       <rect width="${w}" height="${h}" fill="url(#bg)"/>
       <rect width="${w}" height="${h}" fill="url(#sunGlow)"/>
 
-      <!-- distant hills -->
       <path fill="url(#hill1)" opacity="0.9"
         d="M 0 ${h * 0.72} L ${w * 0.22} ${h * 0.48} L ${w * 0.42} ${h * 0.62} L ${w * 0.58} ${h * 0.44} L ${w * 0.78} ${h * 0.58} L ${w} ${h * 0.5} L ${w} ${h} L 0 ${h} Z"/>
       <path fill="url(#hill2)" opacity="0.95"
         d="M 0 ${h} L 0 ${h * 0.78} L ${w * 0.18} ${h * 0.68} L ${w * 0.38} ${h * 0.82} L ${w * 0.55} ${h * 0.7} L ${w * 0.72} ${h * 0.86} L ${w} ${h * 0.74} L ${w} ${h} Z"/>
 
-      <!-- winding path -->
       <path fill="none" stroke="${C.dust}" stroke-width="3" opacity="0.35"
         d="M ${w * 0.08} ${h * 0.92} Q ${w * 0.35} ${h * 0.78} ${w * 0.52} ${h * 0.84} T ${w * 0.88} ${h * 0.76}"/>
 
-      <!-- sun -->
       <circle cx="${w * 0.78}" cy="${h * 0.28}" r="${h * 0.11}" fill="${C.amberSoft}" opacity="0.95"/>
       <circle cx="${w * 0.78}" cy="${h * 0.28}" r="${h * 0.085}" fill="${C.amber}"/>
-      <g stroke="${C.bg}" stroke-width="2.5" stroke-linecap="round" opacity="0.7">
-        <line x1="${w * 0.78}" y1="${h * 0.17}" x2="${w * 0.8}" y2="${h * 0.3}"/>
-        <line x1="${w * 0.72}" y1="${h * 0.24}" x2="${w * 0.84}" y2="${h * 0.32}"/>
-        <line x1="${w * 0.74}" y1="${h * 0.33}" x2="${w * 0.82}" y2="${h * 0.36}"/>
-      </g>
 
-      <!-- title -->
       <text x="${w * 0.08}" y="${h * 0.38}"
         font-family="system-ui, -apple-system, Segoe UI, sans-serif"
-        font-size="96" font-weight="800" fill="${C.amberText}" letter-spacing="4">rough</text>
+        font-size="96" font-weight="800" fill="${BRAND.text}" letter-spacing="4">ROUGH</text>
 
       <text x="${w * 0.08}" y="${h * 0.52}"
         font-family="system-ui, -apple-system, Segoe UI, sans-serif"
@@ -144,31 +158,64 @@ function featureGraphicSvg(w, h) {
         font-family="system-ui, -apple-system, Segoe UI, sans-serif"
         font-size="22" font-weight="500" fill="${C.dust}">Map · quests · taverns · craft · rough.co.nz</text>
 
-      <!-- accent line -->
       <rect x="${w * 0.08}" y="${h * 0.42}" width="${w * 0.12}" height="4" rx="2" fill="${C.amber}"/>
     </svg>`,
   );
 }
 
-const icon512 = await sharp(appIconSvg(512)).png().toBuffer();
+const icon512 = await loadStoreIcon512();
 writeFileSync(join(outDir, "app-icon-512.png"), icon512);
 
 const feature = await sharp(featureGraphicSvg(1024, 500)).png().toBuffer();
 writeFileSync(join(outDir, "feature-graphic-1024x500.png"), feature);
 
-// Keep Play icon aligned with PWA / launcher source
 const iconsDir = join(root, "public/icons");
 mkdirSync(iconsDir, { recursive: true });
 writeFileSync(join(iconsDir, "icon-512.png"), icon512);
 writeFileSync(
   join(iconsDir, "icon-512-maskable.png"),
-  await sharp(appIconSvg(512, true)).png().toBuffer(),
+  existsSync(customIconPath)
+    ? icon512
+    : await sharp(roughStoreIconSvg(512, true)).png().toBuffer(),
 );
 writeFileSync(
   join(iconsDir, "icon-192.png"),
-  await sharp(appIconSvg(192)).png().toBuffer(),
+  await sharp(icon512).resize(192, 192).png().toBuffer(),
 );
+
+// Adaptive-icon foreground (transparent bg, padded logo)
+const fg512 = existsSync(customIconPath)
+  ? await sharp(readFileSync(customIconPath))
+      .resize(432, 432, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .extend({
+        top: 40,
+        bottom: 40,
+        left: 40,
+        right: 40,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      })
+      .png()
+      .toBuffer()
+  : await sharp({
+      create: {
+        width: 512,
+        height: 512,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    })
+      .composite([
+        {
+          input: await sharp(roughStoreIconForegroundSvg(512)).png().toBuffer(),
+          left: Math.round(512 * 0.09),
+          top: Math.round(512 * 0.09),
+        },
+      ])
+      .png()
+      .toBuffer();
+
+writeFileSync(join(outDir, "launcher-foreground-512.png"), fg512);
 
 console.log("Wrote mobile/store-listing/app-icon-512.png");
 console.log("Wrote mobile/store-listing/feature-graphic-1024x500.png");
-console.log("Updated public/icons/ from matching app icon");
+console.log("Updated public/icons/ from store launcher icon");
