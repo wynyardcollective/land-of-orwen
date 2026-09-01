@@ -3,9 +3,9 @@
 Use the **signed AAB** (not the debug APK).
 
 **File:** `mobile/android/app/build/outputs/bundle/release/app-release.aab`  
-**Download:** GitHub release `play-v1.0.6` → `rough-v1.0.6-release.apk` (test) or `rough-v1.0.6-release.aab` (Play)
+**Download:** GitHub release `play-v1.0.7` → `rough-v1.0.7-release.apk` (test) or `rough-v1.0.7-release.aab` (Play)
 **Package:** `nz.co.wynyardcollective.rough`  
-**Version:** 1.0.6 (versionCode 7)
+**Version:** 1.0.7 (versionCode 8)
 
 ## 1. Create the app (if not already)
 
