@@ -83,13 +83,6 @@ function roughStoreIconSvg(size, maskable = false) {
   );
 }
 
-/** Foreground layer for Android adaptive icon (logo in safe zone). */
-function roughStoreIconForegroundSvg(size) {
-  const pad = size * 0.18;
-  const inner = size - pad * 2;
-  return roughStoreIconSvg(inner, false);
-}
-
 async function loadStoreIcon512() {
   if (existsSync(customIconPath)) {
     console.log(`Using custom icon: ${customIconPath}`);
@@ -182,39 +175,6 @@ writeFileSync(
   join(iconsDir, "icon-192.png"),
   await sharp(icon512).resize(192, 192).png().toBuffer(),
 );
-
-// Adaptive-icon foreground (transparent bg, padded logo)
-const fg512 = existsSync(customIconPath)
-  ? await sharp(readFileSync(customIconPath))
-      .resize(432, 432, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .extend({
-        top: 40,
-        bottom: 40,
-        left: 40,
-        right: 40,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      })
-      .png()
-      .toBuffer()
-  : await sharp({
-      create: {
-        width: 512,
-        height: 512,
-        channels: 4,
-        background: { r: 0, g: 0, b: 0, alpha: 0 },
-      },
-    })
-      .composite([
-        {
-          input: await sharp(roughStoreIconForegroundSvg(512)).png().toBuffer(),
-          left: Math.round(512 * 0.09),
-          top: Math.round(512 * 0.09),
-        },
-      ])
-      .png()
-      .toBuffer();
-
-writeFileSync(join(outDir, "launcher-foreground-512.png"), fg512);
 
 console.log("Wrote mobile/store-listing/app-icon-512.png");
 console.log("Wrote mobile/store-listing/feature-graphic-1024x500.png");

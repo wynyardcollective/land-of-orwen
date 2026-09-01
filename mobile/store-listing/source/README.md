@@ -1,16 +1,28 @@
-# Custom Play Store icon (optional)
+# Use your exact Play Console icon
 
-To use your exact Play Console icon in the Android launcher (required for policy match):
+Google compares the **hi-res store icon** with the **launcher icon inside the APK**. They must be the same file.
 
-1. Copy `ROUGH_icon.png` from your Google Drive folder into this directory as:
+## One-time setup
+
+1. Copy your Play icon from Google Drive:
+   ```
+   G:\Shared drives\Shared Game Dev Folder\Rough\Google console images\ROUGH_icon.png
+   ```
+2. Paste it here as:
    ```
    mobile/store-listing/source/ROUGH_icon.png
    ```
-2. Regenerate assets:
+   (exact filename: `ROUGH_icon.png`)
+
+3. Regenerate and rebuild:
    ```bash
    npm run icons:generate
    bash scripts/android-release-build.sh
+   cd mobile/android && ./gradlew assembleRelease
    ```
-3. Re-upload the new AAB to Play Console.
 
-If this file is missing, the repo generates a matching **ROUGH** wordmark (dark field + gold circle **O**).
+4. Install the new APK and confirm the home-screen icon matches Play.
+
+5. Re-upload the new AAB to Play Console.
+
+**Do not** use the auto-generated SVG icon for Play if you have this PNG — always use your original `ROUGH_icon.png`.
